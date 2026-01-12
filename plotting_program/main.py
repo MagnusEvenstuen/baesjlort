@@ -33,13 +33,13 @@ correct_pos_x = data[:, 16]
 correct_pos_y = data[:, 17]
 correct_pos_z = data[:, 18]
 
-orientation_x = data[:, 19]
-orientation_y = data[:, 20]
-orientation_z = data[:, 21]
+orientation_x = data[:, 20]
+orientation_y = data[:, 21]
+orientation_z = data[:, 22]
 
-correct_orientation_x = data[:, 22]
-correct_orientation_y = data[:, 23]
-correct_orientation_z = data[:, 24]
+correct_orientation_x = data[:, 23]
+correct_orientation_y = data[:, 24]
+correct_orientation_z = data[:, 25]
 
 depth = data[:, 19]
 

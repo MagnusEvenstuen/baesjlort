@@ -40,7 +40,6 @@ public:
         gravitational_vector_.z += acc_z/count;
         last_update_time_ = std::chrono::steady_clock::now();
         last_truth_update_time_ = std::chrono::steady_clock::now();
-        orientation_ = perfect_orientation_;
         return gravitational_vector_;
     }
 
@@ -54,10 +53,10 @@ public:
         last_truth_update_time_ = current_time;
         perfect_position_.x = pos_x;
         perfect_position_.y = pos_y;
-        perfect_position_.z = -pos_z;
+        perfect_position_.z = pos_z;
         perfect_speed_.x = vel_x;
         perfect_speed_.y = vel_y;
-        perfect_speed_.z = -vel_z;
+        perfect_speed_.z = vel_z;
         perfect_acceleration_.x = (perfect_speed_.x - prev_speed.x) / dt;
         perfect_acceleration_.y = (perfect_speed_.y - prev_speed.y) / dt;
         perfect_acceleration_.z = (perfect_speed_.z - prev_speed.z) / dt;
@@ -66,6 +65,8 @@ public:
         perfect_orientation_.x = quat_x;
         perfect_orientation_.y = quat_y;
         perfect_orientation_.z = quat_z;
+        perfect_orientation_ = world_correction_ * perfect_orientation_;
+        perfect_orientation_.normalize();
     }
 
 
@@ -150,6 +151,7 @@ private:
     Vector3 perfect_position_ = {0.0f, 0.0f, 0.0f};
     Quaternion orientation_;
     Quaternion perfect_orientation_;
+    Quaternion world_correction_ = Quaternion(0.0f, 1.0f, 0.0f, 0.0f);
     std::chrono::steady_clock::time_point last_update_time_;
     std::chrono::steady_clock::time_point last_truth_update_time_;
     std::chrono::steady_clock::time_point start_time_;
