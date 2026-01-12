@@ -1,0 +1,195 @@
+[0.000000] (-) TimerEvent: {}
+[0.000102] (sensor_read_and_interprat) JobQueued: {'identifier': 'sensor_read_and_interprat', 'dependencies': OrderedDict()}
+[0.000133] (sensor_read_and_interprat) JobStarted: {'identifier': 'sensor_read_and_interprat'}
+[0.006479] (sensor_read_and_interprat) JobProgress: {'identifier': 'sensor_read_and_interprat', 'progress': 'cmake'}
+[0.007777] (sensor_read_and_interprat) JobProgress: {'identifier': 'sensor_read_and_interprat', 'progress': 'build'}
+[0.007812] (sensor_read_and_interprat) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat', '--', '-j12', '-l12'], 'cwd': '/home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat', 'env': OrderedDict({'LESSOPEN': '| /usr/bin/lesspipe %s', 'USER': 'gud', 'XDG_SESSION_TYPE': 'x11', 'SHLVL': '1', 'LD_LIBRARY_PATH': '/opt/ros/jazzy/opt/rviz_ogre_vendor/lib:/opt/ros/jazzy/lib/x86_64-linux-gnu:/opt/ros/jazzy/opt/gz_math_vendor/lib:/opt/ros/jazzy/opt/gz_utils_vendor/lib:/opt/ros/jazzy/opt/gz_cmake_vendor/lib:/opt/ros/jazzy/lib', 'HOME': '/home/gud', 'DESKTOP_SESSION': 'ubuntu', 'ROS_PYTHON_VERSION': '3', 'GNOME_SHELL_SESSION_MODE': 'ubuntu', 'GTK_MODULES': 'gail:atk-bridge', 'DBUS_STARTER_BUS_TYPE': 'session', 'SYSTEMD_EXEC_PID': '2801', 'GSM_SKIP_SSH_AGENT_WORKAROUND': 'true', 'DBUS_SESSION_BUS_ADDRESS': 'unix:path=/run/user/1000/bus,guid=863552eb97863dc06ab10d9d6964ea74', 'COLORTERM': 'truecolor', 'DEBUGINFOD_URLS': 'https://debuginfod.ubuntu.com', 'COLCON_PREFIX_PATH': '/home/gud/Skole/baesjlort/sensor_read_and_interprat/install', 'ROS_DISTRO': 'jazzy', 'LOGNAME': 'gud', '_': '/usr/bin/colcon', 'ROS_VERSION': '2', 'MEMORY_PRESSURE_WATCH': '/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/app-gnome\\x2dsession\\x2dmanager.slice/gnome-session-manager@ubuntu.service/memory.pressure', 'XDG_SESSION_CLASS': 'user', 'USERNAME': 'gud', 'TERM': 'xterm-256color', 'GNOME_DESKTOP_SESSION_ID': 'this-is-deprecated', 'WINDOWPATH': '2', 'PATH': '/opt/ros/jazzy/bin:/home/gud/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/gud/.local/bin', 'SESSION_MANAGER': 'local/gudsSlave:@/tmp/.ICE-unix/2801,unix/gudsSlave:/tmp/.ICE-unix/2801', 'XDG_MENU_PREFIX': 'gnome-', 'GNOME_TERMINAL_SCREEN': '/org/gnome/Terminal/screen/909785f5_d4a5_4bda_b74b_e36600ecef11', 'XDG_RUNTIME_DIR': '/run/user/1000', 'DISPLAY': ':1', 'LANG': 'en_US.UTF-8', 'XDG_CURRENT_DESKTOP': 'ubuntu:GNOME', 'XMODIFIERS': '@im=ibus', 'XDG_SESSION_DESKTOP': 'ubuntu', 'XAUTHORITY': '/run/user/1000/gdm/Xauthority', 'LS_COLORS': 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=00:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.avif=01;35:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:*~=00;90:*#=00;90:*.bak=00;90:*.crdownload=00;90:*.dpkg-dist=00;90:*.dpkg-new=00;90:*.dpkg-old=00;90:*.dpkg-tmp=00;90:*.old=00;90:*.orig=00;90:*.part=00;90:*.rej=00;90:*.rpmnew=00;90:*.rpmorig=00;90:*.rpmsave=00;90:*.swp=00;90:*.tmp=00;90:*.ucf-dist=00;90:*.ucf-new=00;90:*.ucf-old=00;90:', 'GNOME_TERMINAL_SERVICE': ':1.130', 'SSH_AUTH_SOCK': '/run/user/1000/keyring/ssh', 'AMENT_PREFIX_PATH': '/home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat:/opt/ros/jazzy', 'SHELL': '/bin/bash', 'QT_ACCESSIBILITY': '1', 'GDMSESSION': 'ubuntu', 'LESSCLOSE': '/usr/bin/lesspipe %s %s', 'GPG_AGENT_INFO': '/run/user/1000/gnupg/S.gpg-agent:0:1', 'ROS_AUTOMATIC_DISCOVERY_RANGE': 'SUBNET', 'QT_IM_MODULE': 'ibus', 'PWD': '/home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat', 'LC_ALL': 'en_US.UTF-8', 'XDG_CONFIG_DIRS': '/etc/xdg/xdg-ubuntu:/etc/xdg', 'DBUS_STARTER_ADDRESS': 'unix:path=/run/user/1000/bus,guid=863552eb97863dc06ab10d9d6964ea74', 'XDG_DATA_DIRS': '/usr/share/ubuntu:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop', 'PYTHONPATH': '/opt/ros/jazzy/lib/python3.12/site-packages', 'COLCON': '1', 'MEMORY_PRESSURE_WRITE': 'c29tZSAyMDAwMDAgMjAwMDAwMAA=', 'VTE_VERSION': '7600', 'CMAKE_PREFIX_PATH': '/home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat:/opt/ros/jazzy/opt/gz_math_vendor:/opt/ros/jazzy/opt/gz_utils_vendor:/opt/ros/jazzy/opt/gz_cmake_vendor:/opt/ros/jazzy'}), 'shell': False}
+[0.062384] (sensor_read_and_interprat) StdoutLine: {'line': b'[ 50%] \x1b[32mBuilding CXX object CMakeFiles/sensor_subscriber_node.dir/src/main.cpp.o\x1b[0m\n'}
+[0.099423] (-) TimerEvent: {}
+[0.199673] (-) TimerEvent: {}
+[0.299925] (-) TimerEvent: {}
+[0.400174] (-) TimerEvent: {}
+[0.500420] (-) TimerEvent: {}
+[0.600695] (-) TimerEvent: {}
+[0.700945] (-) TimerEvent: {}
+[0.801198] (-) TimerEvent: {}
+[0.901464] (-) TimerEvent: {}
+[1.001718] (-) TimerEvent: {}
+[1.101963] (-) TimerEvent: {}
+[1.202226] (-) TimerEvent: {}
+[1.302485] (-) TimerEvent: {}
+[1.402749] (-) TimerEvent: {}
+[1.503008] (-) TimerEvent: {}
+[1.603266] (-) TimerEvent: {}
+[1.703546] (-) TimerEvent: {}
+[1.803806] (-) TimerEvent: {}
+[1.904068] (-) TimerEvent: {}
+[2.004326] (-) TimerEvent: {}
+[2.104581] (-) TimerEvent: {}
+[2.204836] (-) TimerEvent: {}
+[2.305090] (-) TimerEvent: {}
+[2.405357] (-) TimerEvent: {}
+[2.505617] (-) TimerEvent: {}
+[2.605872] (-) TimerEvent: {}
+[2.706141] (-) TimerEvent: {}
+[2.806442] (-) TimerEvent: {}
+[2.830013] (sensor_read_and_interprat) StderrLine: {'line': b'In file included from \x1b[01m\x1b[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:10\x1b[m\x1b[K,\n'}
+[2.830190] (sensor_read_and_interprat) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/src/main.cpp:1\x1b[m\x1b[K:\n'}
+[2.830318] (sensor_read_and_interprat) StderrLine: {'line': b'\x1b[01m\x1b[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/image_display_and_handle.hpp:\x1b[m\x1b[K In member function \xe2\x80\x98\x1b[01m\x1b[Kvoid image_display_and_handle::\x1b[01;32m\x1b[Kdisplay_image\x1b[m\x1b[K(const sensor_msgs::msg::Image_<std::allocator<void> >::ConstSharedPtr&, const std::string&, rclcpp::Logger)\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[2.830392] (sensor_read_and_interprat) StderrLine: {'line': b'\x1b[01m\x1b[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/image_display_and_handle.hpp:13:123:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kunused parameter \xe2\x80\x98\x1b[01m\x1b[Klogger\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K\x1b]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter\x07-Wunused-parameter\x1b]8;;\x07\x1b[m\x1b[K]\n'}
+[2.830463] (sensor_read_and_interprat) StderrLine: {'line': b'   13 | tSharedPtr& msg, const std::string& window_name, \x1b[01;35m\x1b[Krclcpp::Logger logger\x1b[m\x1b[K)\n'}
+[2.830531] (sensor_read_and_interprat) StderrLine: {'line': b'      |                                                  \x1b[01;35m\x1b[K~~~~~~~~~~~~~~~^~~~~~\x1b[m\x1b[K\n'}
+[2.830605] (sensor_read_and_interprat) StderrLine: {'line': b'\n'}
+[2.906567] (-) TimerEvent: {}
+[2.936983] (sensor_read_and_interprat) StderrLine: {'line': b'\x1b[01m\x1b[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:\x1b[m\x1b[K In member function \xe2\x80\x98\x1b[01m\x1b[Kvoid sensor_subscriber::\x1b[01;32m\x1b[Kimu_perfect_callback\x1b[m\x1b[K(const sensor_msgs::msg::Imu_<std::allocator<void> >::ConstSharedPtr&)\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[2.937144] (sensor_read_and_interprat) StderrLine: {'line': b'\x1b[01m\x1b[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:203:76:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kunused parameter \xe2\x80\x98\x1b[01m\x1b[Kmsg\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K\x1b]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter\x07-Wunused-parameter\x1b]8;;\x07\x1b[m\x1b[K]\n'}
+[2.937243] (sensor_read_and_interprat) StderrLine: {'line': b'  203 |  imu_perfect_callback(\x1b[01;35m\x1b[Kconst sensor_msgs::msg::Imu::ConstSharedPtr& msg\x1b[m\x1b[K)\n'}
+[2.937315] (sensor_read_and_interprat) StderrLine: {'line': b'      |                       \x1b[01;35m\x1b[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~\x1b[m\x1b[K\n'}
+[2.937382] (sensor_read_and_interprat) StderrLine: {'line': b'\n'}
+[3.006697] (-) TimerEvent: {}
+[3.106953] (-) TimerEvent: {}
+[3.207199] (-) TimerEvent: {}
+[3.307463] (-) TimerEvent: {}
+[3.407725] (-) TimerEvent: {}
+[3.507987] (-) TimerEvent: {}
+[3.608244] (-) TimerEvent: {}
+[3.708504] (-) TimerEvent: {}
+[3.808761] (-) TimerEvent: {}
+[3.909024] (-) TimerEvent: {}
+[4.009288] (-) TimerEvent: {}
+[4.109505] (-) TimerEvent: {}
+[4.209762] (-) TimerEvent: {}
+[4.310021] (-) TimerEvent: {}
+[4.410280] (-) TimerEvent: {}
+[4.510539] (-) TimerEvent: {}
+[4.610796] (-) TimerEvent: {}
+[4.711050] (-) TimerEvent: {}
+[4.811331] (-) TimerEvent: {}
+[4.911587] (-) TimerEvent: {}
+[5.011844] (-) TimerEvent: {}
+[5.112076] (-) TimerEvent: {}
+[5.212313] (-) TimerEvent: {}
+[5.312561] (-) TimerEvent: {}
+[5.412831] (-) TimerEvent: {}
+[5.513080] (-) TimerEvent: {}
+[5.613315] (-) TimerEvent: {}
+[5.713585] (-) TimerEvent: {}
+[5.813834] (-) TimerEvent: {}
+[5.914089] (-) TimerEvent: {}
+[6.014321] (-) TimerEvent: {}
+[6.114533] (-) TimerEvent: {}
+[6.214794] (-) TimerEvent: {}
+[6.315047] (-) TimerEvent: {}
+[6.415284] (-) TimerEvent: {}
+[6.515542] (-) TimerEvent: {}
+[6.615798] (-) TimerEvent: {}
+[6.716079] (-) TimerEvent: {}
+[6.816312] (-) TimerEvent: {}
+[6.916557] (-) TimerEvent: {}
+[7.016798] (-) TimerEvent: {}
+[7.117055] (-) TimerEvent: {}
+[7.217285] (-) TimerEvent: {}
+[7.317573] (-) TimerEvent: {}
+[7.417846] (-) TimerEvent: {}
+[7.518096] (-) TimerEvent: {}
+[7.618331] (-) TimerEvent: {}
+[7.718625] (-) TimerEvent: {}
+[7.818883] (-) TimerEvent: {}
+[7.919145] (-) TimerEvent: {}
+[8.019402] (-) TimerEvent: {}
+[8.119655] (-) TimerEvent: {}
+[8.219894] (-) TimerEvent: {}
+[8.320137] (-) TimerEvent: {}
+[8.420377] (-) TimerEvent: {}
+[8.520634] (-) TimerEvent: {}
+[8.620878] (-) TimerEvent: {}
+[8.721166] (-) TimerEvent: {}
+[8.821438] (-) TimerEvent: {}
+[8.921643] (-) TimerEvent: {}
+[9.021849] (-) TimerEvent: {}
+[9.122092] (-) TimerEvent: {}
+[9.222312] (-) TimerEvent: {}
+[9.322517] (-) TimerEvent: {}
+[9.422761] (-) TimerEvent: {}
+[9.523002] (-) TimerEvent: {}
+[9.623247] (-) TimerEvent: {}
+[9.723456] (-) TimerEvent: {}
+[9.823698] (-) TimerEvent: {}
+[9.923942] (-) TimerEvent: {}
+[10.024190] (-) TimerEvent: {}
+[10.124406] (-) TimerEvent: {}
+[10.224653] (-) TimerEvent: {}
+[10.324895] (-) TimerEvent: {}
+[10.425136] (-) TimerEvent: {}
+[10.525374] (-) TimerEvent: {}
+[10.625604] (-) TimerEvent: {}
+[10.725864] (-) TimerEvent: {}
+[10.826105] (-) TimerEvent: {}
+[10.926286] (-) TimerEvent: {}
+[11.026493] (-) TimerEvent: {}
+[11.126733] (-) TimerEvent: {}
+[11.226996] (-) TimerEvent: {}
+[11.327288] (-) TimerEvent: {}
+[11.427521] (-) TimerEvent: {}
+[11.527765] (-) TimerEvent: {}
+[11.628005] (-) TimerEvent: {}
+[11.728254] (-) TimerEvent: {}
+[11.828487] (-) TimerEvent: {}
+[11.928730] (-) TimerEvent: {}
+[12.028971] (-) TimerEvent: {}
+[12.129243] (-) TimerEvent: {}
+[12.229497] (-) TimerEvent: {}
+[12.329738] (-) TimerEvent: {}
+[12.429980] (-) TimerEvent: {}
+[12.530373] (-) TimerEvent: {}
+[12.630621] (-) TimerEvent: {}
+[12.730866] (-) TimerEvent: {}
+[12.831117] (-) TimerEvent: {}
+[12.931350] (-) TimerEvent: {}
+[13.031600] (-) TimerEvent: {}
+[13.131848] (-) TimerEvent: {}
+[13.232121] (-) TimerEvent: {}
+[13.332363] (-) TimerEvent: {}
+[13.432612] (-) TimerEvent: {}
+[13.532882] (-) TimerEvent: {}
+[13.577221] (sensor_read_and_interprat) StdoutLine: {'line': b'[100%] \x1b[32m\x1b[1mLinking CXX executable sensor_subscriber_node\x1b[0m\n'}
+[13.632999] (-) TimerEvent: {}
+[13.733290] (-) TimerEvent: {}
+[13.833573] (-) TimerEvent: {}
+[13.933878] (-) TimerEvent: {}
+[14.034129] (-) TimerEvent: {}
+[14.134409] (-) TimerEvent: {}
+[14.234686] (-) TimerEvent: {}
+[14.334968] (-) TimerEvent: {}
+[14.435251] (-) TimerEvent: {}
+[14.468368] (sensor_read_and_interprat) StdoutLine: {'line': b'[100%] Built target sensor_subscriber_node\n'}
+[14.478656] (sensor_read_and_interprat) CommandEnded: {'returncode': 0}
+[14.479206] (sensor_read_and_interprat) JobProgress: {'identifier': 'sensor_read_and_interprat', 'progress': 'install'}
+[14.487726] (sensor_read_and_interprat) Command: {'cmd': ['/usr/bin/cmake', '--install', '/home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat'], 'cwd': '/home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat', 'env': OrderedDict({'LESSOPEN': '| /usr/bin/lesspipe %s', 'USER': 'gud', 'XDG_SESSION_TYPE': 'x11', 'SHLVL': '1', 'LD_LIBRARY_PATH': '/opt/ros/jazzy/opt/rviz_ogre_vendor/lib:/opt/ros/jazzy/lib/x86_64-linux-gnu:/opt/ros/jazzy/opt/gz_math_vendor/lib:/opt/ros/jazzy/opt/gz_utils_vendor/lib:/opt/ros/jazzy/opt/gz_cmake_vendor/lib:/opt/ros/jazzy/lib', 'HOME': '/home/gud', 'DESKTOP_SESSION': 'ubuntu', 'ROS_PYTHON_VERSION': '3', 'GNOME_SHELL_SESSION_MODE': 'ubuntu', 'GTK_MODULES': 'gail:atk-bridge', 'DBUS_STARTER_BUS_TYPE': 'session', 'SYSTEMD_EXEC_PID': '2801', 'GSM_SKIP_SSH_AGENT_WORKAROUND': 'true', 'DBUS_SESSION_BUS_ADDRESS': 'unix:path=/run/user/1000/bus,guid=863552eb97863dc06ab10d9d6964ea74', 'COLORTERM': 'truecolor', 'DEBUGINFOD_URLS': 'https://debuginfod.ubuntu.com', 'COLCON_PREFIX_PATH': '/home/gud/Skole/baesjlort/sensor_read_and_interprat/install', 'ROS_DISTRO': 'jazzy', 'LOGNAME': 'gud', '_': '/usr/bin/colcon', 'ROS_VERSION': '2', 'MEMORY_PRESSURE_WATCH': '/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/app-gnome\\x2dsession\\x2dmanager.slice/gnome-session-manager@ubuntu.service/memory.pressure', 'XDG_SESSION_CLASS': 'user', 'USERNAME': 'gud', 'TERM': 'xterm-256color', 'GNOME_DESKTOP_SESSION_ID': 'this-is-deprecated', 'WINDOWPATH': '2', 'PATH': '/opt/ros/jazzy/bin:/home/gud/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/gud/.local/bin', 'SESSION_MANAGER': 'local/gudsSlave:@/tmp/.ICE-unix/2801,unix/gudsSlave:/tmp/.ICE-unix/2801', 'XDG_MENU_PREFIX': 'gnome-', 'GNOME_TERMINAL_SCREEN': '/org/gnome/Terminal/screen/909785f5_d4a5_4bda_b74b_e36600ecef11', 'XDG_RUNTIME_DIR': '/run/user/1000', 'DISPLAY': ':1', 'LANG': 'en_US.UTF-8', 'XDG_CURRENT_DESKTOP': 'ubuntu:GNOME', 'XMODIFIERS': '@im=ibus', 'XDG_SESSION_DESKTOP': 'ubuntu', 'XAUTHORITY': '/run/user/1000/gdm/Xauthority', 'LS_COLORS': 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=00:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.avif=01;35:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:*~=00;90:*#=00;90:*.bak=00;90:*.crdownload=00;90:*.dpkg-dist=00;90:*.dpkg-new=00;90:*.dpkg-old=00;90:*.dpkg-tmp=00;90:*.old=00;90:*.orig=00;90:*.part=00;90:*.rej=00;90:*.rpmnew=00;90:*.rpmorig=00;90:*.rpmsave=00;90:*.swp=00;90:*.tmp=00;90:*.ucf-dist=00;90:*.ucf-new=00;90:*.ucf-old=00;90:', 'GNOME_TERMINAL_SERVICE': ':1.130', 'SSH_AUTH_SOCK': '/run/user/1000/keyring/ssh', 'AMENT_PREFIX_PATH': '/home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat:/opt/ros/jazzy', 'SHELL': '/bin/bash', 'QT_ACCESSIBILITY': '1', 'GDMSESSION': 'ubuntu', 'LESSCLOSE': '/usr/bin/lesspipe %s %s', 'GPG_AGENT_INFO': '/run/user/1000/gnupg/S.gpg-agent:0:1', 'ROS_AUTOMATIC_DISCOVERY_RANGE': 'SUBNET', 'QT_IM_MODULE': 'ibus', 'PWD': '/home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat', 'LC_ALL': 'en_US.UTF-8', 'XDG_CONFIG_DIRS': '/etc/xdg/xdg-ubuntu:/etc/xdg', 'DBUS_STARTER_ADDRESS': 'unix:path=/run/user/1000/bus,guid=863552eb97863dc06ab10d9d6964ea74', 'XDG_DATA_DIRS': '/usr/share/ubuntu:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop', 'PYTHONPATH': '/opt/ros/jazzy/lib/python3.12/site-packages', 'COLCON': '1', 'MEMORY_PRESSURE_WRITE': 'c29tZSAyMDAwMDAgMjAwMDAwMAA=', 'VTE_VERSION': '7600', 'CMAKE_PREFIX_PATH': '/home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat:/opt/ros/jazzy/opt/gz_math_vendor:/opt/ros/jazzy/opt/gz_utils_vendor:/opt/ros/jazzy/opt/gz_cmake_vendor:/opt/ros/jazzy'}), 'shell': False}
+[14.494985] (sensor_read_and_interprat) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[14.495122] (sensor_read_and_interprat) StdoutLine: {'line': b'-- Installing: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/lib/sensor_read_and_interprat/sensor_subscriber_node\n'}
+[14.506157] (sensor_read_and_interprat) StdoutLine: {'line': b'-- Set non-toolchain portion of runtime path of "/home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/lib/sensor_read_and_interprat/sensor_subscriber_node" to ""\n'}
+[14.506449] (sensor_read_and_interprat) StdoutLine: {'line': b'-- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/include\n'}
+[14.506754] (sensor_read_and_interprat) StdoutLine: {'line': b'-- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/include/sensor_subscriber.hpp\n'}
+[14.506920] (sensor_read_and_interprat) StdoutLine: {'line': b'-- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/include/structs.hpp\n'}
+[14.507033] (sensor_read_and_interprat) StdoutLine: {'line': b'-- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/include/sensor_read_and_interprat\n'}
+[14.507116] (sensor_read_and_interprat) StdoutLine: {'line': b'-- Installing: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/include/sensor_handler.hpp\n'}
+[14.507269] (sensor_read_and_interprat) StdoutLine: {'line': b'-- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/include/image_display_and_handle.hpp\n'}
+[14.507376] (sensor_read_and_interprat) StdoutLine: {'line': b'-- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/ament_index/resource_index/package_run_dependencies/sensor_read_and_interprat\n'}
+[14.507440] (sensor_read_and_interprat) StdoutLine: {'line': b'-- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/ament_index/resource_index/parent_prefix_path/sensor_read_and_interprat\n'}
+[14.507504] (sensor_read_and_interprat) StdoutLine: {'line': b'-- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/sensor_read_and_interprat/environment/ament_prefix_path.sh\n'}
+[14.507572] (sensor_read_and_interprat) StdoutLine: {'line': b'-- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/sensor_read_and_interprat/environment/ament_prefix_path.dsv\n'}
+[14.507634] (sensor_read_and_interprat) StdoutLine: {'line': b'-- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/sensor_read_and_interprat/environment/path.sh\n'}
+[14.507702] (sensor_read_and_interprat) StdoutLine: {'line': b'-- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/sensor_read_and_interprat/environment/path.dsv\n'}
+[14.507773] (sensor_read_and_interprat) StdoutLine: {'line': b'-- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/sensor_read_and_interprat/local_setup.bash\n'}
+[14.507837] (sensor_read_and_interprat) StdoutLine: {'line': b'-- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/sensor_read_and_interprat/local_setup.sh\n'}
+[14.507900] (sensor_read_and_interprat) StdoutLine: {'line': b'-- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/sensor_read_and_interprat/local_setup.zsh\n'}
+[14.507963] (sensor_read_and_interprat) StdoutLine: {'line': b'-- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/sensor_read_and_interprat/local_setup.dsv\n'}
+[14.508025] (sensor_read_and_interprat) StdoutLine: {'line': b'-- Installing: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/sensor_read_and_interprat/package.dsv\n'}
+[14.508093] (sensor_read_and_interprat) StdoutLine: {'line': b'-- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/ament_index/resource_index/packages/sensor_read_and_interprat\n'}
+[14.508158] (sensor_read_and_interprat) StdoutLine: {'line': b'-- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/sensor_read_and_interprat/cmake/sensor_read_and_interpratConfig.cmake\n'}
+[14.508254] (sensor_read_and_interprat) StdoutLine: {'line': b'-- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/sensor_read_and_interprat/cmake/sensor_read_and_interpratConfig-version.cmake\n'}
+[14.508334] (sensor_read_and_interprat) StdoutLine: {'line': b'-- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/sensor_read_and_interprat/package.xml\n'}
+[14.509058] (sensor_read_and_interprat) CommandEnded: {'returncode': 0}
+[14.523194] (sensor_read_and_interprat) JobEnded: {'identifier': 'sensor_read_and_interprat', 'rc': 0}
+[14.523609] (-) EventReactorShutdown: {}

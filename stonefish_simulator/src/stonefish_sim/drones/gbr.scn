@@ -1,0 +1,377 @@
+<?xml version="1.0"?>
+<scenario>
+    <robot name="GBR" fixed="false" self_collisions="false">
+        <base_link name="Base" type="compound" physics="submerged">
+
+            <external_part name="black_plastic" type="model" physics="submerged">
+                <physical>
+                    <mesh filename="gbr/gbr_physical_mesh_complex.obj" scale="1.0"/>
+                    <origin rpy="0.0 0.0 3.14159" xyz="0.0 0.0 -0.077"/>
+                </physical>
+                <visual>
+                    <mesh filename="gbr/gbr_visual_mesh_black_plastic.obj" scale="1.0"/>
+                    <origin rpy="-1.570796 0.0 0.785" xyz="0.172 0.178 -0.148"/>
+                </visual>
+                <material name="Neutral"/>
+                <look name="Black"/>
+                <mass value="13.26"/>
+                <cg xyz="0.0 -0.003 -0.0013" rpy="0.0 0.0 0.0"/>
+                <compound_transform xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            </external_part>
+
+            <external_part name="acrylic" type="model" physics="submerged">            
+                <physical>
+                    <mesh filename="gbr/1x1x1mm_cube.obj" scale="1.0"/>
+                    <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+                </physical>
+                <visual>
+                    <mesh filename="gbr/gbr_visual_mesh_acrylic.obj" scale="1.0"/>
+                    <origin rpy="0.0 0.0 3.1415" xyz="0.0 0.0 0.046"/>
+                </visual>
+                <material name="Neutral"/>
+                <look name="White"/> 
+                <mass value="0.00001"/>
+                <compound_transform xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+                <inertia xyz="0.0 0.0 0.0"/>
+                <hydrodynamics viscous_drag="0.0 0.0 0.0" quadratic_drag="0.0 0.0 0."/> 
+            </external_part>
+
+            <external_part name="carbon_fiber" type="model" physics="submerged">            
+                <physical>
+                    <mesh filename="gbr/1x1x1mm_cube.obj" scale="1.0"/>
+                    <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+                </physical>
+                <visual>
+                    <mesh filename="gbr/gbr_visual_mesh_carbon_fiber.obj" scale="1.0"/>
+                    <origin rpy="0.0 0.0 3.1415" xyz="0.0 0.0 0.046"/>
+                </visual>
+                <material name="Neutral"/>
+                <look name="CarbonFiber"/> 
+                <mass value="0.00001"/>
+                <compound_transform xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+                <inertia xyz="0.0 0.0 0.0"/>
+                <hydrodynamics viscous_drag="0.0 0.0 0.0" quadratic_drag="0.0 0.0 0."/> 
+            </external_part>
+
+            <external_part name="red_plastic" type="model" physics="submerged">            
+                <physical>
+                    <mesh filename="gbr/1x1x1mm_cube.obj" scale="1.0"/>
+                    <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+                </physical>
+                <visual>
+                    <mesh filename="gbr/gbr_visual_mesh_red_plastic.obj" scale="1.0"/>
+                    <origin rpy="0.0 0.0 3.1415" xyz="0.0 0.0 0.046"/>
+                </visual>
+                <material name="Neutral"/>
+                <look name="Red"/> 
+                <mass value="0.00001"/>
+                <compound_transform xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+                <inertia xyz="0.0 0.0 0.0"/>
+                <hydrodynamics viscous_drag="0.0 0.0 0.0" quadratic_drag="0.0 0.0 0."/> 
+            </external_part>
+
+        </base_link>
+
+        <actuator name="Thruster1" type="thruster">
+            <link name="Base"/>
+            <origin rpy="0.0 0.0 2.356" xyz="0.156 0.156 0.0"/>
+            <specs max_setpoint="50.0" inverted_setpoint="false" normalized_setpoint="false"/>
+            <propeller diameter="0.18" right="true">
+                <mesh filename="gbr/T200_CCW_propeller.obj" scale="0.8"/>
+                <material name="robot_material"/>
+                <look name="Grey"/>
+            </propeller>
+            <rotor_dynamics type="zero_order"/>
+            <thrust_model type="linear_interpolation">
+                <input value="-40.0 -20.0 0.0 20.0 40.0"/>
+                <output value="-40.0 -20.0 0.0 20.0 40.0"/>
+            </thrust_model>
+        </actuator>
+
+        <actuator name="Thruster2" type="thruster">
+            <link name="Base"/>
+            <origin rpy="0.0 0.0 0.785" xyz="-0.156 0.156 0.0"/>
+            <specs max_setpoint="50.0" inverted_setpoint="false" normalized_setpoint="false"/>
+            <propeller diameter="0.18" right="true">
+                <mesh filename="gbr/T200_CCW_propeller.obj" scale="0.8"/>
+                <material name="robot_material"/>
+                <look name="Grey"/>
+            </propeller>
+            <rotor_dynamics type="zero_order"/>
+            <thrust_model type="linear_interpolation">
+                <input value="-40.0 -20.0 0.0 20.0 40.0"/>
+                <output value="-40.0 -20.0 0.0 20.0 40.0"/>
+            </thrust_model>
+        </actuator>
+
+        <actuator name="Thruster3" type="thruster">
+            <link name="Base"/>
+            <origin rpy="0.0 0.0 0.785" xyz="0.156 -0.156 0.0"/>
+            <specs max_setpoint="50.0" inverted_setpoint="false" normalized_setpoint="false"/>
+            <propeller diameter="0.18" right="false">
+                <mesh filename="gbr/T200_CCW_propeller.obj" scale="0.8"/>
+                <material name="robot_material"/>
+                <look name="Grey"/>
+            </propeller>
+            <rotor_dynamics type="zero_order"/>
+            <thrust_model type="linear_interpolation">
+                <input value="-40.0 -20.0 0.0 20.0 40.0"/>
+                <output value="-40.0 -20.0 0.0 20.0 40.0"/>
+            </thrust_model>
+        </actuator>
+
+        <actuator name="Thruster4" type="thruster">
+            <link name="Base"/>
+            <origin rpy="0.0 0.0 -0.785" xyz="-0.156 -0.156 0.0"/>
+            <specs max_setpoint="50.0" inverted_setpoint="false" normalized_setpoint="false"/>
+            <propeller diameter="0.18" right="true">
+                <mesh filename="gbr/T200_CCW_propeller.obj" scale="0.8"/>
+                <material name="robot_material"/>
+                <look name="Grey"/>
+            </propeller>
+            <rotor_dynamics type="zero_order"/>
+            <thrust_model type="linear_interpolation">
+                <input value="-40.0 -20.0 0.0 20.0 40.0"/>
+                <output value="-40.0 -20.0 0.0 20.0 40.0"/>
+            </thrust_model>
+        </actuator>
+
+        <actuator name="Thruster5" type="thruster">
+            <link name="Base"/>
+            <origin rpy="0.0 -1.570796 0.0" xyz="0.096 0.115 0.0"/>
+            <specs max_setpoint="50.0" inverted_setpoint="false" normalized_setpoint="false"/>
+            <propeller diameter="0.18" right="true">
+                <mesh filename="gbr/T200_CCW_propeller.obj" scale="0.8"/>
+                <material name="robot_material"/>
+                <look name="Grey"/>
+            </propeller>
+            <rotor_dynamics type="zero_order"/>
+            <thrust_model type="linear_interpolation">
+                <input value="-40.0 -20.0 0.0 20.0 40.0"/>
+                <output value="-40.0 -20.0 0.0 20.0 40.0"/>
+            </thrust_model>
+        </actuator>
+
+        <actuator name="Thruster6" type="thruster">
+            <link name="Base"/>
+            <origin rpy="0.0 -1.570796 0.0" xyz="-0.096 0.115 0.0"/>
+            <specs max_setpoint="50.0" inverted_setpoint="false" normalized_setpoint="false"/>
+            <propeller diameter="0.18" right="true">
+                <mesh filename="gbr/T200_CCW_propeller.obj" scale="0.8"/>
+                <material name="robot_material"/>
+                <look name="Grey"/>
+            </propeller>
+            <rotor_dynamics type="zero_order"/>
+            <thrust_model type="linear_interpolation">
+                <input value="-40.0 -20.0 0.0 20.0 40.0"/>
+                <output value="-40.0 -20.0 0.0 20.0 40.0"/>
+            </thrust_model>
+        </actuator>
+
+        <actuator name="Thruster7" type="thruster">
+            <link name="Base"/>
+            <origin rpy="0.0 -1.570796 0.0" xyz="0.096 -0.115 0.0"/>
+            <specs max_setpoint="50.0" inverted_setpoint="false" normalized_setpoint="false"/>
+            <propeller diameter="0.18" right="true">
+                <mesh filename="gbr/T200_CCW_propeller.obj" scale="0.8"/>
+                <material name="robot_material"/>
+                <look name="Grey"/>
+            </propeller>
+            <rotor_dynamics type="zero_order"/>
+            <thrust_model type="linear_interpolation">
+                <input value="-40.0 -20.0 0.0 20.0 40.0"/>
+                <output value="-40.0 -20.0 0.0 20.0 40.0"/>
+            </thrust_model>
+        </actuator>
+
+        <actuator name="Thruster8" type="thruster">
+            <link name="Base"/>
+            <origin rpy="0.0 -1.570796 0.0" xyz="-0.096 -0.115 0.0"/>
+            <specs max_setpoint="50.0" inverted_setpoint="false" normalized_setpoint="false"/>
+            <propeller diameter="0.18" right="true">
+                <mesh filename="gbr/T200_CCW_propeller.obj" scale="0.8"/>
+                <material name="robot_material"/>
+                <look name="Grey"/>
+            </propeller>
+            <rotor_dynamics type="zero_order"/>
+            <thrust_model type="linear_interpolation">
+                <input value="-40.0 -20.0 0.0 20.0 40.0"/>
+                <output value="-40.0 -20.0 0.0 20.0 40.0"/>
+            </thrust_model>
+        </actuator>
+
+        <!-- Front left camera -->
+        <sensor name="camLeft" rate="30.0" type="camera">
+            <link name="Base"/>
+            <specs resolution_x="960" resolution_y="540" horizontal_fov="80.0"/>
+            <origin xyz="-0.021 0.17 0.05" rpy="-1.57 0.0 0.0"/>
+            <ros_publisher topic="/gbr/cam_left"/>
+        </sensor>
+
+        <!-- Front right camera -->
+        <sensor name="camRight" rate="30.0" type="camera">
+            <link name="Base"/>
+            <specs resolution_x="960" resolution_y="540" horizontal_fov="80.0"/>
+            <origin xyz="0.021 0.17 0.05" rpy="-1.57 0.0 0.0"/>
+            <ros_publisher topic="/gbr/cam_right"/>
+        </sensor>
+
+        <!-- Perfect odometry sensor -->
+        <sensor name="Odometry" rate="10.0" type="odometry">
+            <noise position="0.0" velocity="0.0" angle="0.0" angular_velocity="0.0"/>
+            <history samples="1"/>
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <link name="Base"/>
+            <ros_publisher topic="/gbr/odometry_perfect"/>
+        </sensor>
+        <!-- IMU at center of mass perfect measurements-->
+        <sensor name="imuCenterPerfect" type="imu" rate="1000.0">
+            <range angular_velocity="35.0 35.0 35.0"
+                linear_acceleration="155.0 155.0 155.0"/>
+            <noise
+                angle="0.0 0.0 0.0"
+                angular_velocity="0.0"
+                yaw_drift="0.0"
+                linear_acceleration="0.0"/>
+            <history samples="1"/>
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <link name="Base"/>
+            <ros_publisher topic="/gbr/imu_center_perfect"/>
+        </sensor>
+
+        <!-- IMU at center of mass -->
+        <sensor name="imuCenter" type="imu" rate="100.0">
+            <range angular_velocity="35.0 35.0 35.0"
+                linear_acceleration="155.0 155.0 155.0"/>
+            <noise
+                angle="0.02 0.02 0.05"
+                angular_velocity="0.0035"
+                yaw_drift="0.001"
+                linear_acceleration="0.10"/>
+            <history samples="1"/>
+            <origin xyz="0.0 -0.003 -0.0013" rpy="0.0 0.0 0.0"/>
+            <link name="Base"/>
+            <ros_publisher topic="/gbr/imu_center"/>
+        </sensor>
+
+        <!-- IMU at center1 -->
+        <sensor name="imuCenter1" type="imu" rate="100.0">
+            <range angular_velocity="35.0 35.0 35.0"
+                linear_acceleration="155.0 155.0 155.0"/>
+            <noise
+                angle="0.02 0.02 0.05"
+                angular_velocity="0.0035"
+                yaw_drift="0.001"
+                linear_acceleration="0.10"/>
+            <history samples="1"/>
+            <origin xyz="0.04 -0.003 -0.0013" rpy="0.0 0.0 0.0"/>
+            <link name="Base"/>
+            <ros_publisher topic="/gbr/imu_center1"/>
+        </sensor>
+
+        <!-- IMU at center2-->
+        <sensor name="imuCenter2" type="imu" rate="100.0">
+            <range angular_velocity="35.0 35.0 35.0"
+                linear_acceleration="155.0 155.0 155.0"/>
+            <noise
+                angle="0.02 0.02 0.05"
+                angular_velocity="0.0035"
+                yaw_drift="0.001"
+                linear_acceleration="0.10"/>
+            <history samples="1"/>
+            <origin xyz="-0.04 -0.003 -0.0013" rpy="0.0 0.0 0.0"/>
+            <link name="Base"/>
+            <ros_publisher topic="/gbr/imu_center2"/>
+        </sensor>
+
+        <!-- IMU at front of vehicle1 -->
+        <sensor name="imu_front1" type="imu" rate="100.0">
+            <range angular_velocity="35.0 35.0 35.0"
+                linear_acceleration="155.0 155.0 155.0"/>
+            <noise
+                angle="0.02 0.02 0.05"
+                angular_velocity="0.0035"
+                yaw_drift="0.001"
+                linear_acceleration="0.10"/>
+            <history samples="1"/>
+            <origin xyz="-0.03 0.05 -0.0013" rpy="0.0 0.0 0.0"/>
+            <link name="Base"/>
+            <ros_publisher topic="/gbr/imu_front1"/>
+        </sensor>
+
+        <!-- IMU at front of vehicle2 -->
+        <sensor name="imu_front2" type="imu" rate="100.0">
+            <range angular_velocity="35.0 35.0 35.0"
+                linear_acceleration="155.0 155.0 155.0"/>
+            <noise
+                angle="0.02 0.02 0.05"
+                angular_velocity="0.0035"
+                yaw_drift="0.001"
+                linear_acceleration="0.10"/>
+            <history samples="1"/>
+            <origin xyz="0.03 0.05 -0.0013" rpy="0.0 0.0 0.0"/>
+            <link name="Base"/>
+            <ros_publisher topic="/gbr/imu_front2"/>
+        </sensor>
+
+        <!-- IMU at back of vehicle1 -->
+        <sensor name="imu_rear1" type="imu" rate="100.0">
+            <range angular_velocity="35.0 35.0 35.0"
+                linear_acceleration="155.0 155.0 155.0"/>
+            <noise
+                angle="0.02 0.02 0.05"
+                angular_velocity="0.0035"
+                yaw_drift="0.001"
+                linear_acceleration="0.10"/>
+            <history samples="1"/>
+            <origin xyz="-0.03 -0.05 -0.0013" rpy="0.0 0.0 0.0"/>
+            <link name="Base"/>
+            <ros_publisher topic="/gbr/imu_rear1"/>
+        </sensor>
+
+        <!-- IMU at back of vehicle2 -->
+        <sensor name="imu_rear2" type="imu" rate="100.0">
+            <range angular_velocity="35.0 35.0 35.0"
+                linear_acceleration="155.0 155.0 155.0"/>
+            <noise
+                angle="0.02 0.02 0.05"
+                angular_velocity="0.0035"
+                yaw_drift="0.001"
+                linear_acceleration="0.10"/>
+            <history samples="1"/>
+            <origin xyz="0.03 -0.05 -0.0013" rpy="0.0 0.0 0.0"/>
+            <link name="Base"/>
+            <ros_publisher topic="/gbr/imu_rear2"/>
+        </sensor>
+
+        <!-- IMU at back of vehicle3 -->
+        <sensor name="imu_rear3" type="imu" rate="100.0">
+            <range angular_velocity="35.0 35.0 35.0"
+                linear_acceleration="155.0 155.0 155.0"/>
+            <noise
+                angle="0.02 0.02 0.05"
+                angular_velocity="0.0035"
+                yaw_drift="0.001"
+                linear_acceleration="0.10"/>
+            <history samples="1"/>
+            <origin xyz="0.00 -0.05 -0.0013" rpy="0.0 0.0 0.0"/>
+            <link name="Base"/>
+            <ros_publisher topic="/gbr/imu_rear3"/>
+        </sensor>
+
+        <!-- Pressure sensor -->
+        <sensor name="pressure" type="pressure" rate="50.0">
+            <range pressure="100000.0"/>
+            <noise pressure="50.0"/>
+            <history samples="1"/>
+            <origin xyz="0.0 0.0 -0.05" rpy="0.0 0.0 0.0"/>
+            <link name="Base"/>
+            <ros_publisher topic="/gbr/pressure"/>
+        </sensor>
+
+
+        <world_transform xyz="2.0 2.0 0.5" rpy="3.14159 0.0 0.0"/>
+        <ros_subscriber thrusters="/gbr/thrusters"/>
+        <ros_publisher thrusters="/gbr/thruster_state"/>
+    </robot>
+</scenario>

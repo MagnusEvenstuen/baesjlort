@@ -1,0 +1,51 @@
+[ 50%] [32mBuilding CXX object CMakeFiles/sensor_subscriber_node.dir/src/main.cpp.o[0m
+In file included from [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:9[m[K,
+                 from [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/src/main.cpp:1[m[K:
+[01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/image_display_and_handle.hpp:[m[K In member function ‘[01m[Kvoid image_display_and_handle::[01;32m[Kdisplay_image[m[K(const sensor_msgs::msg::Image_<std::allocator<void> >::ConstSharedPtr&, const std::string&, rclcpp::Logger)[m[K’:
+[01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/image_display_and_handle.hpp:13:123:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Klogger[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+   13 | tSharedPtr& msg, const std::string& window_name, [01;35m[Krclcpp::Logger logger[m[K)
+      |                                                  [01;35m[K~~~~~~~~~~~~~~~^~~~~~[m[K
+
+In file included from [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:11[m[K:
+[01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_handler.hpp:[m[K In member function ‘[01m[Kvoid sensor_handler::[01;32m[Kupdate[m[K(float, float, float, float, float, float)[m[K’:
+[01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_handler.hpp:41:29:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kgyro_x[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+   41 |                 [01;35m[Kconst float gyro_x[m[K, const float gyro_y, const float gyro_z)
+      |                 [01;35m[K~~~~~~~~~~~~^~~~~~[m[K
+[01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_handler.hpp:41:49:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kgyro_y[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+   41 |                 const float gyro_x, [01;35m[Kconst float gyro_y[m[K, const float gyro_z)
+      |                                     [01;35m[K~~~~~~~~~~~~^~~~~~[m[K
+[01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_handler.hpp:41:69:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kgyro_z[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+   41 |             const float gyro_x, const float gyro_y, [01;35m[Kconst float gyro_z[m[K)
+      |                                                     [01;35m[K~~~~~~~~~~~~^~~~~~[m[K
+
+[01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:[m[K In member function ‘[01m[Kvoid sensor_subscriber::[01;32m[Kpressure_callback[m[K(const sensor_msgs::msg::FluidPressure_<std::allocator<void> >::ConstSharedPtr&)[m[K’:
+[01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:204:83:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kmsg[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+  204 | re_callback([01;35m[Kconst sensor_msgs::msg::FluidPressure::ConstSharedPtr& msg[m[K)
+      |             [01;35m[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~[m[K
+
+[100%] [32m[1mLinking CXX executable sensor_subscriber_node[0m
+[100%] Built target sensor_subscriber_node
+-- Install configuration: ""
+-- Installing: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/lib/sensor_read_and_interprat/sensor_subscriber_node
+-- Set non-toolchain portion of runtime path of "/home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/lib/sensor_read_and_interprat/sensor_subscriber_node" to ""
+-- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/include
+-- Installing: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/include/sensor_subscriber.hpp
+-- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/include/structs.hpp
+-- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/include/sensor_read_and_interprat
+-- Installing: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/include/sensor_handler.hpp
+-- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/include/image_display_and_handle.hpp
+-- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/ament_index/resource_index/package_run_dependencies/sensor_read_and_interprat
+-- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/ament_index/resource_index/parent_prefix_path/sensor_read_and_interprat
+-- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/sensor_read_and_interprat/environment/ament_prefix_path.sh
+-- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/sensor_read_and_interprat/environment/ament_prefix_path.dsv
+-- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/sensor_read_and_interprat/environment/path.sh
+-- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/sensor_read_and_interprat/environment/path.dsv
+-- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/sensor_read_and_interprat/local_setup.bash
+-- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/sensor_read_and_interprat/local_setup.sh
+-- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/sensor_read_and_interprat/local_setup.zsh
+-- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/sensor_read_and_interprat/local_setup.dsv
+-- Installing: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/sensor_read_and_interprat/package.dsv
+-- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/ament_index/resource_index/packages/sensor_read_and_interprat
+-- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/sensor_read_and_interprat/cmake/sensor_read_and_interpratConfig.cmake
+-- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/sensor_read_and_interprat/cmake/sensor_read_and_interpratConfig-version.cmake
+-- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/sensor_read_and_interprat/package.xml

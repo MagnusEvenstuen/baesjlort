@@ -1,0 +1,16 @@
+In file included from [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/src/main.cpp:1[m[K:
+[01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:[m[K In member function ‘[01m[Kvoid SensorSubscriber::[01;32m[KimuCenterCallback[m[K(const sensor_msgs::msg::Imu_<std::allocator<void> >::ConstSharedPtr&)[m[K’:
+[01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:45:73:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kmsg[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+   45 | oid imuCenterCallback([01;35m[Kconst sensor_msgs::msg::Imu::ConstSharedPtr& msg[m[K)
+      |                       [01;35m[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~[m[K
+
+[01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:[m[K In member function ‘[01m[Kvoid SensorSubscriber::[01;32m[KimuFrontCallback[m[K(const sensor_msgs::msg::Imu_<std::allocator<void> >::ConstSharedPtr&)[m[K’:
+[01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:50:72:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kmsg[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+   50 | void imuFrontCallback([01;35m[Kconst sensor_msgs::msg::Imu::ConstSharedPtr& msg[m[K)
+      |                       [01;35m[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~[m[K
+
+[01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:[m[K In member function ‘[01m[Kvoid SensorSubscriber::[01;32m[KimuRearCallback[m[K(const sensor_msgs::msg::Imu_<std::allocator<void> >::ConstSharedPtr&)[m[K’:
+[01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:55:71:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kmsg[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+   55 |  void imuRearCallback([01;35m[Kconst sensor_msgs::msg::Imu::ConstSharedPtr& msg[m[K)
+      |                       [01;35m[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~[m[K
+

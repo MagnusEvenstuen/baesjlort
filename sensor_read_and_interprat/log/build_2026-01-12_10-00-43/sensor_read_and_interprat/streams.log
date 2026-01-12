@@ -1,0 +1,38 @@
+[0.009s] Invoking command in '/home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --build /home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat -- -j12 -l12
+[0.075s] [ 50%] [32mBuilding CXX object CMakeFiles/sensor_subscriber_node.dir/src/main.cpp.o[0m
+[3.249s] In file included from [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:9[m[K,
+[3.249s]                  from [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/src/main.cpp:1[m[K:
+[3.250s] [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/image_display_and_handle.hpp:[m[K In member function ‘[01m[Kvoid image_display_and_handle::[01;32m[Kdisplay_image[m[K(const sensor_msgs::msg::Image_<std::allocator<void> >::ConstSharedPtr&, const std::string&, rclcpp::Logger)[m[K’:
+[3.250s] [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/image_display_and_handle.hpp:13:123:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Klogger[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+[3.250s]    13 | tSharedPtr& msg, const std::string& window_name, [01;35m[Krclcpp::Logger logger[m[K)
+[3.250s]       |                                                  [01;35m[K~~~~~~~~~~~~~~~^~~~~~[m[K
+[3.250s] 
+[13.009s] [100%] [32m[1mLinking CXX executable sensor_subscriber_node[0m
+[13.961s] [100%] Built target sensor_subscriber_node
+[13.972s] Invoked command in '/home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --build /home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat -- -j12 -l12
+[13.982s] Invoking command in '/home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --install /home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat
+[13.989s] -- Install configuration: ""
+[13.989s] -- Installing: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/lib/sensor_read_and_interprat/sensor_subscriber_node
+[13.998s] -- Set non-toolchain portion of runtime path of "/home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/lib/sensor_read_and_interprat/sensor_subscriber_node" to ""
+[13.998s] -- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/include
+[13.998s] -- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/include/sensor_subscriber.hpp
+[13.998s] -- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/include/structs.hpp
+[13.998s] -- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/include/sensor_read_and_interprat
+[13.998s] -- Installing: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/include/sensor_handler.hpp
+[13.998s] -- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/include/image_display_and_handle.hpp
+[13.999s] -- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/ament_index/resource_index/package_run_dependencies/sensor_read_and_interprat
+[13.999s] -- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/ament_index/resource_index/parent_prefix_path/sensor_read_and_interprat
+[13.999s] -- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/sensor_read_and_interprat/environment/ament_prefix_path.sh
+[13.999s] -- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/sensor_read_and_interprat/environment/ament_prefix_path.dsv
+[13.999s] -- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/sensor_read_and_interprat/environment/path.sh
+[13.999s] -- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/sensor_read_and_interprat/environment/path.dsv
+[13.999s] -- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/sensor_read_and_interprat/local_setup.bash
+[13.999s] -- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/sensor_read_and_interprat/local_setup.sh
+[13.999s] -- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/sensor_read_and_interprat/local_setup.zsh
+[13.999s] -- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/sensor_read_and_interprat/local_setup.dsv
+[13.999s] -- Installing: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/sensor_read_and_interprat/package.dsv
+[13.999s] -- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/ament_index/resource_index/packages/sensor_read_and_interprat
+[13.999s] -- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/sensor_read_and_interprat/cmake/sensor_read_and_interpratConfig.cmake
+[13.999s] -- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/sensor_read_and_interprat/cmake/sensor_read_and_interpratConfig-version.cmake
+[14.000s] -- Up-to-date: /home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat/share/sensor_read_and_interprat/package.xml
+[14.001s] Invoked command in '/home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --install /home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat

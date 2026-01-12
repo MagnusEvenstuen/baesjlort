@@ -1,0 +1,26 @@
+[0.009s] Invoking command in '/home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --build /home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat -- -j12 -l12
+[0.065s] [ 50%] [32mBuilding CXX object CMakeFiles/sensor_subscriber_node.dir/src/main.cpp.o[0m
+[3.166s] In file included from [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:10[m[K,
+[3.166s]                  from [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/src/main.cpp:1[m[K:
+[3.166s] [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/image_display_and_handle.hpp:[m[K In member function ‘[01m[Kvoid image_display_and_handle::[01;32m[Kdisplay_image[m[K(const sensor_msgs::msg::Image_<std::allocator<void> >::ConstSharedPtr&, const std::string&, rclcpp::Logger)[m[K’:
+[3.167s] [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/image_display_and_handle.hpp:13:123:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Klogger[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+[3.167s]    13 | tSharedPtr& msg, const std::string& window_name, [01;35m[Krclcpp::Logger logger[m[K)
+[3.167s]       |                                                  [01;35m[K~~~~~~~~~~~~~~~^~~~~~[m[K
+[3.167s] 
+[3.189s] In file included from [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:12[m[K:
+[3.189s] [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_handler.hpp:[m[K In member function ‘[01m[KVector3 sensor_handler::[01;32m[Kcalibrate_gravity[m[K(float, float, float, unsigned int)[m[K’:
+[3.189s] [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_handler.hpp:44:9:[m[K [01;31m[Kerror: [m[Kexpected ‘[01m[K;[m[K’ before ‘[01m[Kreturn[m[K’
+[3.189s]    44 |         [01;31m[Kreturn[m[K gravitational_vector_;
+[3.189s]       |         [01;31m[K^~~~~~[m[K
+[3.189s] [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_handler.hpp:45:5:[m[K [01;35m[Kwarning: [m[Kno return statement in function returning non-void [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wreturn-type-Wreturn-type]8;;[m[K]
+[3.189s]    45 |     [01;35m[K}[m[K
+[3.189s]       |     [01;35m[K^[m[K
+[3.282s] [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:[m[K In member function ‘[01m[Kvoid sensor_subscriber::[01;32m[Kimu_perfect_callback[m[K(const sensor_msgs::msg::Imu_<std::allocator<void> >::ConstSharedPtr&)[m[K’:
+[3.282s] [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:203:76:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kmsg[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+[3.282s]   203 |  imu_perfect_callback([01;35m[Kconst sensor_msgs::msg::Imu::ConstSharedPtr& msg[m[K)
+[3.283s]       |                       [01;35m[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~[m[K
+[3.283s] 
+[7.781s] gmake[2]: *** [CMakeFiles/sensor_subscriber_node.dir/build.make:76: CMakeFiles/sensor_subscriber_node.dir/src/main.cpp.o] Error 1
+[7.781s] gmake[1]: *** [CMakeFiles/Makefile2:137: CMakeFiles/sensor_subscriber_node.dir/all] Error 2
+[7.781s] gmake: *** [Makefile:146: all] Error 2
+[7.784s] Invoked command in '/home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat' returned '2': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --build /home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat -- -j12 -l12

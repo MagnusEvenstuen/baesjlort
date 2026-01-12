@@ -1,0 +1,54 @@
+[0.010s] Invoking command in '/home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --build /home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat -- -j12 -l12
+[0.064s] [ 50%] [32mBuilding CXX object CMakeFiles/sensor_subscriber_node.dir/src/main.cpp.o[0m
+[3.184s] In file included from [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:9[m[K,
+[3.184s]                  from [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/src/main.cpp:1[m[K:
+[3.185s] [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/image_display_and_handle.hpp:[m[K In member function ‘[01m[Kvoid image_display_and_handle::[01;32m[Kdisplay_image[m[K(const sensor_msgs::msg::Image_<std::allocator<void> >::ConstSharedPtr&, const std::string&, rclcpp::Logger)[m[K’:
+[3.185s] [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/image_display_and_handle.hpp:13:123:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Klogger[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+[3.185s]    13 | tSharedPtr& msg, const std::string& window_name, [01;35m[Krclcpp::Logger logger[m[K)
+[3.185s]       |                                                  [01;35m[K~~~~~~~~~~~~~~~^~~~~~[m[K
+[3.185s] 
+[3.185s] In file included from [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:11[m[K:
+[3.186s] [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_handler.hpp:[m[K In member function ‘[01m[Kvoid sensor_handler::[01;32m[Kupdate[m[K(float, float, float, float, float, float)[m[K’:
+[3.186s] [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_handler.hpp:19:83:[m[K [01;31m[Kerror: [m[Kconversion from ‘[01m[Kstd::chrono::duration<long int, std::ratio<1, 1000000000> >::rep[m[K’ {aka ‘[01m[Klong int[m[K’} to non-scalar type ‘[01m[Kstd::chrono::duration<float>[m[K’ requested
+[3.186s]    19 | hrono::duration<float> dt = [01;31m[K(current_time - last_update_time_).count()[m[K;
+[3.186s]       |                             [01;31m[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~[m[K
+[3.186s] 
+[3.187s] [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_handler.hpp:24:26:[m[K [01;31m[Kerror: [m[Kno match for ‘[01m[Koperator+=[m[K’ (operand types are ‘[01m[Kfloat[m[K’ and ‘[01m[Kstd::chrono::duration<float>[m[K’)
+[3.187s]    24 |         [01;31m[Kcurrent_speed_.x += acc_x * dt[m[K;
+[3.187s]       |         [01;31m[K~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~[m[K
+[3.187s] [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_handler.hpp:25:26:[m[K [01;31m[Kerror: [m[Kno match for ‘[01m[Koperator+=[m[K’ (operand types are ‘[01m[Kfloat[m[K’ and ‘[01m[Kstd::chrono::duration<float>[m[K’)
+[3.187s]    25 |         [01;31m[Kcurrent_speed_.y += acc_y * dt[m[K;
+[3.187s]       |         [01;31m[K~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~[m[K
+[3.187s] [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_handler.hpp:26:26:[m[K [01;31m[Kerror: [m[Kno match for ‘[01m[Koperator+=[m[K’ (operand types are ‘[01m[Kfloat[m[K’ and ‘[01m[Kstd::chrono::duration<float>[m[K’)
+[3.187s]    26 |         [01;31m[Kcurrent_speed_.z += acc_z * dt[m[K;
+[3.187s]       |         [01;31m[K~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~[m[K
+[3.187s] [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_handler.hpp:29:29:[m[K [01;31m[Kerror: [m[Kno match for ‘[01m[Koperator+=[m[K’ (operand types are ‘[01m[Kfloat[m[K’ and ‘[01m[Kstd::chrono::duration<float>[m[K’)
+[3.187s]    29 |         [01;31m[Kcurrent_position_.x += current_speed_.x * dt[m[K;
+[3.187s]       |         [01;31m[K~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~[m[K
+[3.188s] [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_handler.hpp:30:29:[m[K [01;31m[Kerror: [m[Kno match for ‘[01m[Koperator+=[m[K’ (operand types are ‘[01m[Kfloat[m[K’ and ‘[01m[Kstd::chrono::duration<float>[m[K’)
+[3.188s]    30 |         [01;31m[Kcurrent_position_.y += current_speed_.y * dt[m[K;
+[3.188s]       |         [01;31m[K~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~[m[K
+[3.188s] [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_handler.hpp:31:29:[m[K [01;31m[Kerror: [m[Kno match for ‘[01m[Koperator+=[m[K’ (operand types are ‘[01m[Kfloat[m[K’ and ‘[01m[Kstd::chrono::duration<float>[m[K’)
+[3.188s]    31 |         [01;31m[Kcurrent_position_.z += current_speed_.z * dt[m[K;
+[3.188s]       |         [01;31m[K~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~[m[K
+[3.188s] [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_handler.hpp:16:62:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kgyro_x[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+[3.188s]    16 |    void update(float acc_x, float acc_y, float acc_z, [01;35m[Kfloat gyro_x[m[K, float gyro_y, float gyro_z)
+[3.188s]       |                                                       [01;35m[K~~~~~~^~~~~~[m[K
+[3.188s] 
+[3.188s] [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_handler.hpp:16:76:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kgyro_y[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+[3.188s]    16 | (float acc_x, float acc_y, float acc_z, float gyro_x, [01;35m[Kfloat gyro_y[m[K, float gyro_z)
+[3.188s]       |                                                       [01;35m[K~~~~~~^~~~~~[m[K
+[3.188s] 
+[3.189s] [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_handler.hpp:16:90:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kgyro_z[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+[3.189s]    16 | _x, float acc_y, float acc_z, float gyro_x, float gyro_y, [01;35m[Kfloat gyro_z[m[K)
+[3.189s]       |                                                           [01;35m[K~~~~~~^~~~~~[m[K
+[3.189s] 
+[3.245s] [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:[m[K In member function ‘[01m[Kvoid sensor_subscriber::[01;32m[Kpressure_callback[m[K(const sensor_msgs::msg::FluidPressure_<std::allocator<void> >::ConstSharedPtr&)[m[K’:
+[3.246s] [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:74:83:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kmsg[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+[3.246s]    74 | re_callback([01;35m[Kconst sensor_msgs::msg::FluidPressure::ConstSharedPtr& msg[m[K)
+[3.246s]       |             [01;35m[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~[m[K
+[3.246s] 
+[6.513s] gmake[2]: *** [CMakeFiles/sensor_subscriber_node.dir/build.make:76: CMakeFiles/sensor_subscriber_node.dir/src/main.cpp.o] Error 1
+[6.513s] gmake[1]: *** [CMakeFiles/Makefile2:137: CMakeFiles/sensor_subscriber_node.dir/all] Error 2
+[6.513s] gmake: *** [Makefile:146: all] Error 2
+[6.516s] Invoked command in '/home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat' returned '2': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --build /home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat -- -j12 -l12

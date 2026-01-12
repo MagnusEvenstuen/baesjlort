@@ -1,0 +1,38 @@
+[0.011s] Invoking command in '/home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --build /home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat -- -j12 -l12
+[0.073s] [ 50%] [32mBuilding CXX object CMakeFiles/sensor_subscriber_node.dir/src/main.cpp.o[0m
+[3.156s] In file included from [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:9[m[K,
+[3.156s]                  from [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/src/main.cpp:1[m[K:
+[3.156s] [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/image_display_and_handle.hpp:[m[K In member function ‘[01m[Kvoid image_display_and_handle::[01;32m[Kdisplay_image[m[K(const sensor_msgs::msg::Image_<std::allocator<void> >::ConstSharedPtr&, const std::string&, rclcpp::Logger)[m[K’:
+[3.156s] [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/image_display_and_handle.hpp:12:123:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Klogger[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+[3.156s]    12 | tSharedPtr& msg, const std::string& window_name, [01;35m[Krclcpp::Logger logger[m[K)
+[3.156s]       |                                                  [01;35m[K~~~~~~~~~~~~~~~^~~~~~[m[K
+[3.157s] 
+[3.207s] [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:[m[K At global scope:
+[3.207s] [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:91:5:[m[K [01;31m[Kerror: [m[K‘[01m[Ksensor_handler[m[K’ does not name a type; did you mean ‘[01m[Ksa_handler[m[K’?
+[3.207s]    91 |     [01;31m[Ksensor_handler[m[K sensor_handler;
+[3.208s]       |     [01;31m[K^~~~~~~~~~~~~~[m[K
+[3.208s]       |     [32m[Ksa_handler[m[K
+[3.234s] [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:[m[K In member function ‘[01m[Kvoid sensor_subscriber::[01;32m[Kimu_center_callback[m[K(const sensor_msgs::msg::Imu_<std::allocator<void> >::ConstSharedPtr&)[m[K’:
+[3.234s] [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:60:9:[m[K [01;31m[Kerror: [m[K‘[01m[Ksensor_handler[m[K’ was not declared in this scope; did you mean ‘[01m[Ksa_handler[m[K’?
+[3.234s]    60 |         [01;31m[Ksensor_handler[m[K.update(msg->linear_acceleration.x, msg->linear_acceleration.y, msg->linear_acceleration.z);
+[3.234s]       |         [01;31m[K^~~~~~~~~~~~~~[m[K
+[3.234s]       |         [32m[Ksa_handler[m[K
+[3.236s] [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:[m[K In member function ‘[01m[Kvoid sensor_subscriber::[01;32m[Kimu_front_callback[m[K(const sensor_msgs::msg::Imu_<std::allocator<void> >::ConstSharedPtr&)[m[K’:
+[3.237s] [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:65:74:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kmsg[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+[3.237s]    65 | id imu_front_callback([01;35m[Kconst sensor_msgs::msg::Imu::ConstSharedPtr& msg[m[K)
+[3.237s]       |                       [01;35m[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~[m[K
+[3.237s] 
+[3.237s] [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:[m[K In member function ‘[01m[Kvoid sensor_subscriber::[01;32m[Kimu_rear_callback[m[K(const sensor_msgs::msg::Imu_<std::allocator<void> >::ConstSharedPtr&)[m[K’:
+[3.237s] [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:70:73:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kmsg[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+[3.237s]    70 | oid imu_rear_callback([01;35m[Kconst sensor_msgs::msg::Imu::ConstSharedPtr& msg[m[K)
+[3.238s]       |                       [01;35m[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~[m[K
+[3.238s] 
+[3.238s] [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:[m[K In member function ‘[01m[Kvoid sensor_subscriber::[01;32m[Kpressure_callback[m[K(const sensor_msgs::msg::FluidPressure_<std::allocator<void> >::ConstSharedPtr&)[m[K’:
+[3.238s] [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:75:83:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kmsg[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+[3.238s]    75 | re_callback([01;35m[Kconst sensor_msgs::msg::FluidPressure::ConstSharedPtr& msg[m[K)
+[3.238s]       |             [01;35m[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~[m[K
+[3.239s] 
+[6.643s] gmake[2]: *** [CMakeFiles/sensor_subscriber_node.dir/build.make:76: CMakeFiles/sensor_subscriber_node.dir/src/main.cpp.o] Error 1
+[6.643s] gmake[1]: *** [CMakeFiles/Makefile2:137: CMakeFiles/sensor_subscriber_node.dir/all] Error 2
+[6.643s] gmake: *** [Makefile:146: all] Error 2
+[6.646s] Invoked command in '/home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat' returned '2': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --build /home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat -- -j12 -l12

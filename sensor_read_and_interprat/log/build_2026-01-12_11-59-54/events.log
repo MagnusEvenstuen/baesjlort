@@ -1,0 +1,158 @@
+[0.000000] (-) TimerEvent: {}
+[0.000266] (sensor_read_and_interprat) JobQueued: {'identifier': 'sensor_read_and_interprat', 'dependencies': OrderedDict()}
+[0.000418] (sensor_read_and_interprat) JobStarted: {'identifier': 'sensor_read_and_interprat'}
+[0.007159] (sensor_read_and_interprat) JobProgress: {'identifier': 'sensor_read_and_interprat', 'progress': 'cmake'}
+[0.008290] (sensor_read_and_interprat) JobProgress: {'identifier': 'sensor_read_and_interprat', 'progress': 'build'}
+[0.008325] (sensor_read_and_interprat) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat', '--', '-j12', '-l12'], 'cwd': '/home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat', 'env': OrderedDict({'LESSOPEN': '| /usr/bin/lesspipe %s', 'USER': 'gud', 'XDG_SESSION_TYPE': 'x11', 'SHLVL': '1', 'LD_LIBRARY_PATH': '/opt/ros/jazzy/opt/rviz_ogre_vendor/lib:/opt/ros/jazzy/lib/x86_64-linux-gnu:/opt/ros/jazzy/opt/gz_math_vendor/lib:/opt/ros/jazzy/opt/gz_utils_vendor/lib:/opt/ros/jazzy/opt/gz_cmake_vendor/lib:/opt/ros/jazzy/lib', 'HOME': '/home/gud', 'DESKTOP_SESSION': 'ubuntu', 'ROS_PYTHON_VERSION': '3', 'GNOME_SHELL_SESSION_MODE': 'ubuntu', 'GTK_MODULES': 'gail:atk-bridge', 'DBUS_STARTER_BUS_TYPE': 'session', 'SYSTEMD_EXEC_PID': '2946', 'GSM_SKIP_SSH_AGENT_WORKAROUND': 'true', 'DBUS_SESSION_BUS_ADDRESS': 'unix:path=/run/user/1000/bus,guid=9e4d3e6dbe44f9ce25144a8d6964a1de', 'COLORTERM': 'truecolor', 'DEBUGINFOD_URLS': 'https://debuginfod.ubuntu.com', 'COLCON_PREFIX_PATH': '/home/gud/Skole/baesjlort/sensor_read_and_interprat/install', 'ROS_DISTRO': 'jazzy', 'LOGNAME': 'gud', '_': '/usr/bin/colcon', 'ROS_VERSION': '2', 'MEMORY_PRESSURE_WATCH': '/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/app-gnome\\x2dsession\\x2dmanager.slice/gnome-session-manager@ubuntu.service/memory.pressure', 'XDG_SESSION_CLASS': 'user', 'USERNAME': 'gud', 'TERM': 'xterm-256color', 'GNOME_DESKTOP_SESSION_ID': 'this-is-deprecated', 'WINDOWPATH': '2', 'PATH': '/opt/ros/jazzy/bin:/home/gud/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/gud/.local/bin', 'SESSION_MANAGER': 'local/gudsSlave:@/tmp/.ICE-unix/2946,unix/gudsSlave:/tmp/.ICE-unix/2946', 'XDG_MENU_PREFIX': 'gnome-', 'GNOME_TERMINAL_SCREEN': '/org/gnome/Terminal/screen/cc6a4082_5c4e_4caa_9b62_99423de093c2', 'XDG_RUNTIME_DIR': '/run/user/1000', 'DISPLAY': ':1', 'LANG': 'en_US.UTF-8', 'XDG_CURRENT_DESKTOP': 'ubuntu:GNOME', 'XMODIFIERS': '@im=ibus', 'XDG_SESSION_DESKTOP': 'ubuntu', 'XAUTHORITY': '/run/user/1000/gdm/Xauthority', 'LS_COLORS': 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=00:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.avif=01;35:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:*~=00;90:*#=00;90:*.bak=00;90:*.crdownload=00;90:*.dpkg-dist=00;90:*.dpkg-new=00;90:*.dpkg-old=00;90:*.dpkg-tmp=00;90:*.old=00;90:*.orig=00;90:*.part=00;90:*.rej=00;90:*.rpmnew=00;90:*.rpmorig=00;90:*.rpmsave=00;90:*.swp=00;90:*.tmp=00;90:*.ucf-dist=00;90:*.ucf-new=00;90:*.ucf-old=00;90:', 'GNOME_TERMINAL_SERVICE': ':1.143', 'SSH_AUTH_SOCK': '/run/user/1000/keyring/ssh', 'AMENT_PREFIX_PATH': '/home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat:/opt/ros/jazzy', 'SHELL': '/bin/bash', 'QT_ACCESSIBILITY': '1', 'GDMSESSION': 'ubuntu', 'LESSCLOSE': '/usr/bin/lesspipe %s %s', 'GPG_AGENT_INFO': '/run/user/1000/gnupg/S.gpg-agent:0:1', 'ROS_AUTOMATIC_DISCOVERY_RANGE': 'SUBNET', 'QT_IM_MODULE': 'ibus', 'PWD': '/home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat', 'LC_ALL': 'en_US.UTF-8', 'XDG_CONFIG_DIRS': '/etc/xdg/xdg-ubuntu:/etc/xdg', 'DBUS_STARTER_ADDRESS': 'unix:path=/run/user/1000/bus,guid=9e4d3e6dbe44f9ce25144a8d6964a1de', 'XDG_DATA_DIRS': '/usr/share/ubuntu:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop', 'PYTHONPATH': '/opt/ros/jazzy/lib/python3.12/site-packages', 'COLCON': '1', 'MEMORY_PRESSURE_WRITE': 'c29tZSAyMDAwMDAgMjAwMDAwMAA=', 'VTE_VERSION': '7600', 'CMAKE_PREFIX_PATH': '/home/gud/Skole/baesjlort/sensor_read_and_interprat/install/sensor_read_and_interprat:/opt/ros/jazzy/opt/gz_math_vendor:/opt/ros/jazzy/opt/gz_utils_vendor:/opt/ros/jazzy/opt/gz_cmake_vendor:/opt/ros/jazzy'}), 'shell': False}
+[0.069490] (sensor_read_and_interprat) StdoutLine: {'line': b'[ 50%] \x1b[32mBuilding CXX object CMakeFiles/sensor_subscriber_node.dir/src/main.cpp.o\x1b[0m\n'}
+[0.099455] (-) TimerEvent: {}
+[0.199735] (-) TimerEvent: {}
+[0.300027] (-) TimerEvent: {}
+[0.400261] (-) TimerEvent: {}
+[0.500533] (-) TimerEvent: {}
+[0.600803] (-) TimerEvent: {}
+[0.701062] (-) TimerEvent: {}
+[0.801325] (-) TimerEvent: {}
+[0.901588] (-) TimerEvent: {}
+[1.001859] (-) TimerEvent: {}
+[1.102103] (-) TimerEvent: {}
+[1.202360] (-) TimerEvent: {}
+[1.302589] (-) TimerEvent: {}
+[1.402862] (-) TimerEvent: {}
+[1.503147] (-) TimerEvent: {}
+[1.603421] (-) TimerEvent: {}
+[1.703696] (-) TimerEvent: {}
+[1.803998] (-) TimerEvent: {}
+[1.904287] (-) TimerEvent: {}
+[2.004545] (-) TimerEvent: {}
+[2.104795] (-) TimerEvent: {}
+[2.205017] (-) TimerEvent: {}
+[2.305263] (-) TimerEvent: {}
+[2.405511] (-) TimerEvent: {}
+[2.505780] (-) TimerEvent: {}
+[2.606050] (-) TimerEvent: {}
+[2.706268] (-) TimerEvent: {}
+[2.806523] (-) TimerEvent: {}
+[2.906793] (-) TimerEvent: {}
+[3.007054] (-) TimerEvent: {}
+[3.107314] (-) TimerEvent: {}
+[3.207551] (-) TimerEvent: {}
+[3.307776] (-) TimerEvent: {}
+[3.340084] (sensor_read_and_interprat) StderrLine: {'line': b'In file included from \x1b[01m\x1b[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:9\x1b[m\x1b[K,\n'}
+[3.340284] (sensor_read_and_interprat) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/src/main.cpp:1\x1b[m\x1b[K:\n'}
+[3.340374] (sensor_read_and_interprat) StderrLine: {'line': b'\x1b[01m\x1b[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/image_display_and_handle.hpp:\x1b[m\x1b[K In member function \xe2\x80\x98\x1b[01m\x1b[Kvoid image_display_and_handle::\x1b[01;32m\x1b[Kdisplay_image\x1b[m\x1b[K(const sensor_msgs::msg::Image_<std::allocator<void> >::ConstSharedPtr&, const std::string&, rclcpp::Logger)\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[3.340459] (sensor_read_and_interprat) StderrLine: {'line': b'\x1b[01m\x1b[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/image_display_and_handle.hpp:13:123:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kunused parameter \xe2\x80\x98\x1b[01m\x1b[Klogger\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K\x1b]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter\x07-Wunused-parameter\x1b]8;;\x07\x1b[m\x1b[K]\n'}
+[3.340568] (sensor_read_and_interprat) StderrLine: {'line': b'   13 | dPtr& msg, const std::string& window_name, \x1b[01;35m\x1b[Krclcpp::Logger logger\x1b[m\x1b[K)\n'}
+[3.340690] (sensor_read_and_interprat) StderrLine: {'line': b'      |                                            \x1b[01;35m\x1b[K~~~~~~~~~~~~~~~^~~~~~\x1b[m\x1b[K\n'}
+[3.340787] (sensor_read_and_interprat) StderrLine: {'line': b'\n'}
+[3.365211] (sensor_read_and_interprat) StderrLine: {'line': b'In file included from \x1b[01m\x1b[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:11\x1b[m\x1b[K:\n'}
+[3.365379] (sensor_read_and_interprat) StderrLine: {'line': b'\x1b[01m\x1b[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_handler.hpp:\x1b[m\x1b[K In member function \xe2\x80\x98\x1b[01m\x1b[Kvoid sensor_handler::\x1b[01;32m\x1b[Kupdate_truth_odometry\x1b[m\x1b[K(float, float, float, float, float, float, float, float, float, float)\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[3.365464] (sensor_read_and_interprat) StderrLine: {'line': b'\x1b[01m\x1b[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_handler.hpp:60:72:\x1b[m\x1b[K \x1b[01;31m\x1b[Kerror: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[Kstruct Quaternion\x1b[m\x1b[K\xe2\x80\x99 has no member named \xe2\x80\x98\x1b[01m\x1b[Kconjugate\x1b[m\x1b[K\xe2\x80\x99\n'}
+[3.365543] (sensor_read_and_interprat) StderrLine: {'line': b'   60 | n delta = incoming_orientation * perfect_orientation_.\x1b[01;31m\x1b[Kconjugate\x1b[m\x1b[K();\n'}
+[3.365617] (sensor_read_and_interprat) StderrLine: {'line': b'      |                                                       \x1b[01;31m\x1b[K^~~~~~~~~\x1b[m\x1b[K\n'}
+[3.365688] (sensor_read_and_interprat) StderrLine: {'line': b'\n'}
+[3.377145] (sensor_read_and_interprat) StderrLine: {'line': b'\x1b[01m\x1b[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:\x1b[m\x1b[K At global scope:\n'}
+[3.377538] (sensor_read_and_interprat) StderrLine: {'line': b'\x1b[01m\x1b[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:215:34:\x1b[m\x1b[K \x1b[01;31m\x1b[Kerror: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[Knav_msgs\x1b[m\x1b[K\xe2\x80\x99 does not name a type\n'}
+[3.377638] (sensor_read_and_interprat) StderrLine: {'line': b'  215 |     void odemetry_callback(const \x1b[01;31m\x1b[Knav_msgs\x1b[m\x1b[K::msg::Odometry::ConstSharedPtr& msg)\n'}
+[3.377725] (sensor_read_and_interprat) StderrLine: {'line': b'      |                                  \x1b[01;31m\x1b[K^~~~~~~~\x1b[m\x1b[K\n'}
+[3.377807] (sensor_read_and_interprat) StderrLine: {'line': b'\x1b[01m\x1b[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:215:47:\x1b[m\x1b[K \x1b[01;31m\x1b[Kerror: \x1b[m\x1b[Kexpected unqualified-id before \xe2\x80\x98\x1b[01m\x1b[K::\x1b[m\x1b[K\xe2\x80\x99 token\n'}
+[3.377892] (sensor_read_and_interprat) StderrLine: {'line': b'  215 |     void odemetry_callback(const nav_msgs::msg\x1b[01;31m\x1b[K::\x1b[m\x1b[KOdometry::ConstSharedPtr& msg)\n'}
+[3.377983] (sensor_read_and_interprat) StderrLine: {'line': b'      |                                               \x1b[01;31m\x1b[K^~\x1b[m\x1b[K\n'}
+[3.378065] (sensor_read_and_interprat) StderrLine: {'line': b'\x1b[01m\x1b[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:215:47:\x1b[m\x1b[K \x1b[01;31m\x1b[Kerror: \x1b[m\x1b[Kexpected \xe2\x80\x98\x1b[01m\x1b[K)\x1b[m\x1b[K\xe2\x80\x99 before \xe2\x80\x98\x1b[01m\x1b[K::\x1b[m\x1b[K\xe2\x80\x99 token\n'}
+[3.378147] (sensor_read_and_interprat) StderrLine: {'line': b'  215 |     void odemetry_callback\x1b[34m\x1b[K(\x1b[m\x1b[Kconst nav_msgs::msg\x1b[01;31m\x1b[K:\x1b[m\x1b[K\x1b[32m\x1b[K:\x1b[m\x1b[KOdometry::ConstSharedPtr& msg)\n'}
+[3.378239] (sensor_read_and_interprat) StderrLine: {'line': b'      |                           \x1b[34m\x1b[K~\x1b[m\x1b[K                   \x1b[01;31m\x1b[K^\x1b[m\x1b[K\x1b[32m\x1b[K~\x1b[m\x1b[K\n'}
+[3.378317] (sensor_read_and_interprat) StderrLine: {'line': b'      |                                               \x1b[32m\x1b[K)\x1b[m\x1b[K\n'}
+[3.378395] (sensor_read_and_interprat) StderrLine: {'line': b'\x1b[01m\x1b[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:215:44:\x1b[m\x1b[K \x1b[01;31m\x1b[Kerror: \x1b[m\x1b[Kexpected \xe2\x80\x98\x1b[01m\x1b[K;\x1b[m\x1b[K\xe2\x80\x99 at end of member declaration\n'}
+[3.378486] (sensor_read_and_interprat) StderrLine: {'line': b'  215 |     void odemetry_callback(const nav_msgs::\x1b[01;31m\x1b[Kmsg\x1b[m\x1b[K::Odometry::ConstSharedPtr& msg)\n'}
+[3.378571] (sensor_read_and_interprat) StderrLine: {'line': b'      |                                            \x1b[01;31m\x1b[K^~~\x1b[m\x1b[K\n'}
+[3.378650] (sensor_read_and_interprat) StderrLine: {'line': b'      |                                               \x1b[32m\x1b[K;\x1b[m\x1b[K\n'}
+[3.380929] (sensor_read_and_interprat) StderrLine: {'line': b'\x1b[01m\x1b[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:215:49:\x1b[m\x1b[K \x1b[01;31m\x1b[Kerror: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[KOdometry\x1b[m\x1b[K\xe2\x80\x99 in namespace \xe2\x80\x98\x1b[01m\x1b[K::\x1b[m\x1b[K\xe2\x80\x99 does not name a type\n'}
+[3.381120] (sensor_read_and_interprat) StderrLine: {'line': b'  215 |     void odemetry_callback(const nav_msgs::msg::\x1b[01;31m\x1b[KOdometry\x1b[m\x1b[K::ConstSharedPtr& msg)\n'}
+[3.381211] (sensor_read_and_interprat) StderrLine: {'line': b'      |                                                 \x1b[01;31m\x1b[K^~~~~~~~\x1b[m\x1b[K\n'}
+[3.407889] (-) TimerEvent: {}
+[3.456285] (sensor_read_and_interprat) StderrLine: {'line': b'\x1b[01m\x1b[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:\x1b[m\x1b[K In member function \xe2\x80\x98\x1b[01m\x1b[Kvoid sensor_subscriber::\x1b[01;32m\x1b[Kinit\x1b[m\x1b[K()\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[3.456557] (sensor_read_and_interprat) StderrLine: {'line': b'\x1b[01m\x1b[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:66:9:\x1b[m\x1b[K \x1b[01;31m\x1b[Kerror: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[Kodemetry_\x1b[m\x1b[K\xe2\x80\x99 was not declared in this scope\n'}
+[3.456713] (sensor_read_and_interprat) StderrLine: {'line': b'   66 |         \x1b[01;31m\x1b[Kodemetry_\x1b[m\x1b[K = this->create_subscription<nav_msgs::msg::Odometry>(\n'}
+[3.456856] (sensor_read_and_interprat) StderrLine: {'line': b'      |         \x1b[01;31m\x1b[K^~~~~~~~~\x1b[m\x1b[K\n'}
+[3.465390] (sensor_read_and_interprat) StderrLine: {'line': b'\x1b[01m\x1b[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:66:47:\x1b[m\x1b[K \x1b[01;31m\x1b[Kerror: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[Knav_msgs\x1b[m\x1b[K\xe2\x80\x99 was not declared in this scope\n'}
+[3.465619] (sensor_read_and_interprat) StderrLine: {'line': b'   66 |         odemetry_ = this->create_subscription<\x1b[01;31m\x1b[Knav_msgs\x1b[m\x1b[K::msg::Odometry>(\n'}
+[3.465759] (sensor_read_and_interprat) StderrLine: {'line': b'      |                                               \x1b[01;31m\x1b[K^~~~~~~~\x1b[m\x1b[K\n'}
+[3.465892] (sensor_read_and_interprat) StderrLine: {'line': b'\x1b[01m\x1b[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:66:27:\x1b[m\x1b[K \x1b[01;31m\x1b[Kerror: \x1b[m\x1b[Kparse error in template argument list\n'}
+[3.466033] (sensor_read_and_interprat) StderrLine: {'line': b'   66 |         odemetry_ = this->\x1b[01;31m\x1b[Kcreate_subscription<nav_msgs::msg::Odometry>\x1b[m\x1b[K(\n'}
+[3.466165] (sensor_read_and_interprat) StderrLine: {'line': b'      |                           \x1b[01;31m\x1b[K^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[3.467090] (sensor_read_and_interprat) StderrLine: {'line': b'\x1b[01m\x1b[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:66:71:\x1b[m\x1b[K \x1b[01;31m\x1b[Kerror: \x1b[m\x1b[Kno matching function for call to \xe2\x80\x98\x1b[01m\x1b[Ksensor_subscriber::create_subscription<<expression error> >(const char [22], int, std::_Bind_helper<false, void (sensor_subscriber::*)(...), sensor_subscriber*, const std::_Placeholder<1>&>::type)\x1b[m\x1b[K\xe2\x80\x99\n'}
+[3.467265] (sensor_read_and_interprat) StderrLine: {'line': b'   66 |   odemetry_ = \x1b[01;31m\x1b[Kthis->create_subscription<nav_msgs::msg::Odometry>(\x1b[m\x1b[K\n'}
+[3.467401] (sensor_read_and_interprat) StderrLine: {'line': b'      |               \x1b[01;31m\x1b[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\x1b[m\x1b[K\n'}
+[3.467601] (sensor_read_and_interprat) StderrLine: {'line': b'\n'}
+[3.467739] (sensor_read_and_interprat) StderrLine: {'line': b'   67 | \x1b[01;31m\x1b[K      "/gbr/odometry_perfect", 100,\x1b[m\x1b[K\n'}
+[3.467865] (sensor_read_and_interprat) StderrLine: {'line': b'      |       \x1b[01;31m\x1b[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\x1b[m\x1b[K                              \n'}
+[3.468003] (sensor_read_and_interprat) StderrLine: {'line': b'\n'}
+[3.468131] (sensor_read_and_interprat) StderrLine: {'line': b'   68 | \x1b[01;31m\x1b[K      std::bind(&sensor_subscriber::odemetry_callback, this, std::placeholders::_1))\x1b[m\x1b[K;\n'}
+[3.468263] (sensor_read_and_interprat) StderrLine: {'line': b'      |       \x1b[01;31m\x1b[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[3.468391] (sensor_read_and_interprat) StderrLine: {'line': b'\n'}
+[3.468519] (sensor_read_and_interprat) StderrLine: {'line': b'In file included from \x1b[01m\x1b[K/opt/ros/jazzy/include/rclcpp/rclcpp/node.hpp:1663\x1b[m\x1b[K,\n'}
+[3.468643] (sensor_read_and_interprat) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/jazzy/include/rclcpp/rclcpp/executors/single_threaded_executor.hpp:28\x1b[m\x1b[K,\n'}
+[3.468769] (sensor_read_and_interprat) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/jazzy/include/rclcpp/rclcpp/executors.hpp:22\x1b[m\x1b[K,\n'}
+[3.468896] (sensor_read_and_interprat) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/jazzy/include/rclcpp/rclcpp/rclcpp.hpp:172\x1b[m\x1b[K,\n'}
+[3.469033] (sensor_read_and_interprat) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:4\x1b[m\x1b[K:\n'}
+[3.469162] (sensor_read_and_interprat) StderrLine: {'line': b'\x1b[01m\x1b[K/opt/ros/jazzy/include/rclcpp/rclcpp/node_impl.hpp:92:1:\x1b[m\x1b[K \x1b[01;36m\x1b[Knote: \x1b[m\x1b[Kcandidate: \xe2\x80\x98\x1b[01m\x1b[Ktemplate<class MessageT, class CallbackT, class AllocatorT, class SubscriptionT, class MessageMemoryStrategyT> std::shared_ptr<ROSMessageT> rclcpp::Node::\x1b[01;32m\x1b[Kcreate_subscription\x1b[m\x1b[K(const std::string&, const rclcpp::QoS&, CallbackT&&, const rclcpp::SubscriptionOptionsWithAllocator<AllocatorT>&, typename MessageMemoryStrategyT::SharedPtr)\x1b[m\x1b[K\xe2\x80\x99\n'}
+[3.469305] (sensor_read_and_interprat) StderrLine: {'line': b'   92 | \x1b[01;36m\x1b[KNode\x1b[m\x1b[K::create_subscription(\n'}
+[3.469432] (sensor_read_and_interprat) StderrLine: {'line': b'      | \x1b[01;36m\x1b[K^~~~\x1b[m\x1b[K\n'}
+[3.469558] (sensor_read_and_interprat) StderrLine: {'line': b'\x1b[01m\x1b[K/opt/ros/jazzy/include/rclcpp/rclcpp/node_impl.hpp:92:1:\x1b[m\x1b[K \x1b[01;36m\x1b[Knote: \x1b[m\x1b[K  template argument deduction/substitution failed:\n'}
+[3.469693] (sensor_read_and_interprat) StderrLine: {'line': b'\x1b[01m\x1b[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:66:71:\x1b[m\x1b[K \x1b[01;31m\x1b[Kerror: \x1b[m\x1b[Ktemplate argument 1 is invalid\n'}
+[3.469821] (sensor_read_and_interprat) StderrLine: {'line': b'   66 |   odemetry_ = \x1b[01;31m\x1b[Kthis->create_subscription<nav_msgs::msg::Odometry>(\x1b[m\x1b[K\n'}
+[3.469946] (sensor_read_and_interprat) StderrLine: {'line': b'      |               \x1b[01;31m\x1b[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\x1b[m\x1b[K\n'}
+[3.470081] (sensor_read_and_interprat) StderrLine: {'line': b'\n'}
+[3.470205] (sensor_read_and_interprat) StderrLine: {'line': b'   67 | \x1b[01;31m\x1b[K      "/gbr/odometry_perfect", 100,\x1b[m\x1b[K\n'}
+[3.470334] (sensor_read_and_interprat) StderrLine: {'line': b'      |       \x1b[01;31m\x1b[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\x1b[m\x1b[K                              \n'}
+[3.470470] (sensor_read_and_interprat) StderrLine: {'line': b'\n'}
+[3.470594] (sensor_read_and_interprat) StderrLine: {'line': b'   68 | \x1b[01;31m\x1b[K      std::bind(&sensor_subscriber::odemetry_callback, this, std::placeholders::_1))\x1b[m\x1b[K;\n'}
+[3.470719] (sensor_read_and_interprat) StderrLine: {'line': b'      |       \x1b[01;31m\x1b[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[3.470853] (sensor_read_and_interprat) StderrLine: {'line': b'\n'}
+[3.471046] (sensor_read_and_interprat) StderrLine: {'line': b'\x1b[01m\x1b[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:\x1b[m\x1b[K In member function \xe2\x80\x98\x1b[01m\x1b[Kvoid sensor_subscriber::\x1b[01;32m\x1b[Kimu_perfect_callback\x1b[m\x1b[K(const sensor_msgs::msg::Imu_<std::allocator<void> >::ConstSharedPtr&)\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[3.471197] (sensor_read_and_interprat) StderrLine: {'line': b'\x1b[01m\x1b[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:205:29:\x1b[m\x1b[K \x1b[01;31m\x1b[Kerror: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[Kclass sensor_handler\x1b[m\x1b[K\xe2\x80\x99 has no member named \xe2\x80\x98\x1b[01m\x1b[Kupdate_truth\x1b[m\x1b[K\xe2\x80\x99; did you mean \xe2\x80\x98\x1b[01m\x1b[Kupdate_depth\x1b[m\x1b[K\xe2\x80\x99?\n'}
+[3.471333] (sensor_read_and_interprat) StderrLine: {'line': b'  205 |             sensor_handler_.\x1b[01;31m\x1b[Kupdate_truth\x1b[m\x1b[K(\n'}
+[3.471460] (sensor_read_and_interprat) StderrLine: {'line': b'      |                             \x1b[01;31m\x1b[K^~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[3.471584] (sensor_read_and_interprat) StderrLine: {'line': b'      |                             \x1b[32m\x1b[Kupdate_depth\x1b[m\x1b[K\n'}
+[3.508017] (-) TimerEvent: {}
+[3.608296] (-) TimerEvent: {}
+[3.708581] (-) TimerEvent: {}
+[3.808863] (-) TimerEvent: {}
+[3.909118] (-) TimerEvent: {}
+[4.009391] (-) TimerEvent: {}
+[4.109668] (-) TimerEvent: {}
+[4.209950] (-) TimerEvent: {}
+[4.310208] (-) TimerEvent: {}
+[4.410475] (-) TimerEvent: {}
+[4.510763] (-) TimerEvent: {}
+[4.611021] (-) TimerEvent: {}
+[4.711301] (-) TimerEvent: {}
+[4.811556] (-) TimerEvent: {}
+[4.911775] (-) TimerEvent: {}
+[5.012048] (-) TimerEvent: {}
+[5.112303] (-) TimerEvent: {}
+[5.212526] (-) TimerEvent: {}
+[5.312760] (-) TimerEvent: {}
+[5.413013] (-) TimerEvent: {}
+[5.513311] (-) TimerEvent: {}
+[5.613592] (-) TimerEvent: {}
+[5.713879] (-) TimerEvent: {}
+[5.814148] (-) TimerEvent: {}
+[5.914440] (-) TimerEvent: {}
+[6.014732] (-) TimerEvent: {}
+[6.115039] (-) TimerEvent: {}
+[6.215321] (-) TimerEvent: {}
+[6.315612] (-) TimerEvent: {}
+[6.415868] (-) TimerEvent: {}
+[6.516163] (-) TimerEvent: {}
+[6.616413] (-) TimerEvent: {}
+[6.716680] (-) TimerEvent: {}
+[6.816941] (-) TimerEvent: {}
+[6.917183] (-) TimerEvent: {}
+[7.016701] (sensor_read_and_interprat) StderrLine: {'line': b'gmake[2]: *** [CMakeFiles/sensor_subscriber_node.dir/build.make:76: CMakeFiles/sensor_subscriber_node.dir/src/main.cpp.o] Error 1\n'}
+[7.016907] (sensor_read_and_interprat) StderrLine: {'line': b'gmake[1]: *** [CMakeFiles/Makefile2:137: CMakeFiles/sensor_subscriber_node.dir/all] Error 2\n'}
+[7.017153] (sensor_read_and_interprat) StderrLine: {'line': b'gmake: *** [Makefile:146: all] Error 2\n'}
+[7.017253] (-) TimerEvent: {}
+[7.019356] (sensor_read_and_interprat) CommandEnded: {'returncode': 2}
+[7.030287] (sensor_read_and_interprat) JobEnded: {'identifier': 'sensor_read_and_interprat', 'rc': 2}
+[7.040603] (-) EventReactorShutdown: {}

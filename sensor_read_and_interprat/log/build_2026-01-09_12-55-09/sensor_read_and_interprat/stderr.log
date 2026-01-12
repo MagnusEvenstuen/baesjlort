@@ -1,0 +1,26 @@
+In file included from [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/src/main.cpp:1[m[K:
+[01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:[m[K In constructor ‘[01m[KSensorSubscriber::[01;32m[KSensorSubscriber[m[K()[m[K’:
+[01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:17:25:[m[K [01;31m[Kerror: [m[K‘[01m[Kclass std::shared_ptr<image_transport::ImageTransport>[m[K’ has no member named ‘[01m[Ksubscribe[m[K’
+   17 |         left_cam_ = it_.[01;31m[Ksubscribe[m[K("/gbr/cam_left", 10,
+      |                         [01;31m[K^~~~~~~~~[m[K
+[01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:19:26:[m[K [01;31m[Kerror: [m[K‘[01m[Kclass std::shared_ptr<image_transport::ImageTransport>[m[K’ has no member named ‘[01m[Ksubscribe[m[K’
+   19 |         right_cam_ = it_.[01;31m[Ksubscribe[m[K("/gbr/cam_right", 10,
+      |                          [01;31m[K^~~~~~~~~[m[K
+[01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:[m[K In member function ‘[01m[Kvoid SensorSubscriber::[01;32m[KimuCenterCallback[m[K(const sensor_msgs::msg::Imu_<std::allocator<void> >::ConstSharedPtr&)[m[K’:
+[01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:45:73:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kmsg[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+   45 | oid imuCenterCallback([01;35m[Kconst sensor_msgs::msg::Imu::ConstSharedPtr& msg[m[K)
+      |                       [01;35m[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~[m[K
+
+[01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:[m[K In member function ‘[01m[Kvoid SensorSubscriber::[01;32m[KimuFrontCallback[m[K(const sensor_msgs::msg::Imu_<std::allocator<void> >::ConstSharedPtr&)[m[K’:
+[01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:50:72:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kmsg[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+   50 | void imuFrontCallback([01;35m[Kconst sensor_msgs::msg::Imu::ConstSharedPtr& msg[m[K)
+      |                       [01;35m[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~[m[K
+
+[01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:[m[K In member function ‘[01m[Kvoid SensorSubscriber::[01;32m[KimuRearCallback[m[K(const sensor_msgs::msg::Imu_<std::allocator<void> >::ConstSharedPtr&)[m[K’:
+[01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/include/sensor_subscriber.hpp:55:71:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kmsg[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+   55 |  void imuRearCallback([01;35m[Kconst sensor_msgs::msg::Imu::ConstSharedPtr& msg[m[K)
+      |                       [01;35m[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~[m[K
+
+gmake[2]: *** [CMakeFiles/sensor_subscriber_node.dir/build.make:76: CMakeFiles/sensor_subscriber_node.dir/src/main.cpp.o] Error 1
+gmake[1]: *** [CMakeFiles/Makefile2:137: CMakeFiles/sensor_subscriber_node.dir/all] Error 2
+gmake: *** [Makefile:146: all] Error 2

@@ -1,0 +1,35 @@
+[0.010s] Invoking command in '/home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --build /home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat -- -j12 -l12
+[0.036s] -- Found ament_cmake: 2.5.4 (/opt/ros/jazzy/share/ament_cmake/cmake)
+[0.280s] -- Found rclcpp: 28.1.13 (/opt/ros/jazzy/share/rclcpp/cmake)
+[0.318s] -- Found rosidl_generator_c: 4.6.6 (/opt/ros/jazzy/share/rosidl_generator_c/cmake)
+[0.332s] -- Found rosidl_generator_cpp: 4.6.6 (/opt/ros/jazzy/share/rosidl_generator_cpp/cmake)
+[0.349s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[0.370s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[0.464s] -- Found rmw_implementation_cmake: 7.3.2 (/opt/ros/jazzy/share/rmw_implementation_cmake/cmake)
+[0.466s] -- Found rmw_fastrtps_cpp: 8.4.3 (/opt/ros/jazzy/share/rmw_fastrtps_cpp/cmake)
+[0.551s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[0.637s] -- Found sensor_msgs: 5.3.6 (/opt/ros/jazzy/share/sensor_msgs/cmake)
+[0.715s] -- Found image_transport: 5.1.7 (/opt/ros/jazzy/share/image_transport/cmake)
+[0.734s] -- Found ament_lint_auto: 0.17.3 (/opt/ros/jazzy/share/ament_lint_auto/cmake)
+[0.864s] -- Added test 'cppcheck' to perform static code analysis on C / C++ code
+[0.864s] -- Configured cppcheck include dirs: /home/gud/Skole/baesjlort/sensor_read_and_interprat/include
+[0.864s] -- Configured cppcheck exclude dirs and/or files: 
+[0.868s] -- Added test 'flake8' to check Python code syntax and style conventions
+[0.868s] -- Configured 'flake8' exclude dirs and/or files: 
+[0.875s] -- Added test 'lint_cmake' to check CMake code style
+[0.879s] -- Added test 'pep257' to check Python code against some of the docstring style conventions in PEP 257
+[0.907s] -- Added test 'uncrustify' to check C / C++ code style
+[0.908s] -- Configured uncrustify additional arguments: 
+[0.911s] -- Added test 'xmllint' to check XML markup files
+[0.913s] -- Configuring done (0.9s)
+[0.928s] -- Generating done (0.0s)
+[0.934s] -- Build files have been written to: /home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat
+[0.982s] [ 50%] [32mBuilding CXX object CMakeFiles/sensor_subscriber_node.dir/src/main.cpp.o[0m
+[1.002s] [100%] [32m[1mLinking CXX executable sensor_subscriber_node[0m
+[1.121s] /usr/bin/ld: /usr/lib/gcc/x86_64-linux-gnu/13/../../../x86_64-linux-gnu/Scrt1.o: in function `_start':
+[1.121s] (.text+0x1b): undefined reference to `main'
+[1.123s] collect2: error: ld returned 1 exit status
+[1.125s] gmake[2]: *** [CMakeFiles/sensor_subscriber_node.dir/build.make:188: sensor_subscriber_node] Error 1
+[1.126s] gmake[1]: *** [CMakeFiles/Makefile2:137: CMakeFiles/sensor_subscriber_node.dir/all] Error 2
+[1.126s] gmake: *** [Makefile:146: all] Error 2
+[1.129s] Invoked command in '/home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat' returned '2': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --build /home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat -- -j12 -l12

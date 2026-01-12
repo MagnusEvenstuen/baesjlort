@@ -1,0 +1,37 @@
+[0.009s] Invoking command in '/home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --build /home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat -- -j12 -l12
+[0.031s] -- Found ament_cmake: 2.5.4 (/opt/ros/jazzy/share/ament_cmake/cmake)
+[0.235s] -- Found rclcpp: 28.1.13 (/opt/ros/jazzy/share/rclcpp/cmake)
+[0.280s] -- Found rosidl_generator_c: 4.6.6 (/opt/ros/jazzy/share/rosidl_generator_c/cmake)
+[0.295s] -- Found rosidl_generator_cpp: 4.6.6 (/opt/ros/jazzy/share/rosidl_generator_cpp/cmake)
+[0.315s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[0.335s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[0.422s] -- Found rmw_implementation_cmake: 7.3.2 (/opt/ros/jazzy/share/rmw_implementation_cmake/cmake)
+[0.425s] -- Found rmw_fastrtps_cpp: 8.4.3 (/opt/ros/jazzy/share/rmw_fastrtps_cpp/cmake)
+[0.508s] -- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.13")  
+[0.526s] -- Found FastRTPS: /opt/ros/jazzy/include (Required is at least version "2.13") 
+[0.549s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[0.635s] -- Found sensor_msgs: 5.3.6 (/opt/ros/jazzy/share/sensor_msgs/cmake)
+[0.707s] -- Found image_transport: 5.1.7 (/opt/ros/jazzy/share/image_transport/cmake)
+[0.734s] -- Found ament_lint_auto: 0.17.3 (/opt/ros/jazzy/share/ament_lint_auto/cmake)
+[0.831s] -- Added test 'cppcheck' to perform static code analysis on C / C++ code
+[0.831s] -- Configured cppcheck include dirs: 
+[0.831s] -- Configured cppcheck exclude dirs and/or files: 
+[0.833s] -- Added test 'flake8' to check Python code syntax and style conventions
+[0.833s] -- Configured 'flake8' exclude dirs and/or files: 
+[0.836s] -- Added test 'lint_cmake' to check CMake code style
+[0.837s] -- Added test 'pep257' to check Python code against some of the docstring style conventions in PEP 257
+[0.847s] -- Added test 'uncrustify' to check C / C++ code style
+[0.847s] -- Configured uncrustify additional arguments: 
+[0.849s] -- Added test 'xmllint' to check XML markup files
+[0.850s] -- Configuring done (0.8s)
+[0.863s] -- Generating done (0.0s)
+[0.866s] -- Build files have been written to: /home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat
+[0.899s] [ 50%] [32mBuilding CXX object CMakeFiles/sensor_subscriber_node.dir/src/main.cpp.o[0m
+[0.912s] [01m[K/home/gud/Skole/baesjlort/sensor_read_and_interprat/src/main.cpp:1:10:[m[K [01;31m[Kfatal error: [m[Ksensor_subscriber.hpp: No such file or directory
+[0.912s]     1 | #include [01;31m[K"sensor_subscriber.hpp"[m[K
+[0.912s]       |          [01;31m[K^~~~~~~~~~~~~~~~~~~~~~~[m[K
+[0.912s] compilation terminated.
+[0.913s] gmake[2]: *** [CMakeFiles/sensor_subscriber_node.dir/build.make:76: CMakeFiles/sensor_subscriber_node.dir/src/main.cpp.o] Error 1
+[0.913s] gmake[1]: *** [CMakeFiles/Makefile2:137: CMakeFiles/sensor_subscriber_node.dir/all] Error 2
+[0.913s] gmake: *** [Makefile:146: all] Error 2
+[0.915s] Invoked command in '/home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat' returned '2': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --build /home/gud/Skole/baesjlort/sensor_read_and_interprat/build/sensor_read_and_interprat -- -j12 -l12
