@@ -1,6 +1,6 @@
 #include <structs.hpp>
 #include <cmath>
-#include <eigen3/Eigen/Dense>
+#include <chrono>
 
 class IMU
 {
@@ -11,18 +11,25 @@ public:
         orientation_.normalize();
     }
 
-    void calibrate_gravity(const float acc_x, const float acc_y, const float acc_z, 
-                           const unsigned int count = 100)
+    void calibrate_gravity(const float acc_x, const float acc_y, const float acc_z)
     {
-        gravitational_vector_.x += acc_x/count;
-        gravitational_vector_.y += acc_y/count;
-        gravitational_vector_.z += acc_z/count;
+        gravitational_vector_.x += acc_x/calibration_needed_;
+        gravitational_vector_.y += acc_y/calibration_needed_;
+        gravitational_vector_.z += acc_z/calibration_needed_;
+        calibration_count_++;
     }
 
     void update(const float acc_x, const float acc_y, const float acc_z,
-                const float gyro_x, const float gyro_y, const float gyro_z,
-                const float dt)
+                const float gyro_x, const float gyro_y, const float gyro_z)
     {
+        float dt = std::chrono::duration<float>(std::chrono::steady_clock::now() - last_update_time_).count();
+        last_update_time_ = std::chrono::steady_clock::now();
+        if (calibration_count_ < calibration_needed_)
+        {
+            calibrate_gravity(acc_x, acc_y, acc_z);
+            return;
+        }
+
 
         Quaternion delta_orientation(
             1.0f,
@@ -36,19 +43,19 @@ public:
         orientation_.normalize();
 
         // Rotate acceleration to world frame
-        acc = orientation_.rotate_vector({acc_x, acc_y, acc_z});
-        acc = compansate_acc_for_angular_velocity(acc, {gyro_x, gyro_y, gyro_z}, dt);
-        
+        acc_ = compansate_acc_for_angular_velocity(acc_, {gyro_x, gyro_y, gyro_z}, dt);
+        acc_ = orientation_.rotate_vector({acc_x, acc_y, acc_z});
+
         // Subtract gravity in world frame
-        acc.x -= gravitational_vector_.x;
-        acc.y -= gravitational_vector_.y;
-        acc.z -= gravitational_vector_.z;
+        acc_.x -= gravitational_vector_.x;
+        acc_.y -= gravitational_vector_.y;
+        acc_.z -= gravitational_vector_.z;
         prev_gyro_ = {gyro_x, gyro_y, gyro_z};
     }
 
     Vector3 compansate_acc_for_angular_velocity(Vector3 acc, Vector3 gyro, const float dt)
     {
-        //Equation from https://robotics.stackexchange.com/questions/24276/calculation-of-imu-offset-for-placement-of-inertial-measurement-unit-away-from-c?
+        //Equation from https://robotics.stackexchange.com/questions/24276/calculation-of-imu-offset-for-placement-of-inertial-measurement-unit-away-from-c? with some changed signs to fit ROV coordinate system
         Vector3 gyro_acc = {
             (gyro.x - prev_gyro_.x) / dt,
             (gyro.y - prev_gyro_.y) / dt,
@@ -56,7 +63,7 @@ public:
         };
 
         Vector3 acc_comp = acc;
-        acc_comp.x += -(gyro.y*gyro.y + gyro.z*gyro.z)*position_.x + (gyro.x*gyro.y - gyro_acc.z)*position_.y + (gyro.x*gyro.z + gyro_acc.y)*position_.z;
+        acc_comp.x -= -(gyro.y*gyro.y + gyro.z*gyro.z)*position_.x + (gyro.x*gyro.y - gyro_acc.z)*position_.y + (gyro.x*gyro.z + gyro_acc.y)*position_.z;
         acc_comp.y += (gyro.x*gyro.y + gyro_acc.z)*position_.x + -(gyro.x*gyro.x + gyro.z*gyro.z)*position_.y + (gyro.y*gyro.z - gyro_acc.x)*position_.z;
         acc_comp.z += (gyro.x*gyro.z - gyro_acc.y)*position_.x + (gyro.y*gyro.z + gyro_acc.x)*position_.y + -(gyro.x*gyro.x + gyro.y*gyro.y)*position_.z;
 
@@ -65,7 +72,7 @@ public:
 
     Vector3 get_acceleration() const
     {
-        return acc;
+        return acc_;
     }
 
     Quaternion get_orientation() const
@@ -75,8 +82,11 @@ public:
 
 private:
     Vector3 position_;
-    Vector3 acc;
+    Vector3 acc_;
     Quaternion orientation_;
     Vector3 gravitational_vector_ = {0.0f, 0.0f, 0.0f};
     Vector3 prev_gyro_ = {0.0f, 0.0f, 0.0f};
+    unsigned int calibration_count_ = 0;
+    unsigned int calibration_needed_ = 100;
+    std::chrono::steady_clock::time_point last_update_time_;
 };

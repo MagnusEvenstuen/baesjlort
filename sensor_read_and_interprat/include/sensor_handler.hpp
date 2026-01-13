@@ -32,7 +32,7 @@ public:
     }
     
     //Assume gravity calibration is done while stationary
-    Vector3 calibrate_gravity(const float acc_x, const float acc_y, const float acc_z, 
+    /*Vector3 calibrate_gravity(const float acc_x, const float acc_y, const float acc_z, 
                             const unsigned int count = 100)
     {
         gravitational_vector_.x += acc_x/count;
@@ -41,7 +41,7 @@ public:
         last_update_time_ = std::chrono::steady_clock::now();
         last_truth_update_time_ = std::chrono::steady_clock::now();
         return gravitational_vector_;
-    }
+    }*/
 
     void update_truth_odometry(float pos_x, float pos_y, float pos_z,
                            float vel_x, float vel_y, float vel_z,
@@ -81,28 +81,14 @@ public:
         depth_ = -(current_pressure - surface_pressure_) / (water_density_ * gravity_);
     }
 
-    void update(float acc_x, float acc_y, float acc_z, 
-                const float gyro_x, const float gyro_y, const float gyro_z)
+    void update(Vector3 acc, Quaternion orientation)
     {
         auto current_time = std::chrono::steady_clock::now();
         float dt = std::chrono::duration<float>(current_time - last_update_time_).count();
         last_update_time_ = current_time;
-
-        // Update orientation from gyro
-        float angle = std::sqrt(gyro_x*gyro_x + gyro_y*gyro_y + gyro_z*gyro_z) * dt;
-        if (angle > 0.0001f) {
-            float scale = std::sin(angle / 2.0f) / (angle / dt);
-            orientation_ = orientation_ * Quaternion(std::cos(angle / 2.0f), gyro_x*scale, gyro_y*scale, gyro_z*scale);
-            orientation_.normalize();
-        }
-
-        // Rotate acceleration to world frame
-        Vector3 acc = orientation_.rotate_vector({acc_x, acc_y, acc_z});
         
-        // Subtract gravity in world frame
-        acc.x -= gravitational_vector_.x;
-        acc.y -= gravitational_vector_.y;
-        acc.z -= gravitational_vector_.z;
+        orientation_ = orientation;
+        orientation_.normalize();
 
         //Update position and speed
         current_position_.x += current_speed_.x * dt + 0.5f * acc.x * dt * dt;
@@ -145,7 +131,6 @@ public:
 private:
     Vector3 current_position_ = {0.0f, 0.0f, 0.0f};
     Vector3 current_speed_ = {0.0f, 0.0f, 0.0f};
-    Vector3 gravitational_vector_ = {0.0f, 0.0f, 0.0f};
     Vector3 perfect_acceleration_ = {0.0f, 0.0f, 0.0f};
     Vector3 perfect_speed_ = {0.0f, 0.0f, 0.0f};
     Vector3 perfect_position_ = {0.0f, 0.0f, 0.0f};
@@ -161,15 +146,6 @@ private:
     const float water_density_ = 997.0f;       //kg/m^3
     const float gravity_ = 9.81f;              //m/s^2
     bool set_surface_pressure_ = false;
-    IMU imu_center({0.0f, -0.003f, -0.0013}, Quaternion(1.0f, 0.0f, 0.0f, 0.0f));
-    IMU imu_center1({0.04f, -0.003f, -0.0013}, Quaternion(1.0f, 0.0f, 0.0f, 0.0f));
-    IMU imu_center2({-0.04f, -0.003f, -0.0013}, Quaternion(1.0f, 0.0f, 0.0f, 0.0f));
-    IMU imu_front1({-0.03f, 0.05f, -0.0013}, Quaternion(1.0f, 0.0f, 0.0f, 0.0f));
-    IMU imu_front2({0.03f, 0.05f, -0.0013}, Quaternion(1.0f, 0.0f, 0.0f, 0.0f));
-    IMU imu_rear1({-0.03f, -0.05f, -0.0013}, Quaternion(1.0f, 0.0f, 0.0f, 0.0f));
-    IMU imu_rear2({0.03f, -0.05f, -0.0013}, Quaternion(1.0f, 0.0f, 0.0f, 0.0f));
-    IMU imu_rear3({0.00f, -0.05f, -0.0013}, Quaternion(1.0f, 0.0f, 0.0f, 0.0f));
-
 };
 
 #endif // SENSOR_HANDLER_HPP
