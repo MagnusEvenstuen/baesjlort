@@ -161,6 +161,15 @@ private:
     const float water_density_ = 997.0f;       //kg/m^3
     const float gravity_ = 9.81f;              //m/s^2
     bool set_surface_pressure_ = false;
+    IMU imu_center({0.0f, -0.003f, -0.0013}, Quaternion(1.0f, 0.0f, 0.0f, 0.0f));
+    IMU imu_center1({0.04f, -0.003f, -0.0013}, Quaternion(1.0f, 0.0f, 0.0f, 0.0f));
+    IMU imu_center2({-0.04f, -0.003f, -0.0013}, Quaternion(1.0f, 0.0f, 0.0f, 0.0f));
+    IMU imu_front1({-0.03f, 0.05f, -0.0013}, Quaternion(1.0f, 0.0f, 0.0f, 0.0f));
+    IMU imu_front2({0.03f, 0.05f, -0.0013}, Quaternion(1.0f, 0.0f, 0.0f, 0.0f));
+    IMU imu_rear1({-0.03f, -0.05f, -0.0013}, Quaternion(1.0f, 0.0f, 0.0f, 0.0f));
+    IMU imu_rear2({0.03f, -0.05f, -0.0013}, Quaternion(1.0f, 0.0f, 0.0f, 0.0f));
+    IMU imu_rear3({0.00f, -0.05f, -0.0013}, Quaternion(1.0f, 0.0f, 0.0f, 0.0f));
+
 };
 
 #endif // SENSOR_HANDLER_HPP

@@ -10,6 +10,7 @@
 #include "image_display_and_handle.hpp"
 #include "structs.hpp"
 #include "sensor_handler.hpp"
+#include "IMU_class.hpp"
 
 class sensor_subscriber : public rclcpp::Node
 {

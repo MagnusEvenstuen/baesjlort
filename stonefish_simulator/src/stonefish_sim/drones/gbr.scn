@@ -217,7 +217,7 @@
         </sensor>
 
         <!-- Perfect odometry sensor -->
-        <sensor name="Odometry" rate="10.0" type="odometry">
+        <sensor name="Odometry" rate="100.0" type="odometry">
             <noise position="0.0" velocity="0.0" angle="0.0" angular_velocity="0.0"/>
             <history samples="1"/>
             <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>

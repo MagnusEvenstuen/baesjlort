@@ -78,7 +78,7 @@ class KeyboardController(Node):
         print(f"Active Keys: {current_keys}")
         print(f"Emergency Stop: {'ACTIVE' if current_estop else 'inactive'}")
         
-        if current_estop:
+        if current_estop == 2:
             self.rov.stop()
             self.get_logger().error("EMERGENCY STOP ACTIVATED!")
         else:
