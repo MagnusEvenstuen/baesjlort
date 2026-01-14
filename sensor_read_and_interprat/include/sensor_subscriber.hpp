@@ -7,6 +7,8 @@
 #include <sensor_msgs/msg/fluid_pressure.hpp>
 #include <image_transport/image_transport.hpp>
 #include <nav_msgs/msg/odometry.hpp>
+#include <array>
+#include <chrono>
 #include "image_display_and_handle.hpp"
 #include "structs.hpp"
 #include "sensor_handler.hpp"
@@ -25,8 +27,8 @@ public:
         IMU_rear2_(Vector3{0.03f, -0.05f, -0.0013}, Quaternion{1.0f, 0.0f, 0.0f, 0.0f}),
         IMU_rear3_(Vector3{0.00f, -0.05f, -0.0013}, Quaternion{1.0f, 0.0f, 0.0f, 0.0f})
     {
-        time_ = std::time(nullptr);
-        prev_time_ = std::time(nullptr);
+        time_ = std::chrono::steady_clock::now();
+        prev_time_ = time_;
     }
 
     void init()
@@ -107,7 +109,6 @@ private:
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
             recieved[0] = true;
-            imu_data_sender();
         }
     }
 
@@ -132,7 +133,6 @@ private:
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
             recieved[1] = true;
-            imu_data_sender();
         }
     }
 
@@ -157,7 +157,6 @@ private:
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
             recieved[2] = true;
-            imu_data_sender();
         }
     }
 
@@ -182,7 +181,6 @@ private:
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
             recieved[3] = true;
-            imu_data_sender();
         }
     }
 
@@ -207,7 +205,6 @@ private:
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
             recieved[4] = true;
-            imu_data_sender();
         }
     }
 
@@ -232,7 +229,6 @@ private:
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
             recieved[5] = true;
-            imu_data_sender();
         }
     }
 
@@ -257,7 +253,6 @@ private:
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
             recieved[6] = true;
-            imu_data_sender();
         }
     }
 
@@ -282,7 +277,6 @@ private:
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
             recieved[7] = true;
-            imu_data_sender();
         }
     }
 
@@ -304,24 +298,29 @@ private:
 
     void imu_data_sender()
     {
-        //Check if all imu messages have been received
-        if (!(recieved[0] && recieved[1] && recieved[2] && recieved[3] &&
-              recieved[4] && recieved[5] && recieved[6] && recieved[7]))
+        unsigned int recieved_counter = 0;
+        for (bool r : recieved)
+        {
+            if (r)
+                recieved_counter++;
+        }
+
+        if (recieved_counter == 0)
         {
             return;
         }
-        
+
         Vector3 avg_acc = {
-            acc_.x / 8.0f,
-            acc_.y / 8.0f,
-            acc_.z / 8.0f
+            acc_.x / recieved_counter,
+            acc_.y / recieved_counter,
+            acc_.z / recieved_counter
         };
         
         Quaternion avg_orientation = {
-            orientation_.w / 8.0f,
-            orientation_.x / 8.0f,
-            orientation_.y / 8.0f,
-            orientation_.z / 8.0f
+            orientation_.w / recieved_counter,
+            orientation_.x / recieved_counter,
+            orientation_.y / recieved_counter,
+            orientation_.z / recieved_counter
         };
         
         recieved[0] = false;
@@ -347,11 +346,12 @@ private:
     void pressure_callback(const sensor_msgs::msg::FluidPressure::ConstSharedPtr& msg)
     {
         sensor_handler_.update_depth(msg->fluid_pressure);
+        imu_data_sender();
     }
 
 private:
-    std::time_t time_;
-    std::time_t prev_time_;
+    std::chrono::steady_clock::time_point time_;
+    std::chrono::steady_clock::time_point prev_time_;
     image_transport::Subscriber left_cam_;
     image_transport::Subscriber right_cam_;
     rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_center_;
@@ -368,13 +368,14 @@ private:
     std::shared_ptr<image_transport::ImageTransport> it_;
     image_display_and_handle display_and_handle;
     sensor_handler sensor_handler_;
+
     float current_speed_x = 0.0;
     float current_speed_y = 0.0;
     float current_speed_z = 0.0;
     unsigned int imu_msg_count_ = 0;
     Vector3 acc_ = {0.0f, 0.0f, 0.0f};
     Quaternion orientation_ = {0.0f, 0.0f, 0.0f, 0.0f};
-    bool recieved[8] = {false, false, false, false, false, false, false, false};
+    std::array<bool, 8> recieved = {false, false, false, false, false, false, false, false};
     IMU IMU_center_;
     IMU IMU_center1_;
     IMU IMU_center2_;

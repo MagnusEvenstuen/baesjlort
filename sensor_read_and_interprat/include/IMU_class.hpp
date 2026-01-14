@@ -43,8 +43,8 @@ public:
         orientation_.normalize();
 
         // Rotate acceleration to world frame
-        acc_ = compansate_acc_for_angular_velocity(acc_, {gyro_x, gyro_y, gyro_z}, dt);
-        acc_ = orientation_.rotate_vector({acc_x, acc_y, acc_z});
+        acc_ = compansate_acc_for_angular_velocity({acc_x, acc_y, acc_z}, {gyro_x, gyro_y, gyro_z}, dt);
+        acc_ = orientation_.rotate_vector({acc_.x, acc_.y, acc_.z});
 
         // Subtract gravity in world frame
         acc_.x -= gravitational_vector_.x;
@@ -64,7 +64,7 @@ public:
 
         Vector3 acc_comp = acc;
         acc_comp.x -= -(gyro.y*gyro.y + gyro.z*gyro.z)*position_.x + (gyro.x*gyro.y - gyro_acc.z)*position_.y + (gyro.x*gyro.z + gyro_acc.y)*position_.z;
-        acc_comp.y += (gyro.x*gyro.y + gyro_acc.z)*position_.x + -(gyro.x*gyro.x + gyro.z*gyro.z)*position_.y + (gyro.y*gyro.z - gyro_acc.x)*position_.z;
+        acc_comp.y -= (gyro.x*gyro.y + gyro_acc.z)*position_.x + -(gyro.x*gyro.x + gyro.z*gyro.z)*position_.y + (gyro.y*gyro.z - gyro_acc.x)*position_.z;
         acc_comp.z += (gyro.x*gyro.z - gyro_acc.y)*position_.x + (gyro.y*gyro.z + gyro_acc.x)*position_.y + -(gyro.x*gyro.x + gyro.y*gyro.y)*position_.z;
 
         return acc_comp;

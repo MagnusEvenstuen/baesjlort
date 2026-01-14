@@ -91,9 +91,9 @@ public:
         orientation_.normalize();
 
         //Update position and speed
-        current_position_.x += current_speed_.x * dt + 0.5f * acc.x * dt * dt;
-        current_position_.y += current_speed_.y * dt + 0.5f * acc.y * dt * dt;
-        current_position_.z += current_speed_.z * dt + 0.5f * acc.z * dt * dt;
+        current_position_.x -= current_speed_.x * dt + 0.5f * acc.x * dt * dt;
+        current_position_.y -= current_speed_.y * dt + 0.5f * acc.y * dt * dt;
+        current_position_.z -= current_speed_.z * dt + 0.5f * acc.z * dt * dt;
         current_speed_.x += acc.x * dt;
         current_speed_.y += acc.y * dt;
         current_speed_.z += acc.z * dt;
