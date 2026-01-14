@@ -90,7 +90,7 @@ plt.plot(timestamp, correct_orientation_x, label="correct_orientation_x", linest
 plt.plot(timestamp, correct_orientation_y, label="correct_orientation_y", linestyle="--")
 plt.plot(timestamp, correct_orientation_z, label="correct_orientation_z", linestyle="--")
 plt.xlabel("Time")
-plt.ylabel("Orientation (rad)")
+plt.ylabel("Orientation")
 plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 
 plt.show()

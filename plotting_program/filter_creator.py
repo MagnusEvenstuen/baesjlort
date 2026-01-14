@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
+
 #Optimal filter design, and exporting code are modified versions of code from https://github.com/MagnusEvenstuen/DiggSiggECGProject/blob/main/Filtering.py
 
 def exportFilterCoeffs(filter, filename):
@@ -36,17 +37,17 @@ def exportFilterCoeffs(filter, filename):
     print(f"Filterkoeffisienter eksportert til {filename}.hpp")
 
 def optimalFilter(filterLength, edges, weights, fs):
-    bp = sig.remez(
+    lp = sig.remez(
         numtaps=filterLength,
         bands=edges,
         desired=[1, 0],
         weight=weights,
         fs=fs
     )
-    bp = bp*np.hamming(filterLength)
-    exportFilterCoeffs(bp, "filter_coeffs_lowpass")
+    lp = lp*np.hamming(filterLength)
+    exportFilterCoeffs(lp, "filter_coeffs_lowpass")
     #Plotte kode fra ChatGPT
-    w, h = sig.freqz(bp, worN=4096, fs=fs)
+    w, h = sig.freqz(lp, worN=4096, fs=fs)
     plt.figure(figsize=(10, 6))
     # Amplituderespons (dB)
     plt.subplot(2, 1, 1)
@@ -62,5 +63,38 @@ def optimalFilter(filterLength, edges, weights, fs):
     plt.grid(True)
     plt.tight_layout()
     plt.show()
+    return lp
 
-optimalFilter(21, [0, 5, 6, 50], [3, 1], 100)
+file_path = 'data_files/sensor_data.csv'
+data = np.genfromtxt(file_path, delimiter=',', skip_header=1)
+
+timestamp = data[:, 0]
+acc_x = data[:, 1]
+acc_y = data[:, 2]
+acc_z = data[:, 3]
+
+correct_acc_x = data[:, 10]
+correct_acc_y = data[:, 11]
+correct_acc_z = data[:, 12]
+
+lp = optimalFilter(21, [0, 5, 6, 50], [3, 1], 100)
+
+acc_x_lp = np.convolve(acc_x, lp, mode="same")
+acc_y_lp = np.convolve(acc_y, lp, mode="same")
+acc_z_lp = np.convolve(acc_z, lp, mode="same")
+
+plt.figure()
+plt.title("Acceleration")
+plt.plot(timestamp, acc_x, label="acceleration_x")
+plt.plot(timestamp, acc_y, label="acceleration_y")
+plt.plot(timestamp, acc_z, label="acceleration_z")
+plt.plot(timestamp, acc_x_lp, label="lp_acceleration_x")
+plt.plot(timestamp, acc_y_lp, label="lp_acceleration_y")
+plt.plot(timestamp, acc_z_lp, label="lp_acceleration_z")
+plt.plot(timestamp, correct_acc_x, label="correct_acceleration_x", linestyle=":")
+plt.plot(timestamp, correct_acc_y, label="correct_acceleration_y", linestyle=":")
+plt.plot(timestamp, correct_acc_z, label="correct_acceleration_z", linestyle=":")
+plt.xlabel("Time")
+plt.ylabel("Acceleration (m/s^2)")
+plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+plt.show()

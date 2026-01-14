@@ -360,7 +360,7 @@
         </sensor>
 
         <!-- Pressure sensor -->
-        <sensor name="pressure" type="pressure" rate="50.0">
+        <sensor name="pressure" type="pressure" rate="150.0">
             <range pressure="100000.0"/>
             <noise pressure="50.0"/>
             <history samples="1"/>

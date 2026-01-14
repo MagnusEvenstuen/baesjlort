@@ -315,6 +315,7 @@ private:
             acc_.y / recieved_counter,
             acc_.z / recieved_counter
         };
+        RCLCPP_INFO(this->get_logger(), "Acc - x: %.4f, y: %.4f, z: %.4f", avg_acc.x, avg_acc.y,  avg_acc.z);
         
         Quaternion avg_orientation = {
             orientation_.w / recieved_counter,
