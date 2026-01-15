@@ -10,7 +10,7 @@ class IMU
 {
 public:
     IMU(const Vector3 position_on_robot, const Quaternion initial_orientation)
-        : position_(position_on_robot), orientation_(initial_orientation)
+        : position_(position_on_robot), orientation_(1.0f, 0.0f, 0.0f, 0.0f)
     {
         //Sets up the IMU
         orientation_.normalize();
@@ -42,20 +42,22 @@ public:
         //Calculates the delta time
         float dt = std::chrono::duration<float>(std::chrono::steady_clock::now() - last_update_time_).count();
         last_update_time_ = std::chrono::steady_clock::now();
+        Vector3 acc_rot = imu_to_robot_frame_.rotate_vector_inverse({acc_x, acc_y, acc_z});
+        Vector3 gyro_rot = imu_to_robot_frame_.rotate_vector_inverse({gyro_x, gyro_y, gyro_z});
         //Checks if calibration is done
         if (calibration_count_ < calibration_needed_)
         {
-            calibrate_gravity(acc_x, acc_y, acc_z);
-            calibrate_gyro(gyro_x, gyro_y, gyro_z);
+            calibrate_gravity(acc_rot.x, acc_rot.y, acc_rot.z);
+            calibrate_gyro(gyro_rot.x, gyro_rot.y, gyro_rot.z);
             return;
         }
 
         //Update orientation based on gyroscope data
         Quaternion delta_orientation(
             1.0f,
-            (gyro_x - gyro_bias_.x) * dt * 0.5f,
-            (gyro_y - gyro_bias_.y) * dt * 0.5f,
-            (gyro_z - gyro_bias_.z) * dt * 0.5f
+            (gyro_rot.x - gyro_bias_.x) * dt * 0.5f,
+            (gyro_rot.y - gyro_bias_.y) * dt * 0.5f,
+            (gyro_rot.z - gyro_bias_.z) * dt * 0.5f
         );
         //delta_orientation_ = delta_orientation;
 
@@ -63,13 +65,25 @@ public:
         orientation_ = orientation_ * delta_orientation;
         orientation_.normalize();
 
+        //Fuse accelerometer and gyroscope data for better orientation
+        orientation_ = fuse_acceleration_gyroscope_for_orientation(acc_rot, dt);
+        //Compensate acceleration for angular velocity
+        acc_ = compansate_acc_for_angular_velocity(acc_rot, {gyro_rot.x, gyro_rot.y, gyro_rot.z}, dt);
+        //Rotate acceleration to correct frame
+        acc_ = orientation_.rotate_vector({acc_.x, acc_.y, acc_.z});
+
+        // Subtract gravity in world frame
+        acc_.x -= gravitational_vector_.x;
+        acc_.y -= gravitational_vector_.y;
+        acc_.z -= gravitational_vector_.z;
+
         //Low pass filter on acceleration data, rotates makes the oldest value the last element
         std::rotate(acc_x_buffer_.begin(), acc_x_buffer_.begin() + 1, acc_x_buffer_.end());
         std::rotate(acc_y_buffer_.begin(), acc_y_buffer_.begin() + 1, acc_y_buffer_.end());
         std::rotate(acc_z_buffer_.begin(), acc_z_buffer_.begin() + 1, acc_z_buffer_.end());
-        acc_x_buffer_.back() = acc_x;
-        acc_y_buffer_.back() = acc_y;
-        acc_z_buffer_.back() = acc_z;
+        acc_x_buffer_.back() = acc_.x;
+        acc_y_buffer_.back() = acc_.y;
+        acc_z_buffer_.back() = acc_.z;
         Vector3 filtered_acc = {0.0f, 0.0f, 0.0f};
 
         //Apply low pass filter
@@ -82,21 +96,7 @@ public:
 
         acc_ = filtered_acc;
 
-        //Fuse accelerometer and gyroscope data for better orientation
-        orientation_ = fuse_acceleration_gyroscope_for_orientation({acc_x, acc_y, acc_z}, dt);
-        //Compensate acceleration for angular velocity
-        acc_ = compansate_acc_for_angular_velocity({acc_x, acc_y, acc_z}, {gyro_x, gyro_y, gyro_z}, dt);
-        //Rotate acceleration to correct frame
-        acc_ = orientation_.rotate_vector({acc_.x, acc_.y, acc_.z});
-
-        // Subtract gravity in world frame
-        acc_.x -= gravitational_vector_.x;
-        acc_.y -= gravitational_vector_.y;
-        acc_.z -= gravitational_vector_.z;
-
-         acc_ = imu_to_robot_frame_.rotate_vector(acc_);
-
-        prev_gyro_ = {gyro_x, gyro_y, gyro_z};
+        prev_gyro_ = {gyro_rot.x, gyro_rot.y, gyro_rot.z};
     }
 
     Vector3 get_acceleration() const
@@ -127,7 +127,7 @@ private:
         );
 
         //Return if acceleration is out of expected range
-        if (length_acc < 9.6f || length_acc > 10.0f)
+        if (length_acc < 9.7f || length_acc > 9.9f)
         {
             return orientation_;
         }

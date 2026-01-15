@@ -25,8 +25,8 @@ public:
         IMU_front1_(Vector3{-0.03f, 0.05f, -0.0013}, Quaternion{1.0f, 0.0f, 0.0f, 0.0f}),
         IMU_front2_(Vector3{0.03f, 0.05f, -0.0013}, Quaternion{1.0f, 0.0f, 0.0f, 0.0f}),
         IMU_rear1_(Vector3{-0.03f, -0.05f, -0.0013}, Quaternion{1.0f, 0.0f, 0.0f, 0.0f}),
-        IMU_rear2_(Vector3{0.03f, -0.05f, -0.0013}, Quaternion{0.9238795f, 0.0f, 0.0f, -0.3826834f}),
-        IMU_rear3_(Vector3{0.00f, -0.05f, -0.0013}, Quaternion{0.9238795f, 0.0f, 0.0f, 0.3826834f})
+        IMU_rear2_(Vector3{0.03f, -0.05f, -0.0013}, Quaternion{0.924f, 0.0f, 0.0f, -0.383f}),
+        IMU_rear3_(Vector3{0.00f, -0.05f, -0.0013}, Quaternion{0.924f, 0.0f, 0.0f, 0.383f})
     {
         time_ = std::chrono::steady_clock::now();
         prev_time_ = time_;
@@ -109,6 +109,7 @@ private:
             orientation_.x += orientation.x;
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
+            orientation_.normalize();
             recieved[0] = true;
         }
     }
@@ -133,6 +134,7 @@ private:
             orientation_.x += orientation.x;
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
+            orientation_.normalize();
             recieved[1] = true;
         }
     }
@@ -157,6 +159,7 @@ private:
             orientation_.x += orientation.x;
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
+            orientation_.normalize();
             recieved[2] = true;
         }
     }
@@ -181,6 +184,7 @@ private:
             orientation_.x += orientation.x;
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
+            orientation_.normalize();
             recieved[3] = true;
         }
     }
@@ -205,6 +209,7 @@ private:
             orientation_.x += orientation.x;
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
+            orientation_.normalize();
             recieved[4] = true;
         }
     }
@@ -229,6 +234,7 @@ private:
             orientation_.x += orientation.x;
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
+            orientation_.normalize();
             recieved[5] = true;
         }
     }
@@ -253,6 +259,7 @@ private:
             orientation_.x += orientation.x;
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
+            orientation_.normalize();
             recieved[6] = true;
         }
     }
@@ -277,6 +284,7 @@ private:
             orientation_.x += orientation.x;
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
+            orientation_.normalize();
             recieved[7] = true;
         }
     }

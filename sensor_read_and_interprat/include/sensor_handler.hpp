@@ -111,7 +111,7 @@ public:
                      << elapsed << ","
                      << acc_x << "," << acc_y << "," << acc_z << ","
                      << current_speed_.x << "," << current_speed_.y << "," << current_speed_.z << ","
-                     << current_position_.x << "," << current_position_.y << "," << current_position_.z << ","
+                     << -current_position_.x << "," << -current_position_.y << "," << -current_position_.z << ","
                      << perfect_acceleration_.x << "," << perfect_acceleration_.y << "," << perfect_acceleration_.z << ","
                      << perfect_speed_.x << "," << perfect_speed_.y << "," << perfect_speed_.z << ","
                      << perfect_position_.x << ", " << perfect_position_.y << ", " << perfect_position_.z << ", " << depth_ << ","
