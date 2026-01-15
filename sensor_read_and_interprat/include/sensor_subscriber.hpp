@@ -18,6 +18,7 @@ class sensor_subscriber : public rclcpp::Node
 {
 public:
     sensor_subscriber() : Node("sensor_subscriber"),
+        //Setup IMU objects with their positions on the robot and initial orientations
         IMU_center_(Vector3{0.0f, -0.003f, -0.0013}, Quaternion{1.0f, 0.0f, 0.0f, 0.0f}),
         IMU_center1_(Vector3{0.04f, -0.003f, -0.0013}, Quaternion{1.0f, 0.0f, 0.0f, 0.0f}),
         IMU_center2_(Vector3{-0.04f, -0.003f, -0.0013}, Quaternion{1.0f, 0.0f, 0.0f, 0.0f}),
@@ -298,6 +299,7 @@ private:
 
     void imu_data_sender()
     {
+        //Check how many IMU messages have been recieved
         unsigned int recieved_counter = 0;
         for (bool r : recieved)
         {
@@ -310,6 +312,7 @@ private:
             return;
         }
 
+        //Calculate average values from the recieved IMU messages
         Vector3 avg_acc = {
             acc_.x / recieved_counter,
             acc_.y / recieved_counter,
@@ -332,13 +335,8 @@ private:
         recieved[5] = false;
         recieved[6] = false;
         recieved[7] = false;
-
+        //Updates sensor handler with averaged IMU data
         sensor_handler_.update(avg_acc, avg_orientation);
-
-        Quaternion delta_orientation = IMU_center_.get_delta_orientation();
-        //RCLCPP_INFO(this->get_logger(), 
-        //    "Delta orientation - x: %.2f, y: %.2f, z: %.2f", 
-        //    delta_orientation.x, delta_orientation.y, delta_orientation.z);
 
         Vector3 position = sensor_handler_.get_position();
         RCLCPP_INFO(this->get_logger(), 

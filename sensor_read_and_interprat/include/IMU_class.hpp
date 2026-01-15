@@ -4,6 +4,7 @@
 #include <array>
 #include <algorithm>
 #include "filter_coeffs_lowpass.hpp"
+#include <iostream>
 
 class IMU
 {
@@ -11,12 +12,14 @@ public:
     IMU(const Vector3 position_on_robot, const Quaternion initial_orientation)
         : position_(position_on_robot), orientation_(initial_orientation)
     {
+        //Sets up the IMU
         orientation_.normalize();
         last_update_time_ = std::chrono::steady_clock::now();
     }
 
     void calibrate_gravity(const float acc_x, const float acc_y, const float acc_z)
     {
+        //Calibrates the gravitational vector by averaging over several samples
         gravitational_vector_.x += acc_x/calibration_needed_;
         gravitational_vector_.y += acc_y/calibration_needed_;
         gravitational_vector_.z += acc_z/calibration_needed_;
@@ -25,6 +28,7 @@ public:
 
     void calibrate_gyro(const float gyro_x, const float gyro_y, const float gyro_z)
     {
+        //Calibrates the gyroscope bias by averaging over several samples
         gyro_bias_.x += gyro_x/calibration_needed_;
         gyro_bias_.y += gyro_y/calibration_needed_;
         gyro_bias_.z += gyro_z/calibration_needed_;
@@ -33,8 +37,10 @@ public:
     void update(const float acc_x, const float acc_y, const float acc_z,
                 const float gyro_x, const float gyro_y, const float gyro_z)
     {
+        //Calculates the delta time
         float dt = std::chrono::duration<float>(std::chrono::steady_clock::now() - last_update_time_).count();
         last_update_time_ = std::chrono::steady_clock::now();
+        //Checks if calibration is done
         if (calibration_count_ < calibration_needed_)
         {
             calibrate_gravity(acc_x, acc_y, acc_z);
@@ -42,7 +48,7 @@ public:
             return;
         }
 
-
+        //Update orientation based on gyroscope data
         Quaternion delta_orientation(
             1.0f,
             (gyro_x - gyro_bias_.x) * dt * 0.5f,
@@ -51,9 +57,11 @@ public:
         );
         //delta_orientation_ = delta_orientation;
 
+        //Updates and normelizes the orientation
         orientation_ = orientation_ * delta_orientation;
         orientation_.normalize();
 
+        //Low pass filter on acceleration data, rotates makes the oldest value the last element
         std::rotate(acc_x_buffer_.begin(), acc_x_buffer_.begin() + 1, acc_x_buffer_.end());
         std::rotate(acc_y_buffer_.begin(), acc_y_buffer_.begin() + 1, acc_y_buffer_.end());
         std::rotate(acc_z_buffer_.begin(), acc_z_buffer_.begin() + 1, acc_z_buffer_.end());
@@ -62,7 +70,7 @@ public:
         acc_z_buffer_.back() = acc_z;
         Vector3 filtered_acc = {0.0f, 0.0f, 0.0f};
 
-
+        //Apply low pass filter
         for (size_t i = 0; i < FILTER_LENGTH; i++)
         {
             filtered_acc.x += filter_coeffs[i] * acc_x_buffer_[i];
@@ -72,9 +80,11 @@ public:
 
         acc_ = filtered_acc;
 
-        // Rotate acceleration to world frame and low pass filter
-        orientation_ = fuse_acceleration_gyroscope_for_orientation({acc_x, acc_y, acc_z}, delta_orientation, dt);
+        //Fuse accelerometer and gyroscope data for better orientation
+        orientation_ = fuse_acceleration_gyroscope_for_orientation({acc_x, acc_y, acc_z}, dt);
+        //Compensate acceleration for angular velocity
         acc_ = compansate_acc_for_angular_velocity({acc_x, acc_y, acc_z}, {gyro_x, gyro_y, gyro_z}, dt);
+        //Rotate acceleration to correct frame
         acc_ = orientation_.rotate_vector({acc_.x, acc_.y, acc_.z});
 
         // Subtract gravity in world frame
@@ -101,7 +111,7 @@ public:
     }
 
 private:
-    Quaternion fuse_acceleration_gyroscope_for_orientation(const Vector3& acc, const Quaternion& delta_orientation, float dt)
+    Quaternion fuse_acceleration_gyroscope_for_orientation(const Vector3& acc, float dt)
     {
         //Using a modified version of fusing method proposed in 
         //https://ciis.lcsr.jhu.edu/lib/exe/fetch.php?media=courses:456:2021:projects:456-2021-01:estimatingorientationcontreras.pdf
@@ -111,19 +121,13 @@ private:
             gravitational_vector_.y * gravitational_vector_.y +
             gravitational_vector_.z * gravitational_vector_.z
         );
-        float length_delta_orientation = std::sqrt(
-            delta_orientation.w * delta_orientation.w +
-            delta_orientation.x * delta_orientation.x +
-            delta_orientation.y * delta_orientation.y +
-            delta_orientation.z * delta_orientation.z
-        );
 
         //Return if acceleration is out of expected range
         if (length_acc < 9.6f || length_acc > 10.0f)
         {
             return orientation_;
         }
-        
+        //Normalize vectors
         Vector3 norm_acc = {
             acc.x / length_acc,
             acc.y / length_acc,
@@ -135,6 +139,7 @@ private:
             gravitational_vector_.y / length_gravity,
             gravitational_vector_.z / length_gravity
         };
+        //Calculate error between expected gravity vector and measured gravity vector
         Vector3 expected_gravity = orientation_.rotate_vector_inverse(norm_gravity);
         Vector3 error = {
             norm_acc.y * expected_gravity.z - norm_acc.z * expected_gravity.y,
@@ -142,6 +147,7 @@ private:
             norm_acc.x * expected_gravity.y - norm_acc.y * expected_gravity.x
         };
 
+        //Get correction from PID controller
         Vector3 correction = PID_corrector(error, length_acc, dt);
         orientation_ = orientation_ * Quaternion(
             1.0f,
@@ -156,14 +162,15 @@ private:
 
     Vector3 PID_corrector(Vector3 error, float acc_length, float dt)
     {
+        //PID controller constants
         constexpr float Kp = 1.2f;
         constexpr float Ki = 0.003f;
         constexpr float Kd = 0.001f;
-
+        constexpr float weight = 0.3f;
+        //Static variables to hold integral and previous error
         static Vector3 integral_error = {0.0f, 0.0f, 0.0f};
         static Vector3 prev_error = {0.0f, 0.0f, 0.0f};
-        constexpr float weight = 0.3f;
-
+        //Update integral error
         integral_error.x += error.x * dt * weight;
         integral_error.y += error.y * dt * weight;
         integral_error.z += error.z * dt * weight;
@@ -181,6 +188,7 @@ private:
     Vector3 compansate_acc_for_angular_velocity(Vector3 acc, Vector3 gyro, const float dt)
     {
         //Equation from https://robotics.stackexchange.com/questions/24276/calculation-of-imu-offset-for-placement-of-inertial-measurement-unit-away-from-c? with some changed signs to fit ROV coordinate system
+        //Quick maths
         Vector3 gyro_acc = {
             (gyro.x - prev_gyro_.x) / dt,
             (gyro.y - prev_gyro_.y) / dt,
@@ -206,6 +214,7 @@ private:
     unsigned int calibration_count_ = 0;
     unsigned int calibration_needed_ = 500;
     std::chrono::steady_clock::time_point last_update_time_;
+    //Initializes filter window
     std::array<float, FILTER_LENGTH> acc_x_buffer_ = {0.0f};
     std::array<float, FILTER_LENGTH> acc_y_buffer_ = {0.0f};
     std::array<float, FILTER_LENGTH> acc_z_buffer_ = {0.0f};
