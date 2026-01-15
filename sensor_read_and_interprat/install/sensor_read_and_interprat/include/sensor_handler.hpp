@@ -12,6 +12,7 @@ class sensor_handler
 public:
     sensor_handler()
     {
+        //Opens CSV file for logging
         last_update_time_ = std::chrono::steady_clock::now();
         start_time_ = last_update_time_;
         csv_file_.open("/home/gud/Skole/baesjlort/plotting_program/data_files/sensor_data.csv", std::ios::app);
@@ -25,28 +26,18 @@ public:
     }
     ~sensor_handler()
     {
+        //Closse CSV file if open
         if (csv_file_.is_open())
         {
             csv_file_.close();
         }
     }
-    
-    //Assume gravity calibration is done while stationary
-    /*Vector3 calibrate_gravity(const float acc_x, const float acc_y, const float acc_z, 
-                            const unsigned int count = 100)
-    {
-        gravitational_vector_.x += acc_x/count;
-        gravitational_vector_.y += acc_y/count;
-        gravitational_vector_.z += acc_z/count;
-        last_update_time_ = std::chrono::steady_clock::now();
-        last_truth_update_time_ = std::chrono::steady_clock::now();
-        return gravitational_vector_;
-    }*/
 
     void update_truth_odometry(float pos_x, float pos_y, float pos_z,
                            float vel_x, float vel_y, float vel_z,
                            float quat_x, float quat_y, float quat_z, float quat_w)
     {
+        //Update perfect position, speed, acceleration and orientation from truth odometry sensor
         Vector3 prev_speed = perfect_speed_;
         auto current_time = std::chrono::steady_clock::now();
         float dt = std::chrono::duration<float>(current_time - last_truth_update_time_).count();
@@ -67,6 +58,7 @@ public:
         perfect_orientation_.z = quat_z;
         perfect_orientation_ = world_correction_ * perfect_orientation_;
         perfect_orientation_.normalize();
+        perfect_speed_ = perfect_orientation_.rotate_vector_inverse(perfect_speed_);
     }
 
 
@@ -83,10 +75,12 @@ public:
 
     void update(Vector3 acc, Quaternion orientation)
     {
+        //Updates delta tile
         auto current_time = std::chrono::steady_clock::now();
         float dt = std::chrono::duration<float>(current_time - last_update_time_).count();
         last_update_time_ = current_time;
         
+        //Updates orientation
         orientation_ = orientation;
         orientation_.normalize();
 
@@ -112,7 +106,7 @@ public:
         {
             auto current_time = std::chrono::steady_clock::now();
             float elapsed = std::chrono::duration<float>(current_time - start_time_).count();
-            
+            //Logs data to CSV file for plotting
             csv_file_ << std::fixed << std::setprecision(6)
                      << elapsed << ","
                      << acc_x << "," << acc_y << "," << acc_z << ","

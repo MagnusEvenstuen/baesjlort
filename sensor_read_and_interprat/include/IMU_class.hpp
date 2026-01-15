@@ -14,6 +14,8 @@ public:
     {
         //Sets up the IMU
         orientation_.normalize();
+        imu_to_robot_frame_ = initial_orientation.conjugate();
+        imu_to_robot_frame_.normalize();
         last_update_time_ = std::chrono::steady_clock::now();
     }
 
@@ -91,6 +93,8 @@ public:
         acc_.x -= gravitational_vector_.x;
         acc_.y -= gravitational_vector_.y;
         acc_.z -= gravitational_vector_.z;
+
+         acc_ = imu_to_robot_frame_.rotate_vector(acc_);
 
         prev_gyro_ = {gyro_x, gyro_y, gyro_z};
     }
@@ -208,6 +212,7 @@ private:
     Vector3 acc_;
     Quaternion orientation_;
     Quaternion delta_orientation_;
+    Quaternion imu_to_robot_frame_;
     Vector3 gravitational_vector_ = {0.0f, 0.0f, 0.0f};
     Vector3 gyro_bias_ = {0.0f, 0.0f, 0.0f};
     Vector3 prev_gyro_ = {0.0f, 0.0f, 0.0f};

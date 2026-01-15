@@ -58,7 +58,6 @@ public:
         perfect_orientation_.z = quat_z;
         perfect_orientation_ = world_correction_ * perfect_orientation_;
         perfect_orientation_.normalize();
-        perfect_acceleration_ = perfect_orientation_.rotate_vector_inverse(perfect_acceleration_);
         perfect_speed_ = perfect_orientation_.rotate_vector_inverse(perfect_speed_);
     }
 
