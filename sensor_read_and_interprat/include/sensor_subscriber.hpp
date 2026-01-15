@@ -335,6 +335,11 @@ private:
 
         sensor_handler_.update(avg_acc, avg_orientation);
 
+        Quaternion delta_orientation = IMU_center_.get_delta_orientation();
+        //RCLCPP_INFO(this->get_logger(), 
+        //    "Delta orientation - x: %.2f, y: %.2f, z: %.2f", 
+        //    delta_orientation.x, delta_orientation.y, delta_orientation.z);
+
         Vector3 position = sensor_handler_.get_position();
         RCLCPP_INFO(this->get_logger(), 
             "Posisjon - x: %.2f, y: %.2f, z: %.2f", 

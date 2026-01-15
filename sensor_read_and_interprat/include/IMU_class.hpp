@@ -49,26 +49,17 @@ public:
             (gyro_y - gyro_bias_.y) * dt * 0.5f,
             (gyro_z - gyro_bias_.z) * dt * 0.5f
         );
+        //delta_orientation_ = delta_orientation;
 
         orientation_ = orientation_ * delta_orientation;
         orientation_.normalize();
 
-        // Rotate acceleration to world frame and low pass filter
-        orientation_ = fuse_acceleration_gyroscope_for_orientation({acc_x, acc_y, acc_z}, dt);
-        acc_ = compansate_acc_for_angular_velocity({acc_x, acc_y, acc_z}, {gyro_x, gyro_y, gyro_z}, dt);
-        acc_ = orientation_.rotate_vector({acc_.x, acc_.y, acc_.z});
-
-        // Subtract gravity in world frame
-        acc_.x -= gravitational_vector_.x;
-        acc_.y -= gravitational_vector_.y;
-        acc_.z -= gravitational_vector_.z;
-
         std::rotate(acc_x_buffer_.begin(), acc_x_buffer_.begin() + 1, acc_x_buffer_.end());
         std::rotate(acc_y_buffer_.begin(), acc_y_buffer_.begin() + 1, acc_y_buffer_.end());
         std::rotate(acc_z_buffer_.begin(), acc_z_buffer_.begin() + 1, acc_z_buffer_.end());
-        acc_x_buffer_.back() = acc_.x;
-        acc_y_buffer_.back() = acc_.y;
-        acc_z_buffer_.back() = acc_.z;
+        acc_x_buffer_.back() = acc_x;
+        acc_y_buffer_.back() = acc_y;
+        acc_z_buffer_.back() = acc_z;
         Vector3 filtered_acc = {0.0f, 0.0f, 0.0f};
 
 
@@ -80,6 +71,16 @@ public:
         }
 
         acc_ = filtered_acc;
+
+        // Rotate acceleration to world frame and low pass filter
+        orientation_ = fuse_acceleration_gyroscope_for_orientation({acc_x, acc_y, acc_z}, delta_orientation, dt);
+        acc_ = compansate_acc_for_angular_velocity({acc_x, acc_y, acc_z}, {gyro_x, gyro_y, gyro_z}, dt);
+        acc_ = orientation_.rotate_vector({acc_.x, acc_.y, acc_.z});
+
+        // Subtract gravity in world frame
+        acc_.x -= gravitational_vector_.x;
+        acc_.y -= gravitational_vector_.y;
+        acc_.z -= gravitational_vector_.z;
 
         prev_gyro_ = {gyro_x, gyro_y, gyro_z};
     }
@@ -94,8 +95,13 @@ public:
         return orientation_;
     }
 
+    Quaternion get_delta_orientation()
+    {
+        return delta_orientation_;
+    }
+
 private:
-    Quaternion fuse_acceleration_gyroscope_for_orientation(const Vector3& acc, float dt)
+    Quaternion fuse_acceleration_gyroscope_for_orientation(const Vector3& acc, const Quaternion& delta_orientation, float dt)
     {
         //Using a modified version of fusing method proposed in 
         //https://ciis.lcsr.jhu.edu/lib/exe/fetch.php?media=courses:456:2021:projects:456-2021-01:estimatingorientationcontreras.pdf
@@ -105,9 +111,15 @@ private:
             gravitational_vector_.y * gravitational_vector_.y +
             gravitational_vector_.z * gravitational_vector_.z
         );
+        float length_delta_orientation = std::sqrt(
+            delta_orientation.w * delta_orientation.w +
+            delta_orientation.x * delta_orientation.x +
+            delta_orientation.y * delta_orientation.y +
+            delta_orientation.z * delta_orientation.z
+        );
 
         //Return if acceleration is out of expected range
-        if (length_acc < 9.4f || length_acc > 10.3f)
+        if (length_acc < 9.6f || length_acc > 10.0f)
         {
             return orientation_;
         }
@@ -144,9 +156,9 @@ private:
 
     Vector3 PID_corrector(Vector3 error, float acc_length, float dt)
     {
-        constexpr float Kp = 0.4f;
-        constexpr float Ki = 0.001f;
-        constexpr float Kd = 0.3f;
+        constexpr float Kp = 1.2f;
+        constexpr float Ki = 0.003f;
+        constexpr float Kd = 0.001f;
 
         static Vector3 integral_error = {0.0f, 0.0f, 0.0f};
         static Vector3 prev_error = {0.0f, 0.0f, 0.0f};
@@ -187,6 +199,7 @@ private:
     Vector3 position_;
     Vector3 acc_;
     Quaternion orientation_;
+    Quaternion delta_orientation_;
     Vector3 gravitational_vector_ = {0.0f, 0.0f, 0.0f};
     Vector3 gyro_bias_ = {0.0f, 0.0f, 0.0f};
     Vector3 prev_gyro_ = {0.0f, 0.0f, 0.0f};
