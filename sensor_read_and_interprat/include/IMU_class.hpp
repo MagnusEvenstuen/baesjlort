@@ -201,7 +201,7 @@ private:
 
         Vector3 acc_comp = acc;
         acc_comp.x -= -(gyro.y*gyro.y + gyro.z*gyro.z)*position_.x + (gyro.x*gyro.y - gyro_acc.z)*position_.y + (gyro.x*gyro.z + gyro_acc.y)*position_.z;
-        acc_comp.y -= (gyro.x*gyro.y + gyro_acc.z)*position_.x + -(gyro.x*gyro.x + gyro.z*gyro.z)*position_.y + (gyro.y*gyro.z - gyro_acc.x)*position_.z;
+        acc_comp.y += (gyro.x*gyro.y + gyro_acc.z)*position_.x + -(gyro.x*gyro.x + gyro.z*gyro.z)*position_.y + (gyro.y*gyro.z - gyro_acc.x)*position_.z;
         acc_comp.z -= (gyro.x*gyro.z - gyro_acc.y)*position_.x + (gyro.y*gyro.z + gyro_acc.x)*position_.y + -(gyro.x*gyro.x + gyro.y*gyro.y)*position_.z;
 
         return acc_comp;

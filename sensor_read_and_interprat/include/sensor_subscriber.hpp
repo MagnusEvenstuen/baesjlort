@@ -19,14 +19,14 @@ class sensor_subscriber : public rclcpp::Node
 public:
     sensor_subscriber() : Node("sensor_subscriber"),
         //Setup IMU objects with their positions on the robot and initial orientations
-        IMU_center_(Vector3{0.0f, -0.003f, -0.0013}, Quaternion{1.0f, 0.0f, 0.0f, 0.0f}),
-        IMU_center1_(Vector3{0.04f, -0.003f, -0.0013}, Quaternion{1.0f, 0.0f, 0.0f, 0.0f}),
-        IMU_center2_(Vector3{-0.04f, -0.003f, -0.0013}, Quaternion{1.0f, 0.0f, 0.0f, 0.0f}),
-        IMU_front1_(Vector3{-0.03f, 0.05f, -0.0013}, Quaternion{1.0f, 0.0f, 0.0f, 0.0f}),
-        IMU_front2_(Vector3{0.03f, 0.05f, -0.0013}, Quaternion{1.0f, 0.0f, 0.0f, 0.0f}),
-        IMU_rear1_(Vector3{-0.03f, -0.05f, -0.0013}, Quaternion{1.0f, 0.0f, 0.0f, 0.0f}),
-        IMU_rear2_(Vector3{0.03f, -0.05f, -0.0013}, Quaternion{0.924f, 0.0f, 0.0f, -0.383f}),
-        IMU_rear3_(Vector3{0.00f, -0.05f, -0.0013}, Quaternion{0.924f, 0.0f, 0.0f, 0.383f})
+        IMU_center_(Vector3{0.0f, -0.003f, -0.0013}-center_of_gravity_, Quaternion{0.924f, 0.0f, 0.0f, 0.383f}),
+        IMU_center1_(Vector3{0.04f, -0.003f, -0.0013}-center_of_gravity_, Quaternion{0.924f, 0.0f, 0.0f, 0.383f}),
+        IMU_center2_(Vector3{-0.04f, -0.003f, -0.0013}-center_of_gravity_, Quaternion{0.924f, 0.0f, 0.0f, 0.383f}),
+        IMU_front1_(Vector3{-0.03f, 0.05f, -0.0013}-center_of_gravity_, Quaternion{0.924f, 0.0f, 0.0f, 0.383f}),
+        IMU_front2_(Vector3{0.03f, 0.05f, -0.0013}-center_of_gravity_, Quaternion{0.924f, 0.0f, 0.0f, 0.383f}),
+        IMU_rear1_(Vector3{-0.03f, -0.05f, -0.0013}-center_of_gravity_, Quaternion{0.924f, 0.0f, 0.0f, 0.383f}),
+        IMU_rear2_(Vector3{0.03f, -0.05f, -0.0013}-center_of_gravity_, Quaternion{0.924f, 0.0f, 0.0f, -0.383f}),
+        IMU_rear3_(Vector3{0.00f, -0.05f, -0.0013}-center_of_gravity_, Quaternion{0.924f, 0.0f, 0.0f, 0.383f})
     {
         time_ = std::chrono::steady_clock::now();
         prev_time_ = time_;
@@ -380,6 +380,7 @@ private:
     std::shared_ptr<image_transport::ImageTransport> it_;
     image_display_and_handle display_and_handle;
     sensor_handler sensor_handler_;
+    const Vector3 center_of_gravity_ = {0.0f, -0.003f, -0.0013f};
 
     float current_speed_x = 0.0;
     float current_speed_y = 0.0;

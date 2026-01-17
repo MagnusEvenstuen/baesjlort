@@ -249,7 +249,7 @@
                 yaw_drift="0.001"
                 linear_acceleration="0.10"/>
             <history samples="1"/>
-            <origin xyz="0.0 -0.003 -0.0013" rpy="0.0 0.0 0.0"/>
+            <origin xyz="0.0 -0.003 -0.0013" rpy="0.0 0.0 0.785398163397"/>
             <link name="Base"/>
             <ros_publisher topic="/gbr/imu_center"/>
         </sensor>
@@ -264,7 +264,7 @@
                 yaw_drift="0.001"
                 linear_acceleration="0.10"/>
             <history samples="1"/>
-            <origin xyz="0.04 -0.003 -0.0013" rpy="0.0 0.0 0.0"/>
+            <origin xyz="0.04 -0.003 -0.0013" rpy="0.0 0.0 0.785398163397"/>
             <link name="Base"/>
             <ros_publisher topic="/gbr/imu_center1"/>
         </sensor>
@@ -279,7 +279,7 @@
                 yaw_drift="0.001"
                 linear_acceleration="0.10"/>
             <history samples="1"/>
-            <origin xyz="-0.04 -0.003 -0.0013" rpy="0.0 0.0 0.0"/>
+            <origin xyz="-0.04 -0.003 -0.0013" rpy="0.0 0.0 0.785398163397"/>
             <link name="Base"/>
             <ros_publisher topic="/gbr/imu_center2"/>
         </sensor>
@@ -294,7 +294,7 @@
                 yaw_drift="0.001"
                 linear_acceleration="0.10"/>
             <history samples="1"/>
-            <origin xyz="-0.03 0.05 -0.0013" rpy="0.0 0.0 0.0"/>
+            <origin xyz="-0.03 0.05 -0.0013" rpy="0.0 0.0 0.785398163397"/>
             <link name="Base"/>
             <ros_publisher topic="/gbr/imu_front1"/>
         </sensor>
@@ -309,7 +309,7 @@
                 yaw_drift="0.001"
                 linear_acceleration="0.10"/>
             <history samples="1"/>
-            <origin xyz="0.03 0.05 -0.0013" rpy="0.0 0.0 0.0"/>
+            <origin xyz="0.03 0.05 -0.0013" rpy="0.0 0.0 0.785398163397"/>
             <link name="Base"/>
             <ros_publisher topic="/gbr/imu_front2"/>
         </sensor>
@@ -324,7 +324,7 @@
                 yaw_drift="0.001"
                 linear_acceleration="0.10"/>
             <history samples="1"/>
-            <origin xyz="-0.03 -0.05 -0.0013" rpy="0.0 0.0 0.0"/>
+            <origin xyz="-0.03 -0.05 -0.0013" rpy="0.0 0.0 0.785398163397"/>
             <link name="Base"/>
             <ros_publisher topic="/gbr/imu_rear1"/>
         </sensor>
