@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(sensor_read_and_interprat)
+project(sys_id)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -8,11 +8,12 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
 
 include_directories(include)
 
 add_executable(sys_id_commands_node src/main.cpp)
-ament_target_dependencies(sys_id_commands_node rclcpp)
+ament_target_dependencies(sys_id_commands_node rclcpp std_msgs)
 target_link_libraries(sys_id_commands_node)
 
 install(TARGETS

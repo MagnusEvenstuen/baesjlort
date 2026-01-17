@@ -4,8 +4,7 @@
 int main(int argc, char** argv)
 {
     rclcpp::init(argc, argv);
-    auto node = std::make_shared<sensor_subscriber>();
-    node->init();
+    auto node = std::make_shared<sys_id_commands>();
     rclcpp::spin(node);
     rclcpp::shutdown();
     
