@@ -75,7 +75,7 @@ public:
 
     void update(Vector3 acc, Quaternion orientation)
     {
-        //Updates delta tile
+        //Updates delta time
         auto current_time = std::chrono::steady_clock::now();
         float dt = std::chrono::duration<float>(current_time - last_update_time_).count();
         last_update_time_ = current_time;

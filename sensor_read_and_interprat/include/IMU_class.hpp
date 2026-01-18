@@ -59,7 +59,7 @@ public:
             (gyro_rot.y - gyro_bias_.y) * dt * 0.5f,
             (gyro_rot.z - gyro_bias_.z) * dt * 0.5f
         );
-        //delta_orientation_ = delta_orientation;
+        delta_orientation_ = delta_orientation;
 
         //Updates and normelizes the orientation
         orientation_ = orientation_ * delta_orientation;

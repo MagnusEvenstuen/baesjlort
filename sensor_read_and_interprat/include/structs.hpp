@@ -18,6 +18,15 @@ struct Vector3
     {
         return Vector3{x - b.x, y - b.y, z - b.z};
     }
+
+    Vector3 operator/(const float b) const
+    {
+        if (b == 0)
+        {
+            return Vector3{0, 0, 0};
+        }
+        return Vector3{x/b, y/b, z/b};
+    }
 };
 
 struct Quaternion

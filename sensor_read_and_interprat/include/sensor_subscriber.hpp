@@ -2,6 +2,8 @@
 #define SENSOR_SUBSCRIBER_HPP
 
 #include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/float32_multi_array.hpp>
+#include <std_msgs/msg/multi_array_layout.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <sensor_msgs/msg/imu.hpp>
 #include <sensor_msgs/msg/fluid_pressure.hpp>
@@ -67,6 +69,11 @@ public:
             "/gbr/imu_rear3", 100, 
             std::bind(&sensor_subscriber::imu_callback7, this, std::placeholders::_1));
 
+        avg_gyro_publisher_ = this->create_publisher<std_msgs::msg::Float32MultiArray>(
+            "/average_gyro", 10);
+        avg_acc_publisher_ = this->create_publisher<std_msgs::msg::Float32MultiArray>(
+            "/average_acceleration", 10);
+
         // Subscriber for Fluid Pressure messages
         pressure_ = this->create_subscription<sensor_msgs::msg::FluidPressure>(
             "/gbr/pressure", 100, 
@@ -110,6 +117,9 @@ private:
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
             orientation_.normalize();
+            gyro_.x += msg->angular_velocity.x;
+            gyro_.y += msg->angular_velocity.y;
+            gyro_.z += msg->angular_velocity.z;
             recieved[0] = true;
         }
     }
@@ -135,6 +145,9 @@ private:
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
             orientation_.normalize();
+            gyro_.x += msg->angular_velocity.x;
+            gyro_.y += msg->angular_velocity.y;
+            gyro_.z += msg->angular_velocity.z;
             recieved[1] = true;
         }
     }
@@ -160,6 +173,9 @@ private:
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
             orientation_.normalize();
+            gyro_.x += msg->angular_velocity.x;
+            gyro_.y += msg->angular_velocity.y;
+            gyro_.z += msg->angular_velocity.z;
             recieved[2] = true;
         }
     }
@@ -185,6 +201,9 @@ private:
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
             orientation_.normalize();
+            gyro_.x += msg->angular_velocity.x;
+            gyro_.y += msg->angular_velocity.y;
+            gyro_.z += msg->angular_velocity.z;
             recieved[3] = true;
         }
     }
@@ -210,6 +229,9 @@ private:
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
             orientation_.normalize();
+            gyro_.x += msg->angular_velocity.x;
+            gyro_.y += msg->angular_velocity.y;
+            gyro_.z += msg->angular_velocity.z;
             recieved[4] = true;
         }
     }
@@ -235,6 +257,9 @@ private:
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
             orientation_.normalize();
+            gyro_.x += msg->angular_velocity.x;
+            gyro_.y += msg->angular_velocity.y;
+            gyro_.z += msg->angular_velocity.z;
             recieved[5] = true;
         }
     }
@@ -260,6 +285,9 @@ private:
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
             orientation_.normalize();
+            gyro_.x += msg->angular_velocity.x;
+            gyro_.y += msg->angular_velocity.y;
+            gyro_.z += msg->angular_velocity.z;
             recieved[6] = true;
         }
     }
@@ -285,6 +313,9 @@ private:
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
             orientation_.normalize();
+            gyro_.x += msg->angular_velocity.x;
+            gyro_.y += msg->angular_velocity.y;
+            gyro_.z += msg->angular_velocity.z;
             recieved[7] = true;
         }
     }
@@ -321,11 +352,7 @@ private:
         }
 
         //Calculate average values from the recieved IMU messages
-        Vector3 avg_acc = {
-            acc_.x / recieved_counter,
-            acc_.y / recieved_counter,
-            acc_.z / recieved_counter
-        };
+        Vector3 avg_acc = acc_/recieved_counter;
         RCLCPP_INFO(this->get_logger(), "Acc - x: %.4f, y: %.4f, z: %.4f", avg_acc.x, avg_acc.y,  avg_acc.z);
         
         Quaternion avg_orientation = {
@@ -334,7 +361,18 @@ private:
             orientation_.y / recieved_counter,
             orientation_.z / recieved_counter
         };
+
+        Vector3 avg_gyro = gyro_/recieved_counter;
         
+        //Publish data for SYSID
+        auto gyro_msg = std_msgs::msg::Float32MultiArray();
+        gyro_msg.data = {avg_gyro.x, avg_gyro.y, avg_gyro.z};
+        avg_gyro_publisher_->publish(gyro_msg);
+        
+        auto acc_msg = std_msgs::msg::Float32MultiArray();
+        acc_msg.data = {avg_acc.x, avg_acc.y, avg_acc.z};
+        avg_acc_publisher_->publish(acc_msg);
+
         recieved[0] = false;
         recieved[1] = false;
         recieved[2] = false;
@@ -352,6 +390,7 @@ private:
             position.x, position.y, position.z);
 
         acc_ = {0.0f, 0.0f, 0.0f};
+        gyro_ = {0.0f, 0.0f, 0.0f};
         orientation_ = {0.0f, 0.0f, 0.0f, 0.0f};
     }
 
@@ -377,6 +416,9 @@ private:
     rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_center_perfect_;
     rclcpp::Subscription<sensor_msgs::msg::FluidPressure>::SharedPtr pressure_;
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odometry_subscription_;
+    rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr avg_gyro_publisher_;
+    rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr avg_acc_publisher_;
+    Vector3 gyro_ = {0, 0, 0};
     std::shared_ptr<image_transport::ImageTransport> it_;
     image_display_and_handle display_and_handle;
     sensor_handler sensor_handler_;
