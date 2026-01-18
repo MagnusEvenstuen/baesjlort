@@ -117,9 +117,10 @@ private:
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
             orientation_.normalize();
-            gyro_.x += msg->angular_velocity.x;
-            gyro_.y += msg->angular_velocity.y;
-            gyro_.z += msg->angular_velocity.z;
+            Vector3 gyro = IMU_center_.get_gyro();
+            gyro_.x += gyro.x;
+            gyro_.y += gyro.y;
+            gyro_.z += gyro.z;
             recieved[0] = true;
         }
     }
@@ -145,9 +146,10 @@ private:
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
             orientation_.normalize();
-            gyro_.x += msg->angular_velocity.x;
-            gyro_.y += msg->angular_velocity.y;
-            gyro_.z += msg->angular_velocity.z;
+            Vector3 gyro = IMU_center1_.get_gyro();
+            gyro_.x += gyro.x;
+            gyro_.y += gyro.y;
+            gyro_.z += gyro.z;
             recieved[1] = true;
         }
     }
@@ -173,9 +175,10 @@ private:
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
             orientation_.normalize();
-            gyro_.x += msg->angular_velocity.x;
-            gyro_.y += msg->angular_velocity.y;
-            gyro_.z += msg->angular_velocity.z;
+            Vector3 gyro = IMU_center2_.get_gyro();
+            gyro_.x += gyro.x;
+            gyro_.y += gyro.y;
+            gyro_.z += gyro.z;
             recieved[2] = true;
         }
     }
@@ -201,9 +204,10 @@ private:
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
             orientation_.normalize();
-            gyro_.x += msg->angular_velocity.x;
-            gyro_.y += msg->angular_velocity.y;
-            gyro_.z += msg->angular_velocity.z;
+            Vector3 gyro = IMU_front1_.get_gyro();
+            gyro_.x += gyro.x;
+            gyro_.y += gyro.y;
+            gyro_.z += gyro.z;
             recieved[3] = true;
         }
     }
@@ -229,9 +233,10 @@ private:
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
             orientation_.normalize();
-            gyro_.x += msg->angular_velocity.x;
-            gyro_.y += msg->angular_velocity.y;
-            gyro_.z += msg->angular_velocity.z;
+            Vector3 gyro = IMU_front2_.get_gyro();
+            gyro_.x += gyro.x;
+            gyro_.y += gyro.y;
+            gyro_.z += gyro.z;
             recieved[4] = true;
         }
     }
@@ -257,9 +262,10 @@ private:
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
             orientation_.normalize();
-            gyro_.x += msg->angular_velocity.x;
-            gyro_.y += msg->angular_velocity.y;
-            gyro_.z += msg->angular_velocity.z;
+            Vector3 gyro = IMU_rear1_.get_gyro();
+            gyro_.x += gyro.x;
+            gyro_.y += gyro.y;
+            gyro_.z += gyro.z;
             recieved[5] = true;
         }
     }
@@ -285,9 +291,10 @@ private:
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
             orientation_.normalize();
-            gyro_.x += msg->angular_velocity.x;
-            gyro_.y += msg->angular_velocity.y;
-            gyro_.z += msg->angular_velocity.z;
+            Vector3 gyro = IMU_rear2_.get_gyro();
+            gyro_.x += gyro.x;
+            gyro_.y += gyro.y;
+            gyro_.z += gyro.z;
             recieved[6] = true;
         }
     }
@@ -313,9 +320,10 @@ private:
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
             orientation_.normalize();
-            gyro_.x += msg->angular_velocity.x;
-            gyro_.y += msg->angular_velocity.y;
-            gyro_.z += msg->angular_velocity.z;
+            Vector3 gyro = IMU_rear3_.get_gyro();
+            gyro_.x += gyro.x;
+            gyro_.y += gyro.y;
+            gyro_.z += gyro.z;
             recieved[7] = true;
         }
     }

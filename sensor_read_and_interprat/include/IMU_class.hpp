@@ -44,6 +44,7 @@ public:
         last_update_time_ = std::chrono::steady_clock::now();
         Vector3 acc_rot = imu_to_robot_frame_.rotate_vector_inverse({acc_x, acc_y, acc_z});
         Vector3 gyro_rot = imu_to_robot_frame_.rotate_vector_inverse({gyro_x, gyro_y, gyro_z});
+        rotated_gyro_ = gyro_rot - gyro_bias_;
         //Checks if calibration is done
         if (calibration_count_ < calibration_needed_)
         {
@@ -112,6 +113,11 @@ public:
     Quaternion get_delta_orientation()
     {
         return delta_orientation_;
+    }
+
+    Vector3 get_gyro()
+    {
+        return rotated_gyro_;
     }
 
 private:
@@ -216,6 +222,7 @@ private:
     Vector3 gravitational_vector_ = {0.0f, 0.0f, 0.0f};
     Vector3 gyro_bias_ = {0.0f, 0.0f, 0.0f};
     Vector3 prev_gyro_ = {0.0f, 0.0f, 0.0f};
+    Vector3 rotated_gyro_ = {0.0f, 0.0f, 0.0f};
     unsigned int calibration_count_ = 0;
     unsigned int calibration_needed_ = 500;
     std::chrono::steady_clock::time_point last_update_time_;
