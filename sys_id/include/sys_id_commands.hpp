@@ -44,7 +44,7 @@ public:
 
         std::random_device rd;
         gen_ = std::mt19937(rd());
-        duration_dist_ = std::uniform_int_distribution<>(20, 2000);
+        duration_dist_ = std::uniform_int_distribution<>(20, 10000);
         power_dist_ = std::uniform_int_distribution<>(0, 20);
         command_dist_ = std::uniform_int_distribution<>(0, 11);
 
@@ -145,7 +145,7 @@ private:
             return;
         }
 
-        if (elapsed < 40000)
+        if (elapsed < 80000)
         {
             if (!going_down_complete_)
             {
@@ -167,7 +167,7 @@ private:
         auto sys_id_elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
             now - sys_id_start_time_).count();
 
-        if (sys_id_elapsed < 300000)  // 5 minutter
+        if (sys_id_elapsed < 600000)  // 10 minutter
         {
             run_system_identification();
         }

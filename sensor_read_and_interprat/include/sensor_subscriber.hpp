@@ -44,6 +44,9 @@ public:
             std::bind(&sensor_subscriber::image_right_callback, this, std::placeholders::_1));
 
         // Subscribers for IMU messages
+        imu_center_perfect_ = this->create_subscription<sensor_msgs::msg::Imu>(
+            "/gbr/imu_center_perfect", 100, 
+            std::bind(&sensor_subscriber::imu_callback0, this, std::placeholders::_1));
         imu_center_ = this->create_subscription<sensor_msgs::msg::Imu>(
             "/gbr/imu_center", 100, 
             std::bind(&sensor_subscriber::imu_callback0, this, std::placeholders::_1));
@@ -116,7 +119,6 @@ private:
             orientation_.x += orientation.x;
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
-            orientation_.normalize();
             Vector3 gyro = IMU_center_.get_gyro();
             gyro_.x += gyro.x;
             gyro_.y += gyro.y;
@@ -145,7 +147,6 @@ private:
             orientation_.x += orientation.x;
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
-            orientation_.normalize();
             Vector3 gyro = IMU_center1_.get_gyro();
             gyro_.x += gyro.x;
             gyro_.y += gyro.y;
@@ -174,7 +175,6 @@ private:
             orientation_.x += orientation.x;
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
-            orientation_.normalize();
             Vector3 gyro = IMU_center2_.get_gyro();
             gyro_.x += gyro.x;
             gyro_.y += gyro.y;
@@ -203,7 +203,6 @@ private:
             orientation_.x += orientation.x;
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
-            orientation_.normalize();
             Vector3 gyro = IMU_front1_.get_gyro();
             gyro_.x += gyro.x;
             gyro_.y += gyro.y;
@@ -232,7 +231,6 @@ private:
             orientation_.x += orientation.x;
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
-            orientation_.normalize();
             Vector3 gyro = IMU_front2_.get_gyro();
             gyro_.x += gyro.x;
             gyro_.y += gyro.y;
@@ -261,7 +259,6 @@ private:
             orientation_.x += orientation.x;
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
-            orientation_.normalize();
             Vector3 gyro = IMU_rear1_.get_gyro();
             gyro_.x += gyro.x;
             gyro_.y += gyro.y;
@@ -290,7 +287,6 @@ private:
             orientation_.x += orientation.x;
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
-            orientation_.normalize();
             Vector3 gyro = IMU_rear2_.get_gyro();
             gyro_.x += gyro.x;
             gyro_.y += gyro.y;
@@ -319,7 +315,6 @@ private:
             orientation_.x += orientation.x;
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
-            orientation_.normalize();
             Vector3 gyro = IMU_rear3_.get_gyro();
             gyro_.x += gyro.x;
             gyro_.y += gyro.y;
@@ -370,6 +365,8 @@ private:
             orientation_.z / recieved_counter
         };
 
+        avg_orientation.normalize();
+        last_orientation_ = avg_orientation;
         Vector3 avg_gyro = gyro_/recieved_counter;
         
         //Publish data for SYSID
@@ -438,6 +435,7 @@ private:
     unsigned int imu_msg_count_ = 0;
     Vector3 acc_ = {0.0f, 0.0f, 0.0f};
     Quaternion orientation_ = {0.0f, 0.0f, 0.0f, 0.0f};
+    Quaternion last_orientation_ = {0.0f, 0.0f, 0.0f, 0.0f};
     std::array<bool, 8> recieved = {false, false, false, false, false, false, false, false};
     IMU IMU_center_;
     IMU IMU_center1_;

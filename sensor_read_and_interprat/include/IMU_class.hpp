@@ -78,6 +78,8 @@ public:
         acc_.y -= gravitational_vector_.y;
         acc_.z -= gravitational_vector_.z;
 
+        acc_ = orientation_.rotate_vector_inverse(acc_);
+
         //Low pass filter on acceleration data, rotates makes the oldest value the last element
         std::rotate(acc_x_buffer_.begin(), acc_x_buffer_.begin() + 1, acc_x_buffer_.end());
         std::rotate(acc_y_buffer_.begin(), acc_y_buffer_.begin() + 1, acc_y_buffer_.end());
@@ -95,7 +97,7 @@ public:
             filtered_acc.z += filter_coeffs[i] * acc_z_buffer_[i];
         }
 
-        acc_ = filtered_acc;
+        //acc_ = filtered_acc;
 
         prev_gyro_ = {gyro_rot.x, gyro_rot.y, gyro_rot.z};
     }
@@ -121,7 +123,7 @@ public:
     }
 
 private:
-    Quaternion fuse_acceleration_gyroscope_for_orientation(const Vector3& acc, float dt)
+    Quaternion fuse_acceleration_gyroscope_for_orientation(const Vector3& acc, const float dt)
     {
         //Using a modified version of fusing method proposed in 
         //https://ciis.lcsr.jhu.edu/lib/exe/fetch.php?media=courses:456:2021:projects:456-2021-01:estimatingorientationcontreras.pdf
@@ -133,7 +135,7 @@ private:
         );
 
         //Return if acceleration is out of expected range
-        if (length_acc < 9.7f || length_acc > 9.9f)
+        if (length_acc < 9.75f || length_acc > 9.85f)
         {
             return orientation_;
         }
@@ -175,8 +177,8 @@ private:
         //PID controller constants
         constexpr float Kp = 1.2f;
         constexpr float Ki = 0.003f;
-        constexpr float Kd = 0.001f;
-        constexpr float weight = 0.3f;
+        constexpr float Kd = 0.0f;
+        constexpr float weight = 0.2f;
         //Static variables to hold integral and previous error
         static Vector3 integral_error = {0.0f, 0.0f, 0.0f};
         static Vector3 prev_error = {0.0f, 0.0f, 0.0f};
