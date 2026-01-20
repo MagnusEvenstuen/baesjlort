@@ -3,6 +3,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/float32_multi_array.hpp>
+#include <std_msgs/msg/float64_multi_array.hpp>
 #include <std_msgs/msg/multi_array_layout.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <sensor_msgs/msg/imu.hpp>
@@ -71,6 +72,9 @@ public:
         imu_rear3_ = this->create_subscription<sensor_msgs::msg::Imu>(
             "/gbr/imu_rear3", 100, 
             std::bind(&sensor_subscriber::imu_callback7, this, std::placeholders::_1));
+        thrust_subscriber_ = this->create_subscription<std_msgs::msg::Float64MultiArray>(
+            "/gbr/thrusters", 100, 
+            std::bind(&sensor_subscriber::thrust_callback, this, std::placeholders::_1));
 
         avg_gyro_publisher_ = this->create_publisher<std_msgs::msg::Float32MultiArray>(
             "/average_gyro", 10);
@@ -339,6 +343,11 @@ private:
         );
     }
 
+    void thrust_callback(const std_msgs::msg::Float64MultiArray::ConstSharedPtr& msg)
+    {
+        thrust_ = {msg->data[0], msg->data[1], msg->data[2], msg->data[3], msg->data[4], msg->data[5], msg->data[6], msg->data[7]};
+    }
+
     void imu_data_sender()
     {
         //Check how many IMU messages have been recieved
@@ -387,7 +396,7 @@ private:
         recieved[6] = false;
         recieved[7] = false;
         //Updates sensor handler with averaged IMU data
-        sensor_handler_.update(avg_acc, avg_orientation);
+        sensor_handler_.update(avg_acc, avg_gyro, thrust_);
 
         Vector3 position = sensor_handler_.get_position();
         RCLCPP_INFO(this->get_logger(), 
@@ -423,12 +432,14 @@ private:
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odometry_subscription_;
     rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr avg_gyro_publisher_;
     rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr avg_acc_publisher_;
+    rclcpp::Subscription<std_msgs::msg::Float64MultiArray>::SharedPtr thrust_subscriber_;
     Vector3 gyro_ = {0, 0, 0};
+    
     std::shared_ptr<image_transport::ImageTransport> it_;
     image_display_and_handle display_and_handle;
     sensor_handler sensor_handler_;
     const Vector3 center_of_gravity_ = {0.0f, -0.003f, -0.0013f};
-
+    std::array<float, 8> thrust_ = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
     float current_speed_x = 0.0;
     float current_speed_y = 0.0;
     float current_speed_z = 0.0;
