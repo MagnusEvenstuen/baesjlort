@@ -8,7 +8,7 @@ import control as ct
 import sklearn
 
 file_path_training = 'data_files/training_data.csv'
-file_path_validation = 'data_files/training_data.csv'
+file_path_validation = 'data_files/validation_data.csv'
 data_validation = np.genfromtxt(file_path_validation, delimiter=',', skip_header=1)
 data = np.genfromtxt(file_path_training, delimiter=',', skip_header=1)
 
@@ -94,7 +94,7 @@ plt.ylabel('Amplitude')
 #plt.show()
 
 input_arr = np.array([20, 20, -20, -20, 0, 0, 0, 0])
-num_steps = 30000
+num_steps = 600
 T = np.arange(num_steps) * sysSS.dt
 step_start = 30
 

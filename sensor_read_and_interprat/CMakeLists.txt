@@ -13,10 +13,16 @@ find_package(image_transport REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(nav_msgs REQUIRED)
+find_package(Eigen3 REQUIRED)
 
 include_directories(include)
 
 add_executable(sensor_subscriber_node src/main.cpp)
+
+target_include_directories(sensor_subscriber_node PRIVATE
+  ${EIGEN3_INCLUDE_DIR}
+)
+
 ament_target_dependencies(sensor_subscriber_node rclcpp sensor_msgs image_transport cv_bridge OpenCV nav_msgs)
 target_link_libraries(sensor_subscriber_node ${OpenCV_LIBS})
 

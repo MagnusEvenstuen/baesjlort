@@ -1,9 +1,13 @@
+#ifndef IMU_CLASS_HPP
+#define IMU_CLASS_HPP
+
 #include <structs.hpp>
 #include <cmath>
 #include <chrono>
 #include <array>
 #include <algorithm>
 #include "filter_coeffs_lowpass.hpp"
+#include "klamann_shit.hpp"
 #include <iostream>
 
 class IMU
@@ -73,7 +77,7 @@ public:
         //Rotate acceleration to correct frame
         acc_ = orientation_.rotate_vector({acc_.x, acc_.y, acc_.z});
 
-        // Subtract gravity in world frame
+        // Subtract gravity in ROV frame
         acc_.x -= gravitational_vector_.x;
         acc_.y -= gravitational_vector_.y;
         acc_.z -= gravitational_vector_.z;
@@ -233,3 +237,5 @@ private:
     std::array<float, FILTER_LENGTH> acc_y_buffer_ = {0.0f};
     std::array<float, FILTER_LENGTH> acc_z_buffer_ = {0.0f};
 };
+
+#endif // IMU_CLASS_HPP

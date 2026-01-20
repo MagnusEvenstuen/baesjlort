@@ -167,7 +167,7 @@ private:
         auto sys_id_elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
             now - sys_id_start_time_).count();
 
-        if (sys_id_elapsed < 600000)  // 10 minutter
+        if (sys_id_elapsed < 300000)  // 5 minutter
         {
             run_system_identification();
         }

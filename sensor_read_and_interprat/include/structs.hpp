@@ -29,6 +29,8 @@ struct Vector3
     }
 };
 
+
+
 struct Quaternion
 {
     float w, x, y, z;
