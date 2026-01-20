@@ -144,10 +144,6 @@ public:
         orientation_.normalize();
         acc_filtered = orientation_.rotate_vector(acc_filtered);
 
-        //Updates orientation
-        //orientation_ = orientation;
-        //orientation_.normalize();
-
         //Update position and speed
         current_position_.x -= current_speed_.x * dt + 0.5f * acc_filtered.x * dt * dt;
         current_position_.y -= current_speed_.y * dt + 0.5f * acc_filtered.y * dt * dt;
@@ -173,13 +169,13 @@ public:
             //Logs data to CSV file for plotting
             csv_file_ << std::fixed << std::setprecision(6)
                      << elapsed << ","
-                     << acc_x << "," << acc_y << "," << acc_z << ","
-                     << current_speed_.x << "," << current_speed_.y << "," << current_speed_.z << ","
-                     << -current_position_.x << "," << -current_position_.y << "," << -current_position_.z << ","
+                     << acc_y << "," << acc_x << "," << acc_z << ","
+                     << current_speed_.y << "," << current_speed_.x << "," << current_speed_.z << ","
+                     << -current_position_.y << "," << -current_position_.x << "," << -current_position_.z << ","
                      << perfect_acceleration_.x << "," << perfect_acceleration_.y << "," << perfect_acceleration_.z << ","
                      << perfect_speed_.x << "," << perfect_speed_.y << "," << perfect_speed_.z << ","
                      << perfect_position_.x << ", " << perfect_position_.y << ", " << perfect_position_.z << ", " << depth_ << ","
-                     << orientation_.x << ", " << orientation_.y << ", " << orientation_.z << ", "
+                     << orientation_.y << ", " << orientation_.x << ", " << orientation_.z << ", "
                      << perfect_orientation_.x << ", " << perfect_orientation_.y << ", " << perfect_orientation_.z
                      << "\n";
             csv_file_.flush();

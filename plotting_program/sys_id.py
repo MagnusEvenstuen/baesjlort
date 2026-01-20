@@ -93,7 +93,7 @@ plt.xlabel('Time (s)')
 plt.ylabel('Amplitude')
 #plt.show()
 
-input_arr = np.array([20, 20, -20, -20, 0, 0, 0, 0])
+input_arr = np.array([0, 0, 0, 0, 20, 20, -20, -20])
 num_steps = 600
 T = np.arange(num_steps) * sysSS.dt
 step_start = 30

@@ -14,7 +14,7 @@ class IMU
 {
 public:
     IMU(const Vector3 position_on_robot, const Quaternion initial_orientation)
-        : position_(position_on_robot), orientation_(1.0f, 0.0f, 0.0f, 0.0f)
+        : position_({-position_on_robot.x, position_on_robot.y, position_on_robot.z}), orientation_(1.0f, 0.0f, 0.0f, 0.0f)
     {
         //Sets up the IMU
         orientation_.normalize();
@@ -46,8 +46,8 @@ public:
         //Calculates the delta time
         float dt = std::chrono::duration<float>(std::chrono::steady_clock::now() - last_update_time_).count();
         last_update_time_ = std::chrono::steady_clock::now();
-        Vector3 acc_rot = imu_to_robot_frame_.rotate_vector_inverse({acc_x, acc_y, acc_z});
-        Vector3 gyro_rot = imu_to_robot_frame_.rotate_vector_inverse({gyro_x, gyro_y, gyro_z});
+        Vector3 acc_rot = imu_to_robot_frame_.rotate_vector({acc_x, acc_y, acc_z});
+        Vector3 gyro_rot = imu_to_robot_frame_.rotate_vector({gyro_x, gyro_y, gyro_z});
         rotated_gyro_ = gyro_rot - gyro_bias_;
         //Checks if calibration is done
         if (calibration_count_ < calibration_needed_)
@@ -212,9 +212,9 @@ private:
         };
 
         Vector3 acc_comp = acc;
-        acc_comp.x -= -(gyro.y*gyro.y + gyro.z*gyro.z)*position_.x + (gyro.x*gyro.y - gyro_acc.z)*position_.y + (gyro.x*gyro.z + gyro_acc.y)*position_.z;
+        acc_comp.x += -(gyro.y*gyro.y + gyro.z*gyro.z)*position_.x + (gyro.x*gyro.y - gyro_acc.z)*position_.y + (gyro.x*gyro.z + gyro_acc.y)*position_.z;
         acc_comp.y += (gyro.x*gyro.y + gyro_acc.z)*position_.x + -(gyro.x*gyro.x + gyro.z*gyro.z)*position_.y + (gyro.y*gyro.z - gyro_acc.x)*position_.z;
-        acc_comp.z -= (gyro.x*gyro.z - gyro_acc.y)*position_.x + (gyro.y*gyro.z + gyro_acc.x)*position_.y + -(gyro.x*gyro.x + gyro.y*gyro.y)*position_.z;
+        acc_comp.z += (gyro.x*gyro.z - gyro_acc.y)*position_.x + (gyro.y*gyro.z + gyro_acc.x)*position_.y + -(gyro.x*gyro.x + gyro.y*gyro.y)*position_.z;
 
         return acc_comp;
     }

@@ -365,7 +365,7 @@ private:
 
         //Calculate average values from the recieved IMU messages
         Vector3 avg_acc = acc_/recieved_counter;
-        RCLCPP_INFO(this->get_logger(), "Acc - x: %.4f, y: %.4f, z: %.4f", avg_acc.x, avg_acc.y,  avg_acc.z);
+        RCLCPP_INFO(this->get_logger(), "Acc - x: %.4f, y: %.4f, z: %.4f", avg_acc.y, avg_acc.x,  avg_acc.z);
         
         Quaternion avg_orientation = {
             orientation_.w / recieved_counter,
@@ -401,7 +401,7 @@ private:
         Vector3 position = sensor_handler_.get_position();
         RCLCPP_INFO(this->get_logger(), 
             "Posisjon - x: %.2f, y: %.2f, z: %.2f", 
-            position.x, position.y, position.z);
+            position.y, position.x, position.z);
 
         acc_ = {0.0f, 0.0f, 0.0f};
         gyro_ = {0.0f, 0.0f, 0.0f};
