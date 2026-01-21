@@ -16,29 +16,33 @@
 */
 
 //
-//  ROS2ConsoleSimulationApp.h
+//  ROS2ConsoleSimulationApp.cpp
 //  stonefish_ros2
 //
-//  Created by Patryk Cieslak on 05/10/23.
-//  Copyright (c) 2023 Patryk Cieslak. All rights reserved.
+//  Created by Patryk Cieslak on 02/10/23.
+//  Copyright (c) 2023-2025 Patryk Cieslak. All rights reserved.
 //
 
-#ifndef __Stonefish_ROS2ConsoleSimulationApp__
-#define __Stonefish_ROS2ConsoleSimulationApp__
-
-#include <Stonefish/core/ConsoleSimulationApp.h>
+#include "stonefish_ros2/ROS2SimulationManager.h"
+#include "stonefish_ros2/ROS2ConsoleSimulationApp.h"
 
 namespace sf
 {
-    class ROS2SimulationManager;
 
-    class ROS2ConsoleSimulationApp : public ConsoleSimulationApp
-    {
-    public:
-        ROS2ConsoleSimulationApp(std::string name, std::string dataPath, ROS2SimulationManager* sim);
-        void Startup();
-        void Shutdown();
-    };
+ROS2ConsoleSimulationApp::ROS2ConsoleSimulationApp(std::string title, std::string dataPath, ROS2SimulationManager* sim)
+    : ConsoleSimulationApp(title, dataPath, sim)
+{
 }
 
-#endif
+void ROS2ConsoleSimulationApp::Startup()
+{
+    Init();
+    StartSimulation();
+}
+
+void ROS2ConsoleSimulationApp::Shutdown()
+{
+    CleanUp();
+}
+
+}

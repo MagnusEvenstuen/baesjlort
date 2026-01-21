@@ -12,7 +12,7 @@
 #include <iomanip>
 #include <string>
 #include <filesystem>
-#include "../../sensor_read_and_interprat/include/structs.hpp"
+#include "../../sensor_read_and_interpret/include/structs.hpp"
 
 class sys_id_commands : public rclcpp::Node
 {
