@@ -401,7 +401,7 @@ private:
         Vector3 position = sensor_handler_.get_position();
         RCLCPP_INFO(this->get_logger(), 
             "Posisjon - x: %.2f, y: %.2f, z: %.2f", 
-            position.y, position.x, position.z);
+            position.x, position.y, position.z);
 
         acc_ = {0.0f, 0.0f, 0.0f};
         gyro_ = {0.0f, 0.0f, 0.0f};

@@ -170,12 +170,12 @@ public:
             csv_file_ << std::fixed << std::setprecision(6)
                      << elapsed << ","
                      << acc_y << "," << acc_x << "," << acc_z << ","
-                     << current_speed_.y << "," << current_speed_.x << "," << current_speed_.z << ","
-                     << -current_position_.y << "," << -current_position_.x << "," << -current_position_.z << ","
+                     << current_speed_.x << "," << current_speed_.y << "," << current_speed_.z << ","
+                     << -current_position_.x << "," << -current_position_.y << "," << -current_position_.z << ","
                      << perfect_acceleration_.x << "," << perfect_acceleration_.y << "," << perfect_acceleration_.z << ","
                      << perfect_speed_.x << "," << perfect_speed_.y << "," << perfect_speed_.z << ","
                      << perfect_position_.x << ", " << perfect_position_.y << ", " << perfect_position_.z << ", " << depth_ << ","
-                     << orientation_.y << ", " << orientation_.x << ", " << orientation_.z << ", "
+                     << orientation_.x << ", " << orientation_.y << ", " << orientation_.z << ", "
                      << perfect_orientation_.x << ", " << perfect_orientation_.y << ", " << perfect_orientation_.z
                      << "\n";
             csv_file_.flush();
