@@ -22,14 +22,27 @@ class sensor_subscriber : public rclcpp::Node
 public:
     sensor_subscriber() : Node("sensor_subscriber"),
         //Setup IMU objects with their positions on the robot and initial orientations
-        IMU_center_(Vector3{0.0f, -0.003f, -0.0013}-center_of_gravity_, Quaternion{0.924f, 0.0f, 0.0f, 0.383f}),
+        IMU_center_(Vector3{0.0f, -0.003f, -0.0013}-center_of_gravity_, Quaternion{0.924f, 0.0f, 0.0f, -0.383f}),
         IMU_center1_(Vector3{0.04f, -0.003f, -0.0013}-center_of_gravity_, Quaternion{0.924f, 0.0f, 0.0f, 0.383f}),
         IMU_center2_(Vector3{-0.04f, -0.003f, -0.0013}-center_of_gravity_, Quaternion{0.924f, 0.0f, 0.0f, 0.383f}),
         IMU_front1_(Vector3{-0.03f, 0.05f, -0.0013}-center_of_gravity_, Quaternion{0.924f, 0.0f, 0.0f, 0.383f}),
         IMU_front2_(Vector3{0.03f, 0.05f, -0.0013}-center_of_gravity_, Quaternion{0.924f, 0.0f, 0.0f, 0.383f}),
-        IMU_rear1_(Vector3{-0.03f, -0.05f, -0.0013}-center_of_gravity_, Quaternion{0.924f, 0.0f, 0.0f, 0.383f}),
+        IMU_rear1_(Vector3{-0.03f, -0.05f, -0.0013}-center_of_gravity_, Quaternion{0.924f, 0.0f, 0.0f, -0.383f}),
         IMU_rear2_(Vector3{0.03f, -0.05f, -0.0013}-center_of_gravity_, Quaternion{0.924f, 0.0f, 0.0f, -0.383f}),
-        IMU_rear3_(Vector3{0.00f, -0.05f, -0.0013}-center_of_gravity_, Quaternion{0.924f, 0.0f, 0.0f, 0.383f})
+        IMU_rear3_(Vector3{0.00f, -0.05f, -0.0013}-center_of_gravity_, Quaternion{0.924f, 0.0f, 0.0f, -0.383f}),
+
+        imu_objects_{IMU_center_, IMU_center1_, IMU_center2_, IMU_front1_, IMU_front2_, IMU_rear1_, IMU_rear2_, IMU_rear3_},
+        imu_topic_map_{
+            //{"/gbr/imu_center_perfect", 0},
+            {"/gbr/imu_center", 0},
+            {"/gbr/imu_center1", 1},
+            {"/gbr/imu_center2", 2},
+            {"/gbr/imu_front1", 3},
+            {"/gbr/imu_front2", 4},
+            {"/gbr/imu_rear1", 5},
+            {"/gbr/imu_rear2", 6},
+            {"/gbr/imu_rear3", 7}
+        }
     {
         time_ = std::chrono::steady_clock::now();
         prev_time_ = time_;
@@ -45,33 +58,14 @@ public:
             std::bind(&sensor_subscriber::image_right_callback, this, std::placeholders::_1));
 
         // Subscribers for IMU messages
-        imu_center_perfect_ = this->create_subscription<sensor_msgs::msg::Imu>(
-            "/gbr/imu_center_perfect", 100, 
-            std::bind(&sensor_subscriber::imu_callback0, this, std::placeholders::_1));
-        imu_center_ = this->create_subscription<sensor_msgs::msg::Imu>(
-            "/gbr/imu_center", 100, 
-            std::bind(&sensor_subscriber::imu_callback0, this, std::placeholders::_1));
-        imu_center1_ = this->create_subscription<sensor_msgs::msg::Imu>(
-            "/gbr/imu_center1", 100, 
-            std::bind(&sensor_subscriber::imu_callback1, this, std::placeholders::_1));
-        imu_center2_ = this->create_subscription<sensor_msgs::msg::Imu>(
-            "/gbr/imu_center2", 100, 
-            std::bind(&sensor_subscriber::imu_callback2, this, std::placeholders::_1));
-        imu_front1_ = this->create_subscription<sensor_msgs::msg::Imu>(
-            "/gbr/imu_front1", 100, 
-            std::bind(&sensor_subscriber::imu_callback3, this, std::placeholders::_1));
-        imu_rear1_ = this->create_subscription<sensor_msgs::msg::Imu>(
-            "/gbr/imu_rear1", 100, 
-            std::bind(&sensor_subscriber::imu_callback4, this, std::placeholders::_1));
-        imu_front2_ = this->create_subscription<sensor_msgs::msg::Imu>(
-            "/gbr/imu_front2", 100, 
-            std::bind(&sensor_subscriber::imu_callback5, this, std::placeholders::_1));
-        imu_rear2_ = this->create_subscription<sensor_msgs::msg::Imu>(
-            "/gbr/imu_rear2", 100, 
-            std::bind(&sensor_subscriber::imu_callback6, this, std::placeholders::_1));
-        imu_rear3_ = this->create_subscription<sensor_msgs::msg::Imu>(
-            "/gbr/imu_rear3", 100, 
-            std::bind(&sensor_subscriber::imu_callback7, this, std::placeholders::_1));
+        for (const auto& [topic_name, imu_index] : imu_topic_map_) {
+            auto subscriber = this->create_subscription<sensor_msgs::msg::Imu>(
+                topic_name, 100,
+                [this, imu_index](const sensor_msgs::msg::Imu::ConstSharedPtr& msg) {
+                    imu_callback(msg, imu_index);
+                });
+            imu_subscribers_.push_back(subscriber);
+        }
         thrust_subscriber_ = this->create_subscription<std_msgs::msg::Float64MultiArray>(
             "/gbr/thrusters", 100, 
             std::bind(&sensor_subscriber::thrust_callback, this, std::placeholders::_1));
@@ -103,227 +97,37 @@ private:
         display_and_handle.display_image(msg, "Left Camera", this->get_logger());
     }
 
-    void imu_callback0(const sensor_msgs::msg::Imu::ConstSharedPtr& msg)
+    void imu_callback(const sensor_msgs::msg::Imu::ConstSharedPtr& msg, int imu_index)
     {
-        if (!recieved[0])
+        if (!recieved[imu_index])
         {
-            IMU_center_.update(
+            auto& imu_obj = imu_objects_[imu_index];
+            imu_obj.update(
                 msg->linear_acceleration.x,
                 msg->linear_acceleration.y,
                 msg->linear_acceleration.z,
                 msg->angular_velocity.x,
                 msg->angular_velocity.y,
                 msg->angular_velocity.z);
-            Vector3 acc = IMU_center_.get_acceleration();
-            Quaternion orientation = IMU_center_.get_orientation();
+            
+            Vector3 acc = imu_obj.get_acceleration();
+            Quaternion orientation = imu_obj.get_orientation();
+            Vector3 gyro = imu_obj.get_gyro();
+            
             acc_.x += acc.x;
             acc_.y += acc.y;
             acc_.z += acc.z;
+            
             orientation_.w += orientation.w;
             orientation_.x += orientation.x;
             orientation_.y += orientation.y;
             orientation_.z += orientation.z;
-            Vector3 gyro = IMU_center_.get_gyro();
+            
             gyro_.x += gyro.x;
             gyro_.y += gyro.y;
             gyro_.z += gyro.z;
-            recieved[0] = true;
-        }
-    }
-
-    void imu_callback1(const sensor_msgs::msg::Imu::ConstSharedPtr& msg)
-    {
-        if (!recieved[1])
-        {
-            IMU_center1_.update(
-                msg->linear_acceleration.x,
-                msg->linear_acceleration.y,
-                msg->linear_acceleration.z,
-                msg->angular_velocity.x,
-                msg->angular_velocity.y,
-                msg->angular_velocity.z);
-            Vector3 acc = IMU_center1_.get_acceleration();
-            Quaternion orientation = IMU_center1_.get_orientation();
-            acc_.x += acc.x;
-            acc_.y += acc.y;
-            acc_.z += acc.z;
-            orientation_.w += orientation.w;
-            orientation_.x += orientation.x;
-            orientation_.y += orientation.y;
-            orientation_.z += orientation.z;
-            Vector3 gyro = IMU_center1_.get_gyro();
-            gyro_.x += gyro.x;
-            gyro_.y += gyro.y;
-            gyro_.z += gyro.z;
-            recieved[1] = true;
-        }
-    }
-
-    void imu_callback2(const sensor_msgs::msg::Imu::ConstSharedPtr& msg)
-    {
-        if (!recieved[2])
-        {
-            IMU_center2_.update(
-                msg->linear_acceleration.x,
-                msg->linear_acceleration.y,
-                msg->linear_acceleration.z,
-                msg->angular_velocity.x,
-                msg->angular_velocity.y,
-                msg->angular_velocity.z);
-            Vector3 acc = IMU_center2_.get_acceleration();
-            Quaternion orientation = IMU_center2_.get_orientation();
-            acc_.x += acc.x;
-            acc_.y += acc.y;
-            acc_.z += acc.z;
-            orientation_.w += orientation.w;
-            orientation_.x += orientation.x;
-            orientation_.y += orientation.y;
-            orientation_.z += orientation.z;
-            Vector3 gyro = IMU_center2_.get_gyro();
-            gyro_.x += gyro.x;
-            gyro_.y += gyro.y;
-            gyro_.z += gyro.z;
-            recieved[2] = true;
-        }
-    }
-
-    void imu_callback3(const sensor_msgs::msg::Imu::ConstSharedPtr& msg)
-    {
-        if (!recieved[3])
-        {
-            IMU_front1_.update(
-                msg->linear_acceleration.x,
-                msg->linear_acceleration.y,
-                msg->linear_acceleration.z,
-                msg->angular_velocity.x,
-                msg->angular_velocity.y,
-                msg->angular_velocity.z);
-            Vector3 acc = IMU_front1_.get_acceleration();
-            Quaternion orientation = IMU_front1_.get_orientation();
-            acc_.x += acc.x;
-            acc_.y += acc.y;
-            acc_.z += acc.z;
-            orientation_.w += orientation.w;
-            orientation_.x += orientation.x;
-            orientation_.y += orientation.y;
-            orientation_.z += orientation.z;
-            Vector3 gyro = IMU_front1_.get_gyro();
-            gyro_.x += gyro.x;
-            gyro_.y += gyro.y;
-            gyro_.z += gyro.z;
-            recieved[3] = true;
-        }
-    }
-
-    void imu_callback4(const sensor_msgs::msg::Imu::ConstSharedPtr& msg)
-    {
-        if (!recieved[4])
-        {
-            IMU_front2_.update(
-                msg->linear_acceleration.x,
-                msg->linear_acceleration.y,
-                msg->linear_acceleration.z,
-                msg->angular_velocity.x,
-                msg->angular_velocity.y,
-                msg->angular_velocity.z);
-            Vector3 acc = IMU_front2_.get_acceleration();
-            Quaternion orientation = IMU_front2_.get_orientation();
-            acc_.x += acc.x;
-            acc_.y += acc.y;
-            acc_.z += acc.z;
-            orientation_.w += orientation.w;
-            orientation_.x += orientation.x;
-            orientation_.y += orientation.y;
-            orientation_.z += orientation.z;
-            Vector3 gyro = IMU_front2_.get_gyro();
-            gyro_.x += gyro.x;
-            gyro_.y += gyro.y;
-            gyro_.z += gyro.z;
-            recieved[4] = true;
-        }
-    }
-
-    void imu_callback5(const sensor_msgs::msg::Imu::ConstSharedPtr& msg)
-    {
-        if (!recieved[5])
-        {
-            IMU_rear1_.update(
-                msg->linear_acceleration.x,
-                msg->linear_acceleration.y,
-                msg->linear_acceleration.z,
-                msg->angular_velocity.x,
-                msg->angular_velocity.y,
-                msg->angular_velocity.z);
-            Vector3 acc = IMU_rear1_.get_acceleration();
-            Quaternion orientation = IMU_rear1_.get_orientation();
-            acc_.x += acc.x;
-            acc_.y += acc.y;
-            acc_.z += acc.z;
-            orientation_.w += orientation.w;
-            orientation_.x += orientation.x;
-            orientation_.y += orientation.y;
-            orientation_.z += orientation.z;
-            Vector3 gyro = IMU_rear1_.get_gyro();
-            gyro_.x += gyro.x;
-            gyro_.y += gyro.y;
-            gyro_.z += gyro.z;
-            recieved[5] = true;
-        }
-    }
-
-    void imu_callback6(const sensor_msgs::msg::Imu::ConstSharedPtr& msg)
-    {
-        if (!recieved[6])
-        {
-            IMU_rear2_.update(
-                msg->linear_acceleration.x,
-                msg->linear_acceleration.y,
-                msg->linear_acceleration.z,
-                msg->angular_velocity.x,
-                msg->angular_velocity.y,
-                msg->angular_velocity.z);
-            Vector3 acc = IMU_rear2_.get_acceleration();
-            Quaternion orientation = IMU_rear2_.get_orientation();
-            acc_.x += acc.x;
-            acc_.y += acc.y;
-            acc_.z += acc.z;
-            orientation_.w += orientation.w;
-            orientation_.x += orientation.x;
-            orientation_.y += orientation.y;
-            orientation_.z += orientation.z;
-            Vector3 gyro = IMU_rear2_.get_gyro();
-            gyro_.x += gyro.x;
-            gyro_.y += gyro.y;
-            gyro_.z += gyro.z;
-            recieved[6] = true;
-        }
-    }
-
-    void imu_callback7(const sensor_msgs::msg::Imu::ConstSharedPtr& msg)
-    {
-        if (!recieved[7])
-        {
-            IMU_rear3_.update(
-                msg->linear_acceleration.x,
-                msg->linear_acceleration.y,
-                msg->linear_acceleration.z,
-                msg->angular_velocity.x,
-                msg->angular_velocity.y,
-                msg->angular_velocity.z);
-            Vector3 acc = IMU_rear3_.get_acceleration();
-            Quaternion orientation = IMU_rear3_.get_orientation();
-            acc_.x += acc.x;
-            acc_.y += acc.y;
-            acc_.z += acc.z;
-            orientation_.w += orientation.w;
-            orientation_.x += orientation.x;
-            orientation_.y += orientation.y;
-            orientation_.z += orientation.z;
-            Vector3 gyro = IMU_rear3_.get_gyro();
-            gyro_.x += gyro.x;
-            gyro_.y += gyro.y;
-            gyro_.z += gyro.z;
-            recieved[7] = true;
+            
+            recieved[imu_index] = true;
         }
     }
 
@@ -433,6 +237,7 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr avg_gyro_publisher_;
     rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr avg_acc_publisher_;
     rclcpp::Subscription<std_msgs::msg::Float64MultiArray>::SharedPtr thrust_subscriber_;
+    std::vector<rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr> imu_subscribers_;
     Vector3 gyro_ = {0, 0, 0};
     
     std::shared_ptr<image_transport::ImageTransport> it_;
@@ -456,6 +261,8 @@ private:
     IMU IMU_rear1_;
     IMU IMU_rear2_;
     IMU IMU_rear3_;
+    std::unordered_map<std::string, int> imu_topic_map_;
+    std::array<IMU, 8> imu_objects_;
 
 };
 #endif // SENSOR_SUBSCRIBER_HPP

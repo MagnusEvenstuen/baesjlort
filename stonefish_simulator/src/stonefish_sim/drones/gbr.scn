@@ -249,7 +249,7 @@
                 yaw_drift="0.001"
                 linear_acceleration="0.10"/>
             <history samples="1"/>
-            <origin xyz="0.0 -0.003 -0.0013" rpy="0.0 0.0 0.785398163397"/>
+            <origin xyz="0.0 -0.003 -0.0013" rpy="0.0 0.0 -0.785398163397"/>
             <link name="Base"/>
             <ros_publisher topic="/gbr/imu_center"/>
         </sensor>
@@ -324,7 +324,7 @@
                 yaw_drift="0.001"
                 linear_acceleration="0.10"/>
             <history samples="1"/>
-            <origin xyz="-0.03 -0.05 -0.0013" rpy="0.0 0.0 0.785398163397"/>
+            <origin xyz="-0.03 -0.05 -0.0013" rpy="0.0 0.0 -0.785398163397"/>
             <link name="Base"/>
             <ros_publisher topic="/gbr/imu_rear1"/>
         </sensor>
@@ -354,7 +354,7 @@
                 yaw_drift="0.001"
                 linear_acceleration="0.10"/>
             <history samples="1"/>
-            <origin xyz="0.00 -0.05 -0.0013" rpy="0.0 0.0 0.785398163397"/>
+            <origin xyz="0.00 -0.05 -0.0013" rpy="0.0 0.0 -0.785398163397"/>
             <link name="Base"/>
             <ros_publisher topic="/gbr/imu_rear3"/>
         </sensor>
