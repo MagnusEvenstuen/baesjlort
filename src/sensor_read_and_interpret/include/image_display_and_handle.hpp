@@ -3,7 +3,6 @@
 
 #include <opencv2/opencv.hpp>
 #include <cv_bridge/cv_bridge.hpp>
-#include <ros2_orb_slam3/include/ros2_orb_slam3/common.hpp>
 
 
 class image_display_and_handle

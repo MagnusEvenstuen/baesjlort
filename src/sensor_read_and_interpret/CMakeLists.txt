@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(sensor_read_and_interpret)
+project(sensor_read_and_interprat)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -14,8 +14,6 @@ find_package(cv_bridge REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(Eigen3 REQUIRED)
-find_package(ros2_orb_slam3 REQUIRED)
-
 
 include_directories(include)
 
@@ -25,11 +23,7 @@ target_include_directories(sensor_subscriber_node PRIVATE
   ${EIGEN3_INCLUDE_DIR}
 )
 
-include_directories(
-  ${ros2_orb_slam3_INCLUDE_DIRS}
-)
-
-ament_target_dependencies(sensor_subscriber_node rclcpp sensor_msgs image_transport cv_bridge OpenCV nav_msgs ros2_orb_slam3)
+ament_target_dependencies(sensor_subscriber_node rclcpp sensor_msgs image_transport cv_bridge OpenCV nav_msgs)
 target_link_libraries(sensor_subscriber_node ${OpenCV_LIBS})
 
 install(TARGETS
