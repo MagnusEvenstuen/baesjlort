@@ -9,13 +9,14 @@
 //* Import all necessary modules
 #include "ros2_orb_slam3/common.hpp" //* equivalent to orbslam3_ros/include/common.h
 #include "ros2_orb_slam3/stereo_node.hpp" //* equivalent to orbslam3_ros/include/common.h
+#include "ros2_orb_slam3/stereo_vision_node.hpp" //* equivalent to orbslam3_ros/include/common.h
 
 //* main
 int main(int argc, char** argv)
 {
     rclcpp::init(argc, argv);
     
-    auto node = std::make_shared<StereoMode>();
+    auto node = std::make_shared<stereo_vision_node>();
     rclcpp::spin(node);
     rclcpp::shutdown();
     

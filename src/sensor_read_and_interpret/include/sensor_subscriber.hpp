@@ -10,7 +10,6 @@
 #include <sensor_msgs/msg/fluid_pressure.hpp>
 #include <image_transport/image_transport.hpp>
 #include <nav_msgs/msg/odometry.hpp>
-#include <tf2_ros/transform_broadcaster.h>  // ← NYTT
 #include <array>
 #include <chrono>
 #include "image_display_and_handle.hpp"
@@ -43,8 +42,7 @@ public:
             {"/gbr/imu_rear1", 5},
             {"/gbr/imu_rear2", 6},
             {"/gbr/imu_rear3", 7}
-        },
-        tf_broadcaster_(std::make_unique<tf2_ros::TransformBroadcaster>(this))  // ← NYTT
+        }
     {
         time_ = std::chrono::steady_clock::now();
         prev_time_ = time_;
@@ -54,9 +52,9 @@ public:
     {
         // Subscriber for Image messages
         it_ = std::make_shared<image_transport::ImageTransport>(shared_from_this());
-        left_cam_ = it_->subscribe("/gbr/cam_left/image_color", 1000, 
+        left_cam_ = it_->subscribe("/gbr/cam_left/image_color", 10, 
             std::bind(&sensor_subscriber::image_left_callback, this, std::placeholders::_1));
-        right_cam_ = it_->subscribe("/gbr/cam_right/image_color", 1000, 
+        right_cam_ = it_->subscribe("/gbr/cam_right/image_color", 10, 
             std::bind(&sensor_subscriber::image_right_callback, this, std::placeholders::_1));
 
         // Subscribers for IMU messages
@@ -147,36 +145,6 @@ private:
             msg->pose.pose.orientation.z,
             msg->pose.pose.orientation.w
         );
-        
-        // Publish odom -> base_link transform
-        geometry_msgs::msg::TransformStamped odom_transform;
-        odom_transform.header.stamp = msg->header.stamp;
-        odom_transform.header.frame_id = "odom";
-        odom_transform.child_frame_id = "base_link";
-        
-        odom_transform.transform.translation.x = msg->pose.pose.position.x;
-        odom_transform.transform.translation.y = msg->pose.pose.position.y;
-        odom_transform.transform.translation.z = msg->pose.pose.position.z;
-        odom_transform.transform.rotation = msg->pose.pose.orientation;
-        
-        tf_broadcaster_->sendTransform(odom_transform);
-        
-        // ← LEGG TIL DENNE: Publiser base_link -> GBR/camLeft transform
-        geometry_msgs::msg::TransformStamped camera_transform;
-        camera_transform.header.stamp = msg->header.stamp;
-        camera_transform.header.frame_id = "base_link";
-        camera_transform.child_frame_id = "GBR/camLeft";
-        
-        // Juster disse verdiene basert på hvor kameraet er montert
-        camera_transform.transform.translation.x = 0.0;    // Avstand i x-retning
-        camera_transform.transform.translation.y = 0.0;    // Avstand i y-retning  
-        camera_transform.transform.translation.z = 0.0;    // Avstand i z-retning
-        camera_transform.transform.rotation.x = 0.0;
-        camera_transform.transform.rotation.y = 0.0;
-        camera_transform.transform.rotation.z = 0.0;
-        camera_transform.transform.rotation.w = 1.0;  // Ingen rotasjon
-        
-        tf_broadcaster_->sendTransform(camera_transform);
     }
 
     void thrust_callback(const std_msgs::msg::Float64MultiArray::ConstSharedPtr& msg)
@@ -255,9 +223,6 @@ private:
     std::chrono::steady_clock::time_point prev_time_;
     image_transport::Subscriber left_cam_;
     image_transport::Subscriber right_cam_;
-    
-    std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;  // ← NYTT
-    
     rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_center_;
     rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_front1_;
     rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_rear1_;
