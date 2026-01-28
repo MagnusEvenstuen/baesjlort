@@ -25,6 +25,8 @@ find_package(OpenCV 4.2 REQUIRED)
 find_package(Eigen3 3.3.0 REQUIRED) # Matched with Sophus
 find_package(Pangolin REQUIRED)
 find_package(image_transport REQUIRED)
+find_package(PCL REQUIRED)
+find_package(visualization_msgs REQUIRED)
 
 
 # Header file locations [C++ node]
@@ -126,6 +128,8 @@ set_target_properties(orb_slam3_lib PROPERTIES VERSION "${orb_slam3_lib_VERSION}
 
 ament_target_dependencies(orb_slam3_lib
   ${THIS_PACKAGE_INCLUDE_DEPENDS}
+  PCL
+  visualization_msgs
 )
 
 
@@ -152,16 +156,16 @@ install(FILES ${g2o_PATH} DESTINATION lib)
 
 
 # Add executable
-add_executable(mono_node_cpp
+add_executable(stereo_orb_slam3_node
   src/mono_example.cpp
-  src/common.cpp
+  include/ros2_orb_slam3/stereo_node.hpp
 )
 
-ament_target_dependencies(mono_node_cpp
+ament_target_dependencies(stereo_orb_slam3_node
   PUBLIC ${THIS_PACKAGE_INCLUDE_DEPENDS}
 )
 
-target_link_libraries(mono_node_cpp PUBLIC orb_slam3_lib) # Link a node with the internal shared library
+target_link_libraries(stereo_orb_slam3_node PUBLIC orb_slam3_lib) # Link a node with the internal shared library
 
 
 # Install all the header files in package/package/include
@@ -185,7 +189,7 @@ ament_export_dependencies(
 )
 
 # Install our node and library
-install(TARGETS mono_node_cpp orb_slam3_lib
+install(TARGETS stereo_orb_slam3_node orb_slam3_lib
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME}

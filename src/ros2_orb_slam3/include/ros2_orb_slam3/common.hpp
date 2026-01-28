@@ -44,7 +44,7 @@ using std::placeholders::_1; //* TODO why this is suggested in official tutorial
 #include <image_transport/image_transport.hpp>
 
 //* ORB SLAM 3 includes
-#include "/home/gud/ros2_ws/src/ros2_orb_slam3/orb_slam3/include/System.h"
+#include "System.h"
 //* Gobal defs
 #define pass (void)0 // Python's equivalent of "pass" i.e. no operation
 
@@ -68,7 +68,7 @@ class MonocularMode : public rclcpp::Node
         
         // Class internal variables
         std::string homeDir = "";
-        std::string packagePath = "ros2_ws/src/ros2_orb_slam3/"; //! Change to match path to your workspace
+        std::string packagePath = "Skole/baesjlort/src/ros2_orb_slam3/"; //! Change to match path to your workspace
         std::string OPENCV_WINDOW = ""; // Set during initialization
         std::string nodeName = ""; // Name of this node
         std::string vocFilePath = ""; // Path to ORB vocabulary provided by DBoW2 package

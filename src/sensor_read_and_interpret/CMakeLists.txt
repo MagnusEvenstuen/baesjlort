@@ -14,6 +14,10 @@ find_package(cv_bridge REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(message_filters REQUIRED)
 
 include_directories(include)
 
@@ -23,7 +27,10 @@ target_include_directories(sensor_subscriber_node PRIVATE
   ${EIGEN3_INCLUDE_DIR}
 )
 
-ament_target_dependencies(sensor_subscriber_node rclcpp sensor_msgs image_transport cv_bridge OpenCV nav_msgs)
+ament_target_dependencies(sensor_subscriber_node rclcpp sensor_msgs image_transport cv_bridge OpenCV nav_msgs tf2_ros
+  tf2
+  geometry_msgs
+  message_filters)
 target_link_libraries(sensor_subscriber_node ${OpenCV_LIBS})
 
 install(TARGETS

@@ -1,0 +1,49 @@
+%YAML:1.0
+
+# Camera parameters
+Camera.type: "PinHole"
+Camera.width: 960
+Camera.height: 540
+Camera.fps: 30.0
+
+# Camera calibration
+Camera.fx: 630.0
+Camera.fy: 630.0
+Camera.cx: 480.0
+Camera.cy: 270.0
+Camera.k1: 0.0
+Camera.k2: 0.0
+Camera.p1: 0.0
+Camera.p2: 0.0
+
+# Stereo baseline * fx
+# baseline = 0.042m, fx = 630
+Camera.bf: 26.46  # 0.042 * 630
+
+# Color order
+Camera.RGB: 1
+
+# ThDepth parameter (depth threshold)
+ThDepth: 40.0
+
+# Depth map factor
+DepthMapFactor: 1.0
+
+# ORB Parameters
+ORBextractor.nFeatures: 1000
+ORBextractor.scaleFactor: 1.2
+ORBextractor.nLevels: 8
+ORBextractor.iniThFAST: 20
+ORBextractor.minThFAST: 7
+
+# Viewer Parameters
+Viewer.KeyFrameSize: 0.05
+Viewer.KeyFrameLineWidth: 1
+Viewer.GraphLineWidth: 0.9
+Viewer.PointSize: 2
+Viewer.CameraSize: 0.08
+Viewer.CameraLineWidth: 3
+Viewer.ViewpointX: 0
+Viewer.ViewpointY: -0.7
+Viewer.ViewpointZ: -1.8
+Viewer.ViewpointF: 500

@@ -4,7 +4,6 @@
 #include <opencv2/opencv.hpp>
 #include <cv_bridge/cv_bridge.hpp>
 
-
 class image_display_and_handle
 {
 public:
