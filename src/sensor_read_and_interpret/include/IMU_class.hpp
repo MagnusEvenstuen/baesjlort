@@ -78,9 +78,9 @@ public:
         acc_ = orientation_.rotate_vector({acc_.x, acc_.y, acc_.z});
 
         // Subtract gravity in ROV frame
-        acc_.x -= gravitational_vector_.x;
-        acc_.y -= gravitational_vector_.y;
-        acc_.z -= gravitational_vector_.z;
+        //acc_.x -= gravitational_vector_.x;
+        //acc_.y -= gravitational_vector_.y;
+        //acc_.z -= gravitational_vector_.z;
 
         acc_ = orientation_.rotate_vector_inverse(acc_);
 

@@ -71,9 +71,9 @@ public:
             std::bind(&sensor_subscriber::thrust_callback, this, std::placeholders::_1));
 
         avg_gyro_publisher_ = this->create_publisher<std_msgs::msg::Float32MultiArray>(
-            "/average_gyro", 10);
+            "cc", 1000);
         avg_acc_publisher_ = this->create_publisher<std_msgs::msg::Float32MultiArray>(
-            "/average_acceleration", 10);
+            "/average_acceleration", 1000);
 
         // Subscriber for Fluid Pressure messages
         pressure_ = this->create_subscription<sensor_msgs::msg::FluidPressure>(

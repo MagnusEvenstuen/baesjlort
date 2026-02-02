@@ -12,7 +12,7 @@ active_keys = set()
 lock = threading.Lock()
 emergency_stop = False
 latest_thrust_values = [0.0] * 8
-
+"""
 thrust_map = {
     'w': [20.0, 20.0, -20.0, -20.0, 0.0, 0.0, 0.0, 0.0],    # Forward (psoitive Y)
     's': [-20.0, -20.0, 20.0, 20.0, 0.0, 0.0, 0.0, 0.0],    # Backward (negative Y)
@@ -26,6 +26,21 @@ thrust_map = {
     'Key.right': [0.0, 0.0, 0.0, 0.0, -20.0, 20.0, -20.0, 20.0],   # Negative Roll (rolls right)
     'Key.page_up': [20.0, -20.0, -20.0, 20.0, 0.0, 0.0, 0.0, 0.0],     # Negative yaw (turns left)
     'Key.page_down': [-20.0, 20.0, 20.0, -20.0, 0.0, 0.0, 0.0, 0.0],   # Positive yaw (turns right)
+}
+"""
+thrust_map = {
+    'w': [5.0, 5.0, -5.0, -5.0, 0.0, 0.0, 0.0, 0.0],        # Forward (positive Y)
+    's': [-5.0, -5.0, 5.0, 5.0, 0.0, 0.0, 0.0, 0.0],        # Backward (negative Y)
+    'a': [5.0, -5.0, 5.0, -5.0, 0.0, 0.0, 0.0, 0.0],        # Left turn (negative X)
+    'd': [-5.0, 5.0, -5.0, 5.0, 0.0, 0.0, 0.0, 0.0],        # Right turn (positive X)
+    'q': [0.0, 0.0, 0.0, 0.0, -5.0, -5.0, -5.0, -5.0],      # Down (positive Z)
+    'e': [0.0, 0.0, 0.0, 0.0, 5.0, 5.0, 5.0, 5.0],          # Up (negative Z)
+    'Key.up': [0.0, 0.0, 0.0, 0.0, -5.0, -5.0, 5.0, 5.0],   # Negative pitch (points down)
+    'Key.down': [0.0, 0.0, 0.0, 0.0, 5.0, 5.0, -5.0, -5.0], # Positive pitch (points up)
+    'Key.left': [0.0, 0.0, 0.0, 0.0, 5.0, -5.0, 5.0, -5.0], # Positive Roll (rolls left)
+    'Key.right': [0.0, 0.0, 0.0, 0.0, -5.0, 5.0, -5.0, 5.0], # Negative Roll (rolls right)
+    'Key.page_up': [5.0, -5.0, -5.0, 5.0, 0.0, 0.0, 0.0, 0.0],   # Negative yaw (turns left)
+    'Key.page_down': [-5.0, 5.0, 5.0, -5.0, 0.0, 0.0, 0.0, 0.0], # Positive yaw (turns right)
 }
 
 def on_press(key):

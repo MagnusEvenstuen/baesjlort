@@ -240,7 +240,7 @@
         </sensor>
 
         <!-- IMU at center of mass -->
-        <sensor name="imuCenter" type="imu" rate="100.0">
+        <sensor name="imuCenter" type="imu" rate="1000.0">
             <range angular_velocity="35.0 35.0 35.0"
                 linear_acceleration="155.0 155.0 155.0"/>
             <noise
@@ -255,7 +255,7 @@
         </sensor>
 
         <!-- IMU at center1 -->
-        <sensor name="imuCenter1" type="imu" rate="100.0">
+        <sensor name="imuCenter1" type="imu" rate="1000.0">
             <range angular_velocity="35.0 35.0 35.0"
                 linear_acceleration="155.0 155.0 155.0"/>
             <noise
@@ -270,7 +270,7 @@
         </sensor>
 
         <!-- IMU at center2-->
-        <sensor name="imuCenter2" type="imu" rate="100.0">
+        <sensor name="imuCenter2" type="imu" rate="1000.0">
             <range angular_velocity="35.0 35.0 35.0"
                 linear_acceleration="155.0 155.0 155.0"/>
             <noise
@@ -285,7 +285,7 @@
         </sensor>
 
         <!-- IMU at front of vehicle1 -->
-        <sensor name="imu_front1" type="imu" rate="100.0">
+        <sensor name="imu_front1" type="imu" rate="1000.0">
             <range angular_velocity="35.0 35.0 35.0"
                 linear_acceleration="155.0 155.0 155.0"/>
             <noise
@@ -300,7 +300,7 @@
         </sensor>
 
         <!-- IMU at front of vehicle2 -->
-        <sensor name="imu_front2" type="imu" rate="100.0">
+        <sensor name="imu_front2" type="imu" rate="1000.0">
             <range angular_velocity="35.0 35.0 35.0"
                 linear_acceleration="155.0 155.0 155.0"/>
             <noise
@@ -315,7 +315,7 @@
         </sensor>
 
         <!-- IMU at back of vehicle1 -->
-        <sensor name="imu_rear1" type="imu" rate="100.0">
+        <sensor name="imu_rear1" type="imu" rate="1000.0">
             <range angular_velocity="35.0 35.0 35.0"
                 linear_acceleration="155.0 155.0 155.0"/>
             <noise
@@ -330,7 +330,7 @@
         </sensor>
 
         <!-- IMU at back of vehicle2 -->
-        <sensor name="imu_rear2" type="imu" rate="100.0">
+        <sensor name="imu_rear2" type="imu" rate="1000.0">
             <range angular_velocity="35.0 35.0 35.0"
                 linear_acceleration="155.0 155.0 155.0"/>
             <noise
@@ -345,7 +345,7 @@
         </sensor>
 
         <!-- IMU at back of vehicle3 -->
-        <sensor name="imu_rear3" type="imu" rate="100.0">
+        <sensor name="imu_rear3" type="imu" rate="1000.0">
             <range angular_velocity="35.0 35.0 35.0"
                 linear_acceleration="155.0 155.0 155.0"/>
             <noise

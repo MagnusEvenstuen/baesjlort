@@ -1,49 +1,146 @@
 %YAML:1.0
+---
+#--------------------------------------------------------------------------------------------
+# System config
+#--------------------------------------------------------------------------------------------
 
-# Camera parameters
+# When the variables are commented, the system doesn't load a previous session or not store the current one
+
+# If the LoadFile doesn't exist, the system give a message and create a new Atlas from scratch
+#System.LoadAtlasFromFile: "Session_MH01_MH02_MH03_Stereo60_Pseudo"
+
+# The store file is created from the current session, if a file with the same name exists it is deleted
+#System.SaveAtlasToFile: "Session_MH01_MH02_MH03_Stereo60_Pseudo"
+
+#--------------------------------------------------------------------------------------------
+# Camera Parameters. Adjust them!
+#--------------------------------------------------------------------------------------------
+File.version: "1.0"
+
 Camera.type: "PinHole"
+
+# Camera calibration and distortion parameters (OpenCV)
+# For 960x540 resolution with 80° horizontal FOV
+# Focal length calculation: f = (width/2) / tan(FOV/2)
+# FOV = 80° = 1.39626 rad
+# f = (960/2) / tan(1.39626/2) = 480 / tan(0.69813) = 480 / 0.8391 ≈ 572.0
+
+Camera1.fx: 572.0
+Camera1.fy: 572.0
+Camera1.cx: 480.0
+Camera1.cy: 270.0
+
+# No distortion coefficients
+Camera1.k1: 0.0
+Camera1.k2: 0.0
+Camera1.p1: 0.0
+Camera1.p2: 0.0
+
+# Right camera (same intrinsics as left)
+Camera2.fx: 572.0
+Camera2.fy: 572.0
+Camera2.cx: 480.0
+Camera2.cy: 270.0
+
+# No distortion coefficients
+Camera2.k1: 0.0
+Camera2.k2: 0.0
+Camera2.p1: 0.0
+Camera2.p2: 0.0
+
 Camera.width: 960
 Camera.height: 540
-Camera.fps: 30.0
 
-# Camera calibration
-Camera.fx: 630.0
-Camera.fy: 630.0
-Camera.cx: 480.0
-Camera.cy: 270.0
-Camera.k1: 0.0
-Camera.k2: 0.0
-Camera.p1: 0.0
-Camera.p2: 0.0
+# Camera frames per second
+Camera.fps: 30
 
-# Stereo baseline * fx
-# baseline = 0.042m, fx = 630
-Camera.bf: 26.46  # 0.042 * 630
-
-# Color order
+# Color order of the images (0: BGR, 1: RGB. It is ignored if images are grayscale)
 Camera.RGB: 1
 
-# ThDepth parameter (depth threshold)
-ThDepth: 40.0
+# Close/Far threshold. Baseline times.
+Stereo.ThDepth: 100.0
 
-# Depth map factor
-DepthMapFactor: 1.0
+# Transformation from camera 0 to camera 1
+# Cameras are 4.2 cm apart (0.042 m) along x-axis (left camera is reference)
+# Left camera: xyz="-0.021 0.17 0.05"
+# Right camera: xyz="0.021 0.17 0.05"
+# Difference: 0.042 m in x-direction
+Stereo.T_c1_c2: !!opencv-matrix
+  rows: 4
+  cols: 4
+  dt: f
+  data: [1.0, 0.0, 0.0, -0.042,
+         0.0, 1.0, 0.0, 0.0,
+         0.0, 0.0, 1.0, 0.0,
+         0.0, 0.0, 0.0, 1.0]
 
+# Transformation from camera 0 to body-frame (imu)
+# Based on your XML: Left camera: xyz="-0.021 0.17 0.05", rpy="-1.57 0.0 0.0"
+# IMU at center: xyz="0.0 -0.003 -0.0013", rpy="0.0 0.0 -0.785398163397"
+# Need to compute T_b_c1 = T_b_world * T_world_c1^-1
+# From your configuration:
+# Camera in robot frame: RPY = (-1.57, 0.0, 0.0) = rotation around X by -90°
+# Position: (-0.021, 0.17, 0.05) relative to base
+# IMU in robot frame: RPY = (0.0, 0.0, -0.785398) = rotation around Z by -45°
+# Position: (0.0, -0.003, -0.0013)
+#
+# Let's compute: T_b_c1 = T_b_robot * T_robot_c1^-1
+# First, camera to robot transform:
+# R_cam_robot = RotX(-90°) = [1, 0, 0; 0, 0, 1; 0, -1, 0]
+# t_cam_robot = [-0.021, 0.17, 0.05]ᵀ
+#
+# IMU to robot transform:
+# R_imu_robot = RotZ(-45°) = [0.7071, 0.7071, 0; -0.7071, 0.7071, 0; 0, 0, 1]
+# t_imu_robot = [0.0, -0.003, -0.0013]ᵀ
+#
+# T_b_c1 = T_imu_robot * T_cam_robot^-1
+IMU.T_b_c1: !!opencv-matrix
+  rows: 4
+  cols: 4
+  dt: f
+  data: [1.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, -1.0, 0.0,
+         0.0, -1.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 1.0]
+
+# IMU noise parameters (using your perfect IMU parameters)
+IMU.NoiseGyro: 1.0e-4  # rad/s^0.5 
+IMU.NoiseAcc: 1.0e-3   # m/s^1.5
+IMU.GyroWalk: 1.0e-5   # rad/s^1.5
+IMU.AccWalk: 1.0e-4    # m/s^2.5
+IMU.Frequency: 500.0
+
+#--------------------------------------------------------------------------------------------
 # ORB Parameters
-ORBextractor.nFeatures: 1000
-ORBextractor.scaleFactor: 1.2
-ORBextractor.nLevels: 8
-ORBextractor.iniThFAST: 20
-ORBextractor.minThFAST: 7
+#--------------------------------------------------------------------------------------------
 
+# ORB Extractor: Number of features per image
+ORBextractor.nFeatures: 2000
+
+# ORB Extractor: Scale factor between levels in the scale pyramid
+ORBextractor.scaleFactor: 1.2
+
+# ORB Extractor: Number of levels in the scale pyramid
+ORBextractor.nLevels: 8
+
+# ORB Extractor: Fast threshold
+# Image is divided in a grid. At each cell FAST are extracted imposing a minimum response.
+# Firstly we impose iniThFAST. If no corners are detected we impose a lower value minThFAST
+# You can lower these values if your images have low contrast
+ORBextractor.iniThFAST: 5
+ORBextractor.minThFAST: 2
+
+#--------------------------------------------------------------------------------------------
 # Viewer Parameters
+#--------------------------------------------------------------------------------------------
 Viewer.KeyFrameSize: 0.05
-Viewer.KeyFrameLineWidth: 1
+Viewer.KeyFrameLineWidth: 1.0
 Viewer.GraphLineWidth: 0.9
-Viewer.PointSize: 2
+Viewer.PointSize: 2.0
 Viewer.CameraSize: 0.08
-Viewer.CameraLineWidth: 3
-Viewer.ViewpointX: 0
+Viewer.CameraLineWidth: 3.0
+Viewer.ViewpointX: 0.0
 Viewer.ViewpointY: -0.7
 Viewer.ViewpointZ: -1.8
-Viewer.ViewpointF: 500
+Viewer.ViewpointF: 500.0
+Viewer.imageViewScale: 1.0
