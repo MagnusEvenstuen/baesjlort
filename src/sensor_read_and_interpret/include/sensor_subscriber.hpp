@@ -9,6 +9,7 @@
 #include <sensor_msgs/msg/imu.hpp>
 #include <sensor_msgs/msg/fluid_pressure.hpp>
 #include <image_transport/image_transport.hpp>
+#include "geometry_msgs/msg/pose_stamped.hpp"
 #include <nav_msgs/msg/odometry.hpp>
 #include <array>
 #include <chrono>
@@ -70,8 +71,12 @@ public:
             "/gbr/thrusters", 100, 
             std::bind(&sensor_subscriber::thrust_callback, this, std::placeholders::_1));
 
+        pose_subscriber_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
+            "/orb_slam3/pose", 30,
+            std::bind(&sensor_subscriber::pose_callback, this, std::placeholders::_1));
+
         avg_gyro_publisher_ = this->create_publisher<std_msgs::msg::Float32MultiArray>(
-            "cc", 1000);
+            "/average_gyro", 1000);
         avg_acc_publisher_ = this->create_publisher<std_msgs::msg::Float32MultiArray>(
             "/average_acceleration", 1000);
 
@@ -129,6 +134,26 @@ private:
             
             recieved[imu_index] = true;
         }
+    }
+
+    void pose_callback(const geometry_msgs::msg::PoseStamped::ConstSharedPtr& msg)
+    {
+        static double last_time = this->now().seconds();
+        double current_time = this->now().seconds();
+        double dt = current_time - last_time;
+        RCLCPP_INFO(this->get_logger(), "DT between poses: %.4f", dt);
+        
+        sensor_handler_.update_pose_estimate(
+            msg->pose.position.x,
+            msg->pose.position.y,
+            msg->pose.position.z,
+            msg->pose.orientation.x,
+            msg->pose.orientation.y,
+            msg->pose.orientation.z,
+            msg->pose.orientation.w,
+            dt
+        );
+        last_time = this->now().seconds();
     }
 
     void odometry_callback(const nav_msgs::msg::Odometry::ConstSharedPtr& msg)
@@ -237,6 +262,7 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr avg_gyro_publisher_;
     rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr avg_acc_publisher_;
     rclcpp::Subscription<std_msgs::msg::Float64MultiArray>::SharedPtr thrust_subscriber_;
+    rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr pose_subscriber_;
     std::vector<rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr> imu_subscribers_;
     Vector3 gyro_ = {0, 0, 0};
     

@@ -52,7 +52,7 @@ public:
         //Opens CSV file for logging
         last_update_time_ = std::chrono::steady_clock::now();
         start_time_ = last_update_time_;
-        csv_file_.open("/home/gud/Skole/baesjlort/plotting_program/data_files/sensor_data.csv", std::ios::app);
+        csv_file_.open("/home/gud/Skole/baesjlort/scripts/plotting_program/data_files/sensor_data.csv", std::ios::app);
         if (csv_file_.is_open())
         {
             csv_file_ << "timestamp,acc_x,acc_y,acc_z,vel_x,vel_y,vel_z,pos_x,pos_y,pos_z,"
@@ -68,6 +68,50 @@ public:
         {
             csv_file_.close();
         }
+    }
+
+    void update_pose_estimate(const float pos_x, const float pos_y, const float pos_z,
+                           const float quat_x, const float quat_y, const float quat_z, 
+                           const float quat_w, const float dt)
+    {
+        if (first_update_)
+        {
+            //On first update, set position directly to SLAM position to avoid large jumps
+            current_position_.x = pos_x;
+            current_position_.y = pos_y;
+            current_position_.z = pos_z;
+            first_update_ = false;
+            return;
+        }
+        //Update position and orientation from SLAM pose estimate
+        Vector3 estimated_SLAM_speed = {
+            (pos_x - prev_SLAM_pos_.x) / dt,
+            (pos_y - prev_SLAM_pos_.y) / dt,
+            (pos_z - prev_SLAM_pos_.z) / dt
+        };
+
+        Vector3 estimated_SLAM_delta_orientation = {
+            (quat_x - prev_SLAM_orientation_.x) / dt,
+            (quat_y - prev_SLAM_orientation_.y) / dt,
+            (quat_z - prev_SLAM_orientation_.z) / dt
+        };
+
+        current_speed_.x = 0.6f*current_speed_.x - 0.4f*estimated_SLAM_speed.x;
+        current_speed_.y = 0.6f*current_speed_.y + 0.4f*estimated_SLAM_speed.z;
+        current_speed_.z = 0.6f*current_speed_.z - 0.4f*estimated_SLAM_speed.y;
+        delta_orientation.x = 0.6f*delta_orientation.x + 0.4f*estimated_SLAM_delta_orientation.x;
+        delta_orientation.y = 0.6f*delta_orientation.y + 0.4f*estimated_SLAM_delta_orientation.y;
+        delta_orientation.z = 0.6f*delta_orientation.z + 0.4f*estimated_SLAM_delta_orientation.z;
+
+        current_position_.x -= current_speed_.x * dt;
+        current_position_.y -= current_speed_.y * dt;
+        current_position_.z -= current_speed_.z * dt;
+        orientation_ = orientation_ * delta_orientation;
+        orientation_.normalize();
+
+        //Update prev values for speed calculation
+        prev_SLAM_pos_ = {pos_x, pos_y, pos_z};
+        prev_SLAM_orientation_ = {quat_w, quat_x, quat_y, quat_z};
     }
 
     void update_truth_odometry(float pos_x, float pos_y, float pos_z,
@@ -134,20 +178,20 @@ public:
             static_cast<float>(filtered_values[5])
         };
 
-        Quaternion delta_orientation(
+        delta_orientation = Quaternion{
             1.0f,
             gyro_filtered.x * dt * 0.5f,
             gyro_filtered.y * dt * 0.5f,
             gyro_filtered.z * dt * 0.5f
-        );
-        orientation_ = orientation_ * delta_orientation;
-        orientation_.normalize();
+        };
+        //orientation_ = orientation_ * delta_orientation;
+        //orientation_.normalize();
         acc_filtered = orientation_.rotate_vector(acc_filtered);
 
         //Update position and speed
-        current_position_.x -= current_speed_.x * dt + 0.5f * acc_filtered.x * dt * dt;
-        current_position_.y -= current_speed_.y * dt + 0.5f * acc_filtered.y * dt * dt;
-        current_position_.z -= current_speed_.z * dt + 0.5f * acc_filtered.z * dt * dt;
+        //current_position_.x -= current_speed_.x * dt + 0.5f * acc_filtered.x * dt * dt;
+        //current_position_.y -= current_speed_.y * dt + 0.5f * acc_filtered.y * dt * dt;
+        //current_position_.z -= current_speed_.z * dt + 0.5f * acc_filtered.z * dt * dt;
         current_speed_.x += acc_filtered.x * dt;
         current_speed_.y += acc_filtered.y * dt;
         current_speed_.z += acc_filtered.z * dt;
@@ -189,9 +233,12 @@ private:
     Vector3 perfect_acceleration_ = {0.0f, 0.0f, 0.0f};
     Vector3 perfect_speed_ = {0.0f, 0.0f, 0.0f};
     Vector3 perfect_position_ = {0.0f, 0.0f, 0.0f};
+    Vector3 prev_SLAM_pos_ = {0.0f, 0.0f, 0.0f};
+    Quaternion prev_SLAM_orientation_ = {1.0f, 0.0f, 0.0f, 0.0f};
     Quaternion orientation_ = {1.0f, 0.0f, 0.0f, 0.0f};
     Quaternion perfect_orientation_;
     Quaternion world_correction_ = Quaternion(0.0f, 1.0f, 0.0f, 0.0f);
+    Quaternion delta_orientation = {1.0f, 0.0f, 0.0f, 0.0f};
     std::chrono::steady_clock::time_point last_update_time_;
     std::chrono::steady_clock::time_point last_truth_update_time_;
     std::chrono::steady_clock::time_point start_time_;
@@ -201,6 +248,7 @@ private:
     const float water_density_ = 997.0f;       //kg/m^3
     const float gravity_ = 9.81f;              //m/s^2
     bool set_surface_pressure_ = false;
+    bool first_update_ = true;
 };
 
 #endif // SENSOR_HANDLER_HPP

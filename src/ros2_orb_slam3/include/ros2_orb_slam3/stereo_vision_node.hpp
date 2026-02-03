@@ -40,14 +40,14 @@ public:
         slam_system_ = std::make_unique<ORB_SLAM3::System>(
             "/home/gud/Skole/baesjlort/src/ros2_orb_slam3/orb_slam3/Vocabulary/ORBvoc.txt.bin",     //Path to vocabulary file 
             "/home/gud/Skole/baesjlort/src/ros2_orb_slam3/config/stereo_gbr_sim.yaml",               //Path to camera settings file 
-            ORB_SLAM3::System::IMU_STEREO, 
+            ORB_SLAM3::System::STEREO, 
             true                                                                                   //Disable viewer
         );
 
         //Publisher for estimated pose
         pose_publisher_ = this->create_publisher<geometry_msgs::msg::PoseStamped>(
             "/orb_slam3/pose",
-            10
+            30
         );
 
         left_subscriber_ = this->create_subscription<sensor_msgs::msg::Image>(
@@ -77,7 +77,7 @@ public:
 
         imu_center_ = this->create_subscription<sensor_msgs::msg::Imu>(
             "/gbr/imu_center_perfect", 
-            1000,
+            100,
             std::bind(&stereo_vision_node::imu_center_callback, this, std::placeholders::_1)
         );
 
@@ -89,22 +89,22 @@ public:
 
         init_start_time_ = this->now().seconds();
         
-        init_timer_ = this->create_wall_timer(
-            std::chrono::milliseconds(100),
-            std::bind(&stereo_vision_node::init, this)
-        );
+        //init_timer_ = this->create_wall_timer(
+        //    std::chrono::milliseconds(100),
+        //    std::bind(&stereo_vision_node::init, this)
+        //);
         
 
-        this->create_wall_timer(
-            std::chrono::seconds(250),
-            [this]() {
-                RCLCPP_INFO(this->get_logger(), "Initialization complete!");
-                init_timer_->cancel();  // Stopp initialiseringsløkken
-                auto msg = std_msgs::msg::Float64MultiArray();
-                msg.data = std::vector<double>({0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f});
-                thrust_publisher_->publish(msg);
-            }
-        );
+        //this->create_wall_timer(
+        //    std::chrono::seconds(250),
+        //    [this]() {
+        //        RCLCPP_INFO(this->get_logger(), "Initialization complete!");
+        //        init_timer_->cancel();  // Stopp initialiseringsløkken
+        //        auto msg = std_msgs::msg::Float64MultiArray();
+        //        msg.data = std::vector<double>({0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f});
+        //        thrust_publisher_->publish(msg);
+        //    }
+        //);
     }
 
     ~stereo_vision_node()
@@ -120,17 +120,17 @@ private:
         if (this->now().seconds() - init_start_time_ < 5.0)         //Back
         {
             auto msg = std_msgs::msg::Float64MultiArray();
-            msg.data = std::vector<double>({-3.0f, -3.0f, 3.0f, 3.0f, 0.0f, 0.0f, 0.0f, 0.0f});
+            msg.data = std::vector<double>({-10.0f, -10.0f, 10.0f, 10.0f, 0.0f, 0.0f, 0.0f, 0.0f});
             thrust_publisher_->publish(msg);
         } else if(this->now().seconds() - init_start_time_ < 10.0)      //Left
         {
             auto msg = std_msgs::msg::Float64MultiArray();
-            msg.data = std::vector<double>({3.0f, -3.0f, 3.0f, -3.0f, 0.0f, 0.0f, 0.0f, 0.0f});
+            msg.data = std::vector<double>({3.0f, -6.0f, 3.0f, -6.0f, 0.0f, 0.0f, 0.0f, 0.0f});
             thrust_publisher_->publish(msg);
         } else if(this->now().seconds() - init_start_time_ < 15.0)      //Forward
         {
             auto msg = std_msgs::msg::Float64MultiArray();
-            msg.data = std::vector<double>({3.0f, 3.0f, -3.0f, -3.0f, 0.0f, 0.0f, 0.0f, 0.0f});
+            msg.data = std::vector<double>({3.0f, 3.0f, -3.0f, -3.0f, -10.0f, -10.0f, -10.0f, 0.0f});
             thrust_publisher_->publish(msg);
         } else if(this->now().seconds() - init_start_time_ < 20.0)      //Right
         {
@@ -176,7 +176,7 @@ private:
         // Store gyro data with current timestamp
         current_gyro_ = {msg->angular_velocity.x, msg->angular_velocity.y, msg->angular_velocity.z};
         current_acc_ = {msg->linear_acceleration.x, msg->linear_acceleration.y, msg->linear_acceleration.z};
-        last_imu_time_ = std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
+        last_imu_time_ = msg->header.stamp.sec + msg->header.stamp.nanosec * 1e-9;
         RCLCPP_WARN(this->get_logger(), "Time: %f", last_imu_time_);
 
         //Both gyro and acc data are available, add to IMU buffer
@@ -267,6 +267,7 @@ private:
         }
 
         //std::lock_guard<std::mutex> imu_lock(imu_mutex_);
+        std::lock_guard<std::mutex> imu_lock(image_mutex_);
         //Process stereo images with ORB_SLAM3
         if (imu_buffer_.empty()) 
         {
@@ -276,8 +277,7 @@ private:
         RCLCPP_INFO(this->get_logger(), "Calculating balls pose...");
         Sophus::SE3f pose = slam_system_->TrackStereo(left_image_, 
                                                     right_image_, 
-                                                    std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count(),
-                                                    imu_buffer_);
+                                                    header.stamp.sec + header.stamp.nanosec * 1e-9);
         RCLCPP_INFO(this->get_logger(), "Calculated balls pose...");
 
         //Only keep recent IMU data

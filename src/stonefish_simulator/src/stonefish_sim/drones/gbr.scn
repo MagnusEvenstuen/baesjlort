@@ -225,7 +225,7 @@
             <ros_publisher topic="/gbr/odometry_perfect"/>
         </sensor>
         <!-- IMU at center of mass perfect measurements-->
-        <sensor name="imuCenterPerfect" type="imu" rate="1000.0">
+        <sensor name="imuCenterPerfect" type="imu" rate="100.0">
             <range angular_velocity="35.0 35.0 35.0"
                 linear_acceleration="155.0 155.0 155.0"/>
             <noise

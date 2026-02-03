@@ -27,6 +27,11 @@ struct Vector3
         }
         return Vector3{x/b, y/b, z/b};
     }
+
+    Vector3 operator*(const float b) const
+    {
+        return Vector3{x*b, y*b, z*b};
+    }
 };
 
 

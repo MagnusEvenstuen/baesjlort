@@ -55,7 +55,7 @@ Camera.height: 540
 Camera.fps: 30
 
 # Color order of the images (0: BGR, 1: RGB. It is ignored if images are grayscale)
-Camera.RGB: 1
+Camera.RGB: 0
 
 # Close/Far threshold. Baseline times.
 Stereo.ThDepth: 100.0
@@ -75,30 +75,11 @@ Stereo.T_c1_c2: !!opencv-matrix
          0.0, 0.0, 0.0, 1.0]
 
 # Transformation from camera 0 to body-frame (imu)
-# Based on your XML: Left camera: xyz="-0.021 0.17 0.05", rpy="-1.57 0.0 0.0"
-# IMU at center: xyz="0.0 -0.003 -0.0013", rpy="0.0 0.0 -0.785398163397"
-# Need to compute T_b_c1 = T_b_world * T_world_c1^-1
-# From your configuration:
-# Camera in robot frame: RPY = (-1.57, 0.0, 0.0) = rotation around X by -90°
-# Position: (-0.021, 0.17, 0.05) relative to base
-# IMU in robot frame: RPY = (0.0, 0.0, -0.785398) = rotation around Z by -45°
-# Position: (0.0, -0.003, -0.0013)
-#
-# Let's compute: T_b_c1 = T_b_robot * T_robot_c1^-1
-# First, camera to robot transform:
-# R_cam_robot = RotX(-90°) = [1, 0, 0; 0, 0, 1; 0, -1, 0]
-# t_cam_robot = [-0.021, 0.17, 0.05]ᵀ
-#
-# IMU to robot transform:
-# R_imu_robot = RotZ(-45°) = [0.7071, 0.7071, 0; -0.7071, 0.7071, 0; 0, 0, 1]
-# t_imu_robot = [0.0, -0.003, -0.0013]ᵀ
-#
-# T_b_c1 = T_imu_robot * T_cam_robot^-1
 IMU.T_b_c1: !!opencv-matrix
   rows: 4
   cols: 4
   dt: f
-  data: [1.0, 0.0, 0.0, 0.0,
+  data: [-1.0, 0.0, 0.0, 0.0,
          0.0, 0.0, -1.0, 0.0,
          0.0, -1.0, 0.0, 0.0,
          0.0, 0.0, 0.0, 1.0]
@@ -108,7 +89,7 @@ IMU.NoiseGyro: 1.0e-4  # rad/s^0.5
 IMU.NoiseAcc: 1.0e-3   # m/s^1.5
 IMU.GyroWalk: 1.0e-5   # rad/s^1.5
 IMU.AccWalk: 1.0e-4    # m/s^2.5
-IMU.Frequency: 500.0
+IMU.Frequency: 100.0
 
 #--------------------------------------------------------------------------------------------
 # ORB Parameters
