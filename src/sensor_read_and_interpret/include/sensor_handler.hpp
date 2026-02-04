@@ -85,9 +85,9 @@ public:
         }
         //Update position and orientation from SLAM pose estimate
         Vector3 estimated_SLAM_speed = {
-            (pos_x - prev_SLAM_pos_.x) / dt,
-            (pos_y - prev_SLAM_pos_.y) / dt,
-            (pos_z - prev_SLAM_pos_.z) / dt
+            -(pos_x - prev_SLAM_pos_.x) / dt,
+            -(pos_z - prev_SLAM_pos_.z) / dt,
+            (pos_y - prev_SLAM_pos_.y) / dt
         };
 
         Vector3 estimated_SLAM_delta_orientation = {
@@ -96,19 +96,21 @@ public:
             (quat_z - prev_SLAM_orientation_.z) / dt
         };
 
-        current_speed_.x = 0.6f*current_speed_.x - 0.4f*estimated_SLAM_speed.x;
-        current_speed_.y = 0.6f*current_speed_.y + 0.4f*estimated_SLAM_speed.z;
-        current_speed_.z = 0.6f*current_speed_.z - 0.4f*estimated_SLAM_speed.y;
-        delta_orientation.x = 0.6f*delta_orientation.x + 0.4f*estimated_SLAM_delta_orientation.x;
-        delta_orientation.y = 0.6f*delta_orientation.y + 0.4f*estimated_SLAM_delta_orientation.y;
-        delta_orientation.z = 0.6f*delta_orientation.z + 0.4f*estimated_SLAM_delta_orientation.z;
+        current_speed_.x = 0.9f*current_speed_.x + 0.1f*estimated_SLAM_speed.x;
+        current_speed_.y = 0.9f*current_speed_.y + 0.1f*estimated_SLAM_speed.z;
+        current_speed_.z = 0.9f*current_speed_.z + 0.1f*estimated_SLAM_speed.y;
+        delta_orientation.x = 0.9f*delta_orientation.x + 0.1f*estimated_SLAM_delta_orientation.x;
+        delta_orientation.y = 0.9f*delta_orientation.y + 0.1f*estimated_SLAM_delta_orientation.y;
+        delta_orientation.z = 0.9f*delta_orientation.z + 0.1f*estimated_SLAM_delta_orientation.z;
 
-        current_position_.x -= current_speed_.x * dt;
-        current_position_.y -= current_speed_.y * dt;
-        current_position_.z -= current_speed_.z * dt;
-        orientation_ = orientation_ * delta_orientation;
+        current_position_.x -= 0.8f*current_speed_.x * dt + 0.2f*current_position_acc_.x;
+        current_position_.y -= 0.8f*current_speed_.y * dt + 0.2f*current_position_acc_.y;
+        current_position_.z -= 0.8f*current_speed_.z * dt + 0.2f*current_position_acc_.z;
+        orientation_ = 0.8f*orientation_ * delta_orientation + 0.2*orientation_acc_;
         orientation_.normalize();
 
+        current_position_acc_ = current_position_;
+        current_orientation_acc_ = orientation_;
         //Update prev values for speed calculation
         prev_SLAM_pos_ = {pos_x, pos_y, pos_z};
         prev_SLAM_orientation_ = {quat_w, quat_x, quat_y, quat_z};
@@ -184,14 +186,13 @@ public:
             gyro_filtered.y * dt * 0.5f,
             gyro_filtered.z * dt * 0.5f
         };
-        //orientation_ = orientation_ * delta_orientation;
-        //orientation_.normalize();
-        acc_filtered = orientation_.rotate_vector(acc_filtered);
+        orientation_acc_ = orientation_acc_ * delta_orientation;
+        orientation_acc_.normalize();
 
         //Update position and speed
-        //current_position_.x -= current_speed_.x * dt + 0.5f * acc_filtered.x * dt * dt;
-        //current_position_.y -= current_speed_.y * dt + 0.5f * acc_filtered.y * dt * dt;
-        //current_position_.z -= current_speed_.z * dt + 0.5f * acc_filtered.z * dt * dt;
+        current_position_acc.x -= current_speed_.x * dt + 0.5f * acc_filtered.x * dt * dt;
+        current_position_acc.y -= current_speed_.y * dt + 0.5f * acc_filtered.y * dt * dt;
+        current_position_acc.z -= current_speed_.z * dt + 0.5f * acc_filtered.z * dt * dt;
         current_speed_.x += acc_filtered.x * dt;
         current_speed_.y += acc_filtered.y * dt;
         current_speed_.z += acc_filtered.z * dt;
@@ -234,6 +235,8 @@ private:
     Vector3 perfect_speed_ = {0.0f, 0.0f, 0.0f};
     Vector3 perfect_position_ = {0.0f, 0.0f, 0.0f};
     Vector3 prev_SLAM_pos_ = {0.0f, 0.0f, 0.0f};
+    Vector3 current_position_acc_ = {0.0f, 0.0f, 0.0f};
+    Quaternion orientation_acc_ = {1.0f, 0.0f, 0.0f, 0.0f};
     Quaternion prev_SLAM_orientation_ = {1.0f, 0.0f, 0.0f, 0.0f};
     Quaternion orientation_ = {1.0f, 0.0f, 0.0f, 0.0f};
     Quaternion perfect_orientation_;
