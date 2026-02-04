@@ -81,6 +81,9 @@ public:
             current_position_.y = pos_y;
             current_position_.z = pos_z;
             first_update_ = false;
+            current_position_acc_ = current_position_;
+            prev_SLAM_pos_ = {pos_x, pos_y, pos_z};
+            prev_SLAM_orientation_ = {quat_w, quat_x, quat_y, quat_z};
             return;
         }
         //Update position and orientation from SLAM pose estimate
@@ -90,27 +93,28 @@ public:
             (pos_y - prev_SLAM_pos_.y) / dt
         };
 
-        Vector3 estimated_SLAM_delta_orientation = {
-            (quat_x - prev_SLAM_orientation_.x) / dt,
-            (quat_y - prev_SLAM_orientation_.y) / dt,
-            (quat_z - prev_SLAM_orientation_.z) / dt
+        Quaternion estimated_SLAM_delta_orientation = {
+            (quat_w - prev_SLAM_orientation_.w) / dt,
+            -(quat_x - prev_SLAM_orientation_.x) / dt,
+            -(quat_z - prev_SLAM_orientation_.z) / dt,
+            (quat_y - prev_SLAM_orientation_.y) / dt
         };
 
-        current_speed_.x = 0.9f*current_speed_.x + 0.1f*estimated_SLAM_speed.x;
-        current_speed_.y = 0.9f*current_speed_.y + 0.1f*estimated_SLAM_speed.z;
-        current_speed_.z = 0.9f*current_speed_.z + 0.1f*estimated_SLAM_speed.y;
-        delta_orientation.x = 0.9f*delta_orientation.x + 0.1f*estimated_SLAM_delta_orientation.x;
-        delta_orientation.y = 0.9f*delta_orientation.y + 0.1f*estimated_SLAM_delta_orientation.y;
-        delta_orientation.z = 0.9f*delta_orientation.z + 0.1f*estimated_SLAM_delta_orientation.z;
+        float alpha = 0.7f;
 
-        current_position_.x -= 0.8f*current_speed_.x * dt + 0.2f*current_position_acc_.x;
-        current_position_.y -= 0.8f*current_speed_.y * dt + 0.2f*current_position_acc_.y;
-        current_position_.z -= 0.8f*current_speed_.z * dt + 0.2f*current_position_acc_.z;
-        orientation_ = 0.8f*orientation_ * delta_orientation + 0.2*orientation_acc_;
-        orientation_.normalize();
+        if (dt > 0.3f)
+        {
+            alpha = 1.0f;
+        } else if (dt < 0.1f)
+        {
+            alpha = 0.3f;
+        }
+
+        //current_speed_.x = alpha*current_speed_.x + (1-alpha)*estimated_SLAM_speed.x;
+        //current_speed_.y = alpha*current_speed_.y + (1-alpha)*estimated_SLAM_speed.y;
+        //current_speed_.z = alpha*current_speed_.z + (1-alpha)*estimated_SLAM_speed.z;
 
         current_position_acc_ = current_position_;
-        current_orientation_acc_ = orientation_;
         //Update prev values for speed calculation
         prev_SLAM_pos_ = {pos_x, pos_y, pos_z};
         prev_SLAM_orientation_ = {quat_w, quat_x, quat_y, quat_z};
@@ -186,13 +190,15 @@ public:
             gyro_filtered.y * dt * 0.5f,
             gyro_filtered.z * dt * 0.5f
         };
-        orientation_acc_ = orientation_acc_ * delta_orientation;
-        orientation_acc_.normalize();
+        orientation_ = orientation_ * delta_orientation;
+        orientation_.normalize();
+
+        acc_filtered = orientation_.rotate_vector(acc_filtered);
 
         //Update position and speed
-        current_position_acc.x -= current_speed_.x * dt + 0.5f * acc_filtered.x * dt * dt;
-        current_position_acc.y -= current_speed_.y * dt + 0.5f * acc_filtered.y * dt * dt;
-        current_position_acc.z -= current_speed_.z * dt + 0.5f * acc_filtered.z * dt * dt;
+        current_position_.x -= current_speed_.x * dt + 0.5f * acc_filtered.x * dt * dt;
+        current_position_.y -= current_speed_.y * dt + 0.5f * acc_filtered.y * dt * dt;
+        current_position_.z -= current_speed_.z * dt + 0.5f * acc_filtered.z * dt * dt;
         current_speed_.x += acc_filtered.x * dt;
         current_speed_.y += acc_filtered.y * dt;
         current_speed_.z += acc_filtered.z * dt;
@@ -203,6 +209,11 @@ public:
     Vector3 get_position() const
     {
         return current_position_;
+    }
+
+    Quaternion get_orientation() const
+    {
+        return orientation_;
     }
 
     void log_to_csv(float acc_x, float acc_y, float acc_z)
@@ -216,7 +227,7 @@ public:
                      << elapsed << ","
                      << acc_y << "," << acc_x << "," << acc_z << ","
                      << current_speed_.x << "," << current_speed_.y << "," << current_speed_.z << ","
-                     << -current_position_.x << "," << -current_position_.y << "," << -current_position_.z << ","
+                     << current_position_.x << "," << current_position_.y << "," << -current_position_.z << ","
                      << perfect_acceleration_.x << "," << perfect_acceleration_.y << "," << perfect_acceleration_.z << ","
                      << perfect_speed_.x << "," << perfect_speed_.y << "," << perfect_speed_.z << ","
                      << perfect_position_.x << ", " << perfect_position_.y << ", " << perfect_position_.z << ", " << depth_ << ","
@@ -236,7 +247,6 @@ private:
     Vector3 perfect_position_ = {0.0f, 0.0f, 0.0f};
     Vector3 prev_SLAM_pos_ = {0.0f, 0.0f, 0.0f};
     Vector3 current_position_acc_ = {0.0f, 0.0f, 0.0f};
-    Quaternion orientation_acc_ = {1.0f, 0.0f, 0.0f, 0.0f};
     Quaternion prev_SLAM_orientation_ = {1.0f, 0.0f, 0.0f, 0.0f};
     Quaternion orientation_ = {1.0f, 0.0f, 0.0f, 0.0f};
     Quaternion perfect_orientation_;

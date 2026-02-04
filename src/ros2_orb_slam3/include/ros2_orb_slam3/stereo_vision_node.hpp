@@ -62,6 +62,12 @@ public:
             std::bind(&stereo_vision_node::right_image_callback, this, std::placeholders::_1)
         );
 
+        orientation_subscriber_ = this->create_subscription<std_msgs::msg::Float32MultiArray>(
+            "/average_orientation",
+            100,
+            std::bind(&stereo_vision_node::orientation_callback, this, std::placeholders::_1)
+        );
+
         //Subscribes to averaged IMU data from sensor_subscriber node
         //avg_gyro_subscriber_ = this->create_subscription<std_msgs::msg::Float32MultiArray>(
         //    "/average_gyro",
@@ -145,6 +151,16 @@ private:
             thrust_publisher_->publish(msg);
             init_start_time_ = this->now().seconds();
         }
+    }
+
+    void orientation_callback(const std_msgs::msg::Float32MultiArray::SharedPtr msg)
+    {
+        orientation_ = {
+            msg->data[0],
+            msg->data[1],
+            msg->data[2],
+            msg->data[3]
+        };
     }
 
     void left_image_callback(const sensor_msgs::msg::Image::SharedPtr msg)
@@ -305,11 +321,27 @@ private:
         pose_msg.header.frame_id = "world";
         
         Eigen::Quaternionf quat(pose.rotationMatrix());
+
+        Quaternion quat_non_eigen = {
+            quat.w(),
+            quat.x(),
+            quat.y(),
+            quat.z()
+        };
         
+        Vector3 position = {
+            pose.translation().x(),
+            pose.translation().y(),
+            pose.translation().z()
+        };
+
+        //Vector3 position_rotated = quat_non_eigen.rotate_vector(position);
+        Vector3 position_corrected = orientation_.rotate_vector_inverse(position);
+
         //Set position and orientation
-        pose_msg.pose.position.x = pose.translation().x();
-        pose_msg.pose.position.y = pose.translation().y();
-        pose_msg.pose.position.z = pose.translation().z();
+        pose_msg.pose.position.x = position_corrected.x;
+        pose_msg.pose.position.y = position_corrected.y;
+        pose_msg.pose.position.z = position_corrected.z;
         pose_msg.pose.orientation.x = quat.x();
         pose_msg.pose.orientation.y = quat.y();
         pose_msg.pose.orientation.z = quat.z();
@@ -339,7 +371,9 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr thrust_publisher_;
     rclcpp::Subscription<std_msgs::msg::Float32MultiArray>::SharedPtr avg_gyro_subscriber_;
     rclcpp::Subscription<std_msgs::msg::Float32MultiArray>::SharedPtr avg_acc_subscriber_;
+    rclcpp::Subscription<std_msgs::msg::Float32MultiArray>::SharedPtr orientation_subscriber_;
     rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_center_;
+    
     double last_imu_time_;
     Vector3 current_gyro_ = {-10000.0, -10000.0, -10000.0};
     Vector3 current_acc_ = {-10000.0, -10000.0, -10000.0};
@@ -348,6 +382,7 @@ private:
     std::mutex image_mutex_;
     double init_start_time_;
     rclcpp::TimerBase::SharedPtr init_timer_;
+    Quaternion orientation_;
 
     bool left_received_ = false;
     bool right_received_ = false;

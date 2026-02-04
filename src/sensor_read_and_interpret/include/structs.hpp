@@ -60,6 +60,7 @@ struct Quaternion
         }
     }
     
+    // tull og tøys 
     // Rotate a vector using this quaternion: q * v * q^-1
     Vector3 rotate_vector(const Vector3& v) const
     {
@@ -67,12 +68,13 @@ struct Quaternion
         Quaternion v_quat(0.0f, v.x, v.y, v.z);
         
         // Compute conjugate (inverse for unit quaternions)
-        Quaternion q_conj(w, -x, -y, -z);
+        Quaternion q_conj = conjugate();
         
         // q * v * q^-1
         Quaternion result = *this * v_quat;
-        result = result * q_conj;
         
+        result = result * q_conj;
+
         return Vector3{result.x, result.y, result.z};
     }
     

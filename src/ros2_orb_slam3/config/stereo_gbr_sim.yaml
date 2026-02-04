@@ -69,34 +69,17 @@ Stereo.T_c1_c2: !!opencv-matrix
   rows: 4
   cols: 4
   dt: f
-  data: [1.0, 0.0, 0.0, -0.042,
+  data: [1.0, 0.0, 0.0, 0.042,
          0.0, 1.0, 0.0, 0.0,
          0.0, 0.0, 1.0, 0.0,
          0.0, 0.0, 0.0, 1.0]
-
-# Transformation from camera 0 to body-frame (imu)
-IMU.T_b_c1: !!opencv-matrix
-  rows: 4
-  cols: 4
-  dt: f
-  data: [-1.0, 0.0, 0.0, 0.0,
-         0.0, 0.0, -1.0, 0.0,
-         0.0, -1.0, 0.0, 0.0,
-         0.0, 0.0, 0.0, 1.0]
-
-# IMU noise parameters (using your perfect IMU parameters)
-IMU.NoiseGyro: 1.0e-4  # rad/s^0.5 
-IMU.NoiseAcc: 1.0e-3   # m/s^1.5
-IMU.GyroWalk: 1.0e-5   # rad/s^1.5
-IMU.AccWalk: 1.0e-4    # m/s^2.5
-IMU.Frequency: 100.0
 
 #--------------------------------------------------------------------------------------------
 # ORB Parameters
 #--------------------------------------------------------------------------------------------
 
 # ORB Extractor: Number of features per image
-ORBextractor.nFeatures: 2000
+ORBextractor.nFeatures: 10000
 
 # ORB Extractor: Scale factor between levels in the scale pyramid
 ORBextractor.scaleFactor: 1.2

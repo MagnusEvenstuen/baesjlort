@@ -3,7 +3,7 @@
   <environment>
     <ned latitude="63.446827" longitude="10.421906"/>
     <ocean>
-        <water density="1031.0" jerlov="0.60"/>
+        <water density="1031.0" jerlov="0.45"/>
         <waves height="0.0"/>
         <particles enabled="true"/>
         <current type="uniform">

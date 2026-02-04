@@ -80,6 +80,9 @@ public:
         avg_acc_publisher_ = this->create_publisher<std_msgs::msg::Float32MultiArray>(
             "/average_acceleration", 1000);
 
+        orientation_publisher_ = this->create_publisher<std_msgs::msg::Float32MultiArray>(
+            "/average_orientation", 100);
+
         // Subscriber for Fluid Pressure messages
         pressure_ = this->create_subscription<sensor_msgs::msg::FluidPressure>(
             "/gbr/pressure", 100, 
@@ -216,6 +219,12 @@ private:
         acc_msg.data = {avg_acc.x, avg_acc.y, avg_acc.z};
         avg_acc_publisher_->publish(acc_msg);
 
+        //Publish data for Slamming balls
+        Quaternion ori_from_handler = sensor_handler_.get_orientation();
+        auto orientation_msg = std_msgs::msg::Float32MultiArray();
+        orientation_msg.data = {ori_from_handler.w, ori_from_handler.x, ori_from_handler.y, ori_from_handler.z};
+        orientation_publisher_->publish(orientation_msg);
+
         recieved[0] = false;
         recieved[1] = false;
         recieved[2] = false;
@@ -261,6 +270,7 @@ private:
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odometry_subscription_;
     rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr avg_gyro_publisher_;
     rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr avg_acc_publisher_;
+    rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr orientation_publisher_;
     rclcpp::Subscription<std_msgs::msg::Float64MultiArray>::SharedPtr thrust_subscriber_;
     rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr pose_subscriber_;
     std::vector<rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr> imu_subscribers_;

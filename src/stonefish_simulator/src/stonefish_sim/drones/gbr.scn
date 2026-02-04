@@ -203,7 +203,7 @@
         <!-- Front left camera -->
         <sensor name="camLeft" rate="30.0" type="camera">
             <link name="Base"/>
-            <specs resolution_x="960" resolution_y="540" horizontal_fov="80.0"/>
+            <specs resolution_x="960" resolution_y="540" horizontal_fov="80.0" vertical_fov="64.0"/>
             <origin xyz="-0.021 0.17 0.05" rpy="-1.57 0.0 0.0"/>
             <ros_publisher topic="/gbr/cam_left"/>
         </sensor>
@@ -211,7 +211,7 @@
         <!-- Front right camera -->
         <sensor name="camRight" rate="30.0" type="camera">
             <link name="Base"/>
-            <specs resolution_x="960" resolution_y="540" horizontal_fov="80.0"/>
+            <specs resolution_x="960" resolution_y="540" horizontal_fov="80.0" vertical_fov="64.0"/>
             <origin xyz="0.021 0.17 0.05" rpy="-1.57 0.0 0.0"/>
             <ros_publisher topic="/gbr/cam_right"/>
         </sensor>
