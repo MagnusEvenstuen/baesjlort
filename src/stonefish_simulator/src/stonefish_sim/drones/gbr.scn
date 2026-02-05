@@ -83,8 +83,9 @@
             </propeller>
             <rotor_dynamics type="zero_order"/>
             <thrust_model type="linear_interpolation">
-                <input value="-40.0 -20.0 0.0 20.0 40.0"/>
-                <output value="-40.0 -20.0 0.0 20.0 40.0"/>
+                <input value="-1.0 -0.5 0.0 0.5 1.0"/>
+                <!-- <output value="-25.0 -12.5 0.0 15 30"/> -->
+                <output value="-5.0 -2.5 0.0 3.0 6.0"/>
             </thrust_model>
         </actuator>
 
@@ -99,8 +100,9 @@
             </propeller>
             <rotor_dynamics type="zero_order"/>
             <thrust_model type="linear_interpolation">
-                <input value="-40.0 -20.0 0.0 20.0 40.0"/>
-                <output value="-40.0 -20.0 0.0 20.0 40.0"/>
+                <input value="-1.0 -0.5 0.0 0.5 1.0"/>
+                <!-- <output value="-25.0 -12.5 0.0 15 30"/> -->
+                <output value="-5.0 -2.5 0.0 3.0 6.0"/>
             </thrust_model>
         </actuator>
 
@@ -115,8 +117,9 @@
             </propeller>
             <rotor_dynamics type="zero_order"/>
             <thrust_model type="linear_interpolation">
-                <input value="-40.0 -20.0 0.0 20.0 40.0"/>
-                <output value="-40.0 -20.0 0.0 20.0 40.0"/>
+                <input value="-1.0 -0.5 0.0 0.5 1.0"/>
+                <!-- <output value="-25.0 -12.5 0.0 15 30"/> -->
+                <output value="-5.0 -2.5 0.0 3.0 6.0"/>
             </thrust_model>
         </actuator>
 
@@ -131,8 +134,9 @@
             </propeller>
             <rotor_dynamics type="zero_order"/>
             <thrust_model type="linear_interpolation">
-                <input value="-40.0 -20.0 0.0 20.0 40.0"/>
-                <output value="-40.0 -20.0 0.0 20.0 40.0"/>
+                <input value="-1.0 -0.5 0.0 0.5 1.0"/>
+                <!-- <output value="-25.0 -12.5 0.0 15 30"/> -->
+                <output value="-5.0 -2.5 0.0 3.0 6.0"/>
             </thrust_model>
         </actuator>
 
@@ -147,8 +151,9 @@
             </propeller>
             <rotor_dynamics type="zero_order"/>
             <thrust_model type="linear_interpolation">
-                <input value="-40.0 -20.0 0.0 20.0 40.0"/>
-                <output value="-40.0 -20.0 0.0 20.0 40.0"/>
+                <input value="-1.0 -0.5 0.0 0.5 1.0"/>
+                <!-- <output value="-25.0 -12.5 0.0 15 30"/> -->
+                <output value="-5.0 -2.5 0.0 3.0 6.0"/>
             </thrust_model>
         </actuator>
 
@@ -163,8 +168,9 @@
             </propeller>
             <rotor_dynamics type="zero_order"/>
             <thrust_model type="linear_interpolation">
-                <input value="-40.0 -20.0 0.0 20.0 40.0"/>
-                <output value="-40.0 -20.0 0.0 20.0 40.0"/>
+                <input value="-1.0 -0.5 0.0 0.5 1.0"/>
+                <!-- <output value="-25.0 -12.5 0.0 15 30"/> -->
+                <output value="-5.0 -2.5 0.0 3.0 6.0"/>
             </thrust_model>
         </actuator>
 
@@ -179,8 +185,9 @@
             </propeller>
             <rotor_dynamics type="zero_order"/>
             <thrust_model type="linear_interpolation">
-                <input value="-40.0 -20.0 0.0 20.0 40.0"/>
-                <output value="-40.0 -20.0 0.0 20.0 40.0"/>
+                <input value="-1.0 -0.5 0.0 0.5 1.0"/>
+                <!-- <output value="-25.0 -12.5 0.0 15 30"/> -->
+                <output value="-5.0 -2.55 0.0 3.056.00"/>
             </thrust_model>
         </actuator>
 
@@ -195,8 +202,9 @@
             </propeller>
             <rotor_dynamics type="zero_order"/>
             <thrust_model type="linear_interpolation">
-                <input value="-40.0 -20.0 0.0 20.0 40.0"/>
-                <output value="-40.0 -20.0 0.0 20.0 40.0"/>
+                <input value="-1.0 -0.5 0.0 0.5 1.0"/>
+                <!-- <output value="-25.0 -12.5 0.0 15 30"/> -->
+                <output value="-5.0 -2.5 0.0 3.0 6.0"/>
             </thrust_model>
         </actuator>
 
@@ -220,7 +228,7 @@
         <sensor name="Odometry" rate="50.0" type="odometry">
             <noise position="0.0" velocity="0.0" angle="0.0" angular_velocity="0.0"/>
             <history samples="1"/>
-            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <origin xyz="0.0 0.0 0.0" rpy="3.14 0.0 1.57"/>
             <link name="Base"/>
             <ros_publisher topic="/gbr/odometry_perfect"/>
         </sensor>
@@ -234,12 +242,13 @@
                 yaw_drift="0.0"
                 linear_acceleration="0.0"/>
             <history samples="1"/>
-            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <origin xyz="0.0 0.0 0.0" rpy="3.14 0.0 1.57"/>
             <link name="Base"/>
             <ros_publisher topic="/gbr/imu_center_perfect"/>
         </sensor>
 
         <!-- IMU at center of mass -->
+<<<<<<< Updated upstream
         <sensor name="imuCenter" type="imu" rate="1000.0">
             <range angular_velocity="35.0 35.0 35.0"
                 linear_acceleration="155.0 155.0 155.0"/>
@@ -358,16 +367,136 @@
             <link name="Base"/>
             <ros_publisher topic="/gbr/imu_rear3"/>
         </sensor>
+=======
+        <!-- <sensor name="imuCenter" type="imu" rate="100.0"> -->
+        <!--     <range angular_velocity="35.0 35.0 35.0" -->
+        <!--         linear_acceleration="155.0 155.0 155.0"/> -->
+        <!--     <noise -->
+        <!--         angle="0.02 0.02 0.05" -->
+        <!--         angular_velocity="0.0035" -->
+        <!--         yaw_drift="0.001" -->
+        <!--         linear_acceleration="0.10"/> -->
+        <!--     <history samples="1"/> -->
+        <!--     <origin xyz="0.0 -0.003 -0.0013" rpy="0.0 0.0 -0.785398163397"/> -->
+        <!--     <link name="Base"/> -->
+        <!--     <ros_publisher topic="/gbr/imu_center"/> -->
+        <!-- </sensor> -->
+
+        <!-- IMU at center1 -->
+        <!-- <sensor name="imuCenter1" type="imu" rate="100.0"> -->
+        <!--     <range angular_velocity="35.0 35.0 35.0" -->
+        <!--         linear_acceleration="155.0 155.0 155.0"/> -->
+        <!--     <noise -->
+        <!--         angle="0.02 0.02 0.05" -->
+        <!--         angular_velocity="0.0035" -->
+        <!--         yaw_drift="0.001" -->
+        <!--         linear_acceleration="0.10"/> -->
+        <!--     <history samples="1"/> -->
+        <!--     <origin xyz="0.04 -0.003 -0.0013" rpy="0.0 0.0 0.785398163397"/> -->
+        <!--     <link name="Base"/> -->
+        <!--     <ros_publisher topic="/gbr/imu_center1"/> -->
+        <!-- </sensor> -->
+
+        <!-- IMU at center2-->
+        <!-- <sensor name="imuCenter2" type="imu" rate="100.0"> -->
+        <!--     <range angular_velocity="35.0 35.0 35.0" -->
+        <!--         linear_acceleration="155.0 155.0 155.0"/> -->
+        <!--     <noise -->
+        <!--         angle="0.02 0.02 0.05" -->
+        <!--         angular_velocity="0.0035" -->
+        <!--         yaw_drift="0.001" -->
+        <!--         linear_acceleration="0.10"/> -->
+        <!--     <history samples="1"/> -->
+        <!--     <origin xyz="-0.04 -0.003 -0.0013" rpy="0.0 0.0 0.785398163397"/> -->
+        <!--     <link name="Base"/> -->
+        <!--     <ros_publisher topic="/gbr/imu_center2"/> -->
+        <!-- </sensor> -->
+
+        <!-- IMU at front of vehicle1 -->
+        <!-- <sensor name="imu_front1" type="imu" rate="100.0"> -->
+        <!--     <range angular_velocity="35.0 35.0 35.0" -->
+        <!--         linear_acceleration="155.0 155.0 155.0"/> -->
+        <!--     <noise -->
+        <!--         angle="0.02 0.02 0.05" -->
+        <!--         angular_velocity="0.0035" -->
+        <!--         yaw_drift="0.001" -->
+        <!--         linear_acceleration="0.10"/> -->
+        <!--     <history samples="1"/> -->
+        <!--     <origin xyz="-0.03 0.05 -0.0013" rpy="0.0 0.0 0.785398163397"/> -->
+        <!--     <link name="Base"/> -->
+        <!--     <ros_publisher topic="/gbr/imu_front1"/> -->
+        <!-- </sensor> -->
+
+        <!-- IMU at front of vehicle2 -->
+        <!-- <sensor name="imu_front2" type="imu" rate="100.0"> -->
+        <!--     <range angular_velocity="35.0 35.0 35.0" -->
+        <!--         linear_acceleration="155.0 155.0 155.0"/> -->
+        <!--     <noise -->
+        <!--         angle="0.02 0.02 0.05" -->
+        <!--         angular_velocity="0.0035" -->
+        <!--         yaw_drift="0.001" -->
+        <!--         linear_acceleration="0.10"/> -->
+        <!--     <history samples="1"/> -->
+        <!--     <origin xyz="0.03 0.05 -0.0013" rpy="0.0 0.0 0.785398163397"/> -->
+        <!--     <link name="Base"/> -->
+        <!--     <ros_publisher topic="/gbr/imu_front2"/> -->
+        <!-- </sensor> -->
+
+        <!-- IMU at back of vehicle1 -->
+        <!-- <sensor name="imu_rear1" type="imu" rate="100.0"> -->
+        <!--     <range angular_velocity="35.0 35.0 35.0" -->
+        <!--         linear_acceleration="155.0 155.0 155.0"/> -->
+        <!--     <noise -->
+        <!--         angle="0.02 0.02 0.05" -->
+        <!--         angular_velocity="0.0035" -->
+        <!--         yaw_drift="0.001" -->
+        <!--         linear_acceleration="0.10"/> -->
+        <!--     <history samples="1"/> -->
+        <!--     <origin xyz="-0.03 -0.05 -0.0013" rpy="0.0 0.0 -0.785398163397"/> -->
+        <!--     <link name="Base"/> -->
+        <!--     <ros_publisher topic="/gbr/imu_rear1"/> -->
+        <!-- </sensor> -->
+
+        <!-- IMU at back of vehicle2 -->
+        <!-- <sensor name="imu_rear2" type="imu" rate="100.0"> -->
+        <!--     <range angular_velocity="35.0 35.0 35.0" -->
+        <!--         linear_acceleration="155.0 155.0 155.0"/> -->
+        <!--     <noise -->
+        <!--         angle="0.02 0.02 0.05" -->
+        <!--         angular_velocity="0.0035" -->
+        <!--         yaw_drift="0.001" -->
+        <!--         linear_acceleration="0.10"/> -->
+        <!--     <history samples="1"/> -->
+        <!--     <origin xyz="0.03 -0.05 -0.0013" rpy="0.0 0.0 -0.785398163397"/> -->
+        <!--     <link name="Base"/> -->
+        <!--     <ros_publisher topic="/gbr/imu_rear2"/> -->
+        <!-- </sensor> -->
+
+        <!-- IMU at back of vehicle3 -->
+        <!-- <sensor name="imu_rear3" type="imu" rate="100.0"> -->
+        <!--     <range angular_velocity="35.0 35.0 35.0" -->
+        <!--         linear_acceleration="155.0 155.0 155.0"/> -->
+        <!--     <noise -->
+        <!--         angle="0.02 0.02 0.05" -->
+        <!--         angular_velocity="0.0035" -->
+        <!--         yaw_drift="0.001" -->
+        <!--         linear_acceleration="0.10"/> -->
+        <!--     <history samples="1"/> -->
+        <!--     <origin xyz="0.00 -0.05 -0.0013" rpy="0.0 0.0 -0.785398163397"/> -->
+        <!--     <link name="Base"/> -->
+        <!--     <ros_publisher topic="/gbr/imu_rear3"/> -->
+        <!-- </sensor> -->
+>>>>>>> Stashed changes
 
         <!-- Pressure sensor -->
-        <sensor name="pressure" type="pressure" rate="150.0">
-            <range pressure="100000.0"/>
-            <noise pressure="50.0"/>
-            <history samples="1"/>
-            <origin xyz="0.0 0.0 -0.05" rpy="0.0 0.0 0.0"/>
-            <link name="Base"/>
-            <ros_publisher topic="/gbr/pressure"/>
-        </sensor>
+        <!-- <sensor name="pressure" type="pressure" rate="150.0"> -->
+        <!--     <range pressure="100000.0"/> -->
+        <!--     <noise pressure="50.0"/> -->
+        <!--     <history samples="1"/> -->
+        <!--     <origin xyz="0.0 0.0 -0.05" rpy="0.0 0.0 0.0"/> -->
+        <!--     <link name="Base"/> -->
+        <!--     <ros_publisher topic="/gbr/pressure"/> -->
+        <!-- </sensor> -->
 
 
         <world_transform xyz="2.0 2.0 0.5" rpy="3.14159 0.0 0.0"/>

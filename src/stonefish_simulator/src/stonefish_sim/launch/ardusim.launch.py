@@ -8,6 +8,7 @@ from launch.substitutions import (
     PathJoinSubstitution,
     TextSubstitution,
 )
+from launch_ros.actions import Node
 
 class ConcatenateSubstitutions(Substitution):
     def __init__(self, *substitutions):
@@ -29,20 +30,6 @@ def generate_launch_description():
         description="Path to the simulation data folder",
     )
 
-    scenario_desc_arg = DeclareLaunchArgument(
-        "scenario",
-        description="Path to the scenario file",
-        #scenario files need to be added here
-        choices=[
-            "gbr_keyboard_demo",
-            "gbr_pipeline",
-            "gbr_docking",
-            "gbr_structure",
-            "gbr_DYNSYS2025",
-            "vard",
-        ],
-    )
-
     window_res_x_arg = DeclareLaunchArgument(
         "window_res_x", default_value="1920", description="Window resolution width"
     )
@@ -60,9 +47,7 @@ def generate_launch_description():
         [
             stonefish_sim_dir,
             "scenarios",
-            ConcatenateSubstitutions(
-                LaunchConfiguration("scenario"), TextSubstitution(text=".scn")
-            ),
+            "gbr_pipeline.scn"
         ]
     )
 
@@ -79,13 +64,20 @@ def generate_launch_description():
         }.items(),
     )
 
+    sitl = Node(
+        package="sitl",
+        executable="middleman.py",
+        name="sitl_middleman",
+        output="screen"
+    )
+
     return LaunchDescription(
         [
             simulation_data_arg,
-            scenario_desc_arg,
             window_res_x_arg,
             window_res_y_arg,
             quality_arg,
             include_stonefish_launch,
+            sitl,
         ]
     )
