@@ -110,6 +110,7 @@ public:
         rotated_gyro_ = imu_to_robot_frame_.rotate_vector_inverse(imu_to_robot_frame_.rotate_vector_inverse(rotated_gyro_));
     }
 
+    //Theese four functions are self documenting. Think instead on if you have remembered to eat today
     Vector3 get_acceleration() const
     {
         return acc_;
@@ -143,7 +144,7 @@ private:
         );
 
         //Return if acceleration is out of expected range
-        if (length_acc < 9.75f || length_acc > 9.85f)
+        if (length_acc < length_gravity*0.9 || length_acc > length_gravity*1.1)
         {
             return orientation_;
         }
@@ -216,6 +217,7 @@ private:
         };
 
         Vector3 acc_comp = acc;
+        //Cross product calculations
         acc_comp.x += -(gyro.y*gyro.y + gyro.z*gyro.z)*position_.x + (gyro.x*gyro.y - gyro_acc.z)*position_.y + (gyro.x*gyro.z + gyro_acc.y)*position_.z;
         acc_comp.y += (gyro.x*gyro.y + gyro_acc.z)*position_.x + -(gyro.x*gyro.x + gyro.z*gyro.z)*position_.y + (gyro.y*gyro.z - gyro_acc.x)*position_.z;
         acc_comp.z += (gyro.x*gyro.z - gyro_acc.y)*position_.x + (gyro.y*gyro.z + gyro_acc.x)*position_.y + -(gyro.x*gyro.x + gyro.y*gyro.y)*position_.z;
@@ -224,6 +226,7 @@ private:
     }
 
 private:
+    //Variables and shit
     Vector3 position_;
     Vector3 acc_;
     Quaternion orientation_;
@@ -236,7 +239,7 @@ private:
     unsigned int calibration_count_ = 0;
     unsigned int calibration_needed_ = 500;
     std::chrono::steady_clock::time_point last_update_time_;
-    //Initializes filter window
+    //Initializes filter window. Filter not currently in use, probably wont be either
     std::array<float, FILTER_LENGTH> acc_x_buffer_ = {0.0f};
     std::array<float, FILTER_LENGTH> acc_y_buffer_ = {0.0f};
     std::array<float, FILTER_LENGTH> acc_z_buffer_ = {0.0f};

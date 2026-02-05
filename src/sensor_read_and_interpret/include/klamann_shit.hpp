@@ -10,6 +10,7 @@ class klamann_shit
 {
 public:
     klamann_shit(Eigen::MatrixXd& a_matrix, Eigen::MatrixXd& b_matrix, Eigen::MatrixXd& c_matrix):
+    //Defines stuff. The things that isn't from the SYSID is guesswork
     a_matrix_(a_matrix), b_matrix_(b_matrix), c_matrix_(c_matrix), x_hat_(Eigen::VectorXd::Zero(9)),
         x_hat_pre_(Eigen::VectorXd::Zero(9)),
         p_(Eigen::MatrixXd::Identity(9, 9) * 10),

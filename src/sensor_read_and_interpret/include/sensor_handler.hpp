@@ -12,6 +12,7 @@ class sensor_handler
 {
 public:
     sensor_handler(): orientation_({1.0f, 0.0f, 0.0f, 0.0f}), kalmann(
+                        //A, B, and C matrices found using sysID in python
                       // A-matrix (9x9)
                       (Eigen::MatrixXd(9, 9) << 
                         1.01474855e+00, -3.64004525e-03,  6.28674112e-03, -4.47525821e-03,  2.05615813e-03, -6.08400975e-03, -5.11822564e-02, -5.66985020e-02,  3.06323981e-02,
@@ -81,7 +82,6 @@ public:
             current_position_.y = pos_y;
             current_position_.z = pos_z;
             first_update_ = false;
-            current_position_acc_ = current_position_;
             prev_SLAM_pos_ = {pos_x, pos_y, pos_z};
             prev_SLAM_orientation_ = {quat_w, quat_x, quat_y, quat_z};
             return;
@@ -93,6 +93,7 @@ public:
             (pos_y - prev_SLAM_pos_.y) / dt
         };
 
+        //Rotates the estimated speed to the correct frame. Rotations work, but is a mess
         estimated_SLAM_speed = orientation_.rotate_vector(estimated_SLAM_speed);
 
         Quaternion estimated_SLAM_delta_orientation = {
@@ -112,11 +113,12 @@ public:
             alpha = 0.3f;
         }
 
+        //Complementary filter for speed. Higher weight on current speed due to IMU having higher update rate
+        //SLAM speed is noisy due to low frame rate
         current_speed_.x = alpha*current_speed_.x + (1-alpha)*estimated_SLAM_speed.x;
         current_speed_.y = alpha*current_speed_.y + (1-alpha)*estimated_SLAM_speed.y;
         current_speed_.z = alpha*current_speed_.z + (1-alpha)*estimated_SLAM_speed.z;
 
-        current_position_acc_ = current_position_;
         //Update prev values for speed calculation
         prev_SLAM_pos_ = {pos_x, pos_y, pos_z};
         prev_SLAM_orientation_ = {quat_w, quat_x, quat_y, quat_z};
@@ -169,11 +171,13 @@ public:
         float dt = std::chrono::duration<float>(current_time - last_update_time_).count();
         last_update_time_ = current_time;
         
+        //Transfers vectors to Eigen for Kalman filter
         Eigen::VectorXd measurement(6);
         measurement << acc.x, acc.y, acc.z, gyro.x, gyro.y, gyro.z;
         Eigen::VectorXd gain(8); 
         gain << thruster_gain[0], thruster_gain[1], thruster_gain[2], thruster_gain[3], thruster_gain[4], thruster_gain[5], thruster_gain[6], thruster_gain[7];
         Eigen::VectorXd filtered_values = kalmann.update(gain, measurement);
+        //Gets filtered measurements from Kalman filter
         Vector3 acc_filtered = {
             static_cast<float>(filtered_values[0]),
             static_cast<float>(filtered_values[1]),
@@ -186,6 +190,7 @@ public:
             static_cast<float>(filtered_values[5])
         };
 
+        //Update orientation based on filtered gyroscope data
         delta_orientation = Quaternion{
             1.0f,
             gyro_filtered.x * dt * 0.5f,
@@ -197,7 +202,7 @@ public:
 
         acc_filtered = orientation_.rotate_vector(acc_filtered);
 
-        //Update position and speed
+        //Update position and speed based on filtered accelerometer data
         current_position_.x -= current_speed_.x * dt + 0.5f * acc_filtered.x * dt * dt;
         current_position_.y -= current_speed_.y * dt + 0.5f * acc_filtered.y * dt * dt;
         current_position_.z -= current_speed_.z * dt + 0.5f * acc_filtered.z * dt * dt;
@@ -229,7 +234,7 @@ public:
                      << elapsed << ","
                      << acc_y << "," << -acc_x << "," << acc_z << ","
                      << current_speed_.x << "," << -current_speed_.y << "," << current_speed_.z << ","
-                     << current_position_.x << "," << current_position_.y << "," << -current_position_.z << ","
+                     << current_position_.x << "," << -current_position_.y << "," << -current_position_.z << ","
                      << perfect_acceleration_.x << "," << perfect_acceleration_.y << "," << perfect_acceleration_.z << ","
                      << perfect_speed_.x << "," << perfect_speed_.y << "," << perfect_speed_.z << ","
                      << perfect_position_.x << ", " << perfect_position_.y << ", " << perfect_position_.z << ", " << depth_ << ","
@@ -248,7 +253,6 @@ private:
     Vector3 perfect_speed_ = {0.0f, 0.0f, 0.0f};
     Vector3 perfect_position_ = {0.0f, 0.0f, 0.0f};
     Vector3 prev_SLAM_pos_ = {0.0f, 0.0f, 0.0f};
-    Vector3 current_position_acc_ = {0.0f, 0.0f, 0.0f};
     Quaternion prev_SLAM_orientation_ = {1.0f, 0.0f, 0.0f, 0.0f};
     Quaternion orientation_ = {1.0f, 0.0f, 0.0f, 0.0f};
     Quaternion perfect_orientation_;

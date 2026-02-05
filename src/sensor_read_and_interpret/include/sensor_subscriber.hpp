@@ -80,6 +80,7 @@ public:
         avg_acc_publisher_ = this->create_publisher<std_msgs::msg::Float32MultiArray>(
             "/average_acceleration", 1000);
 
+        //Publishes orientation for SLAMming balls
         orientation_publisher_ = this->create_publisher<std_msgs::msg::Float32MultiArray>(
             "/average_orientation", 100);
 
@@ -107,6 +108,7 @@ private:
 
     void imu_callback(const sensor_msgs::msg::Imu::ConstSharedPtr& msg, int imu_index)
     {
+        //Updates stuff from each IMU
         if (!recieved[imu_index])
         {
             auto& imu_obj = imu_objects_[imu_index];
@@ -141,6 +143,7 @@ private:
 
     void pose_callback(const geometry_msgs::msg::PoseStamped::ConstSharedPtr& msg)
     {
+        //Recievs estimated pose from SLAM
         static double last_time = this->now().seconds();
         double current_time = this->now().seconds();
         double dt = current_time - last_time;
@@ -161,6 +164,7 @@ private:
 
     void odometry_callback(const nav_msgs::msg::Odometry::ConstSharedPtr& msg)
     {
+        //Recievs perfect odometry for comparison and logging
         sensor_handler_.update_truth_odometry(
             msg->pose.pose.position.x,
             msg->pose.pose.position.y,
@@ -177,6 +181,7 @@ private:
 
     void thrust_callback(const std_msgs::msg::Float64MultiArray::ConstSharedPtr& msg)
     {
+        //Recievs current thruster commands for Kalman filter
         thrust_ = {msg->data[0], msg->data[1], msg->data[2], msg->data[3], msg->data[4], msg->data[5], msg->data[6], msg->data[7]};
     }
 
@@ -199,6 +204,7 @@ private:
         Vector3 avg_acc = acc_/recieved_counter;
         RCLCPP_INFO(this->get_logger(), "Acc - x: %.4f, y: %.4f, z: %.4f", avg_acc.y, avg_acc.x,  avg_acc.z);
         
+        //Updates orientation based on stuff from IMU data
         Quaternion avg_orientation = {
             orientation_.w / recieved_counter,
             orientation_.x / recieved_counter,
@@ -225,6 +231,7 @@ private:
         orientation_msg.data = {ori_from_handler.w, ori_from_handler.x, ori_from_handler.y, ori_from_handler.z};
         orientation_publisher_->publish(orientation_msg);
 
+        //Reset recieved flags
         recieved[0] = false;
         recieved[1] = false;
         recieved[2] = false;
@@ -253,6 +260,7 @@ private:
     }
 
 private:
+    //Variables and shit
     std::chrono::steady_clock::time_point time_;
     std::chrono::steady_clock::time_point prev_time_;
     image_transport::Subscriber left_cam_;
