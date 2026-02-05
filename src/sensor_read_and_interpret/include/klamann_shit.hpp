@@ -41,6 +41,13 @@ public:
         return c_matrix_*x_hat_;
     }
 
+    //Predicts the current state without measurements. Is used to solve the problem with inconsistent IMU updates.
+    Eigen::VectorXd predict_state(const Eigen::VectorXd& u, float dt)
+    { 
+        x_hat_pre_ = a_matrix_ * x_hat_ + b_matrix_ * u;
+        return c_matrix_ * x_hat_pre_;
+    }
+
 private:
     Eigen::MatrixXd a_matrix_;
     Eigen::MatrixXd b_matrix_;

@@ -99,11 +99,13 @@ private:
     void image_right_callback(const sensor_msgs::msg::Image::ConstSharedPtr& msg)
     {
         display_and_handle.display_image(msg, "Right Camera", this->get_logger());
+        imu_data_sender();
     }
 
     void image_left_callback(const sensor_msgs::msg::Image::ConstSharedPtr& msg)
     {
         display_and_handle.display_image(msg, "Left Camera", this->get_logger());
+        imu_data_sender();
     }
 
     void imu_callback(const sensor_msgs::msg::Imu::ConstSharedPtr& msg, int imu_index)
@@ -160,6 +162,7 @@ private:
             dt
         );
         last_time = this->now().seconds();
+        imu_data_sender();
     }
 
     void odometry_callback(const nav_msgs::msg::Odometry::ConstSharedPtr& msg)
@@ -177,12 +180,14 @@ private:
             msg->pose.pose.orientation.z,
             msg->pose.pose.orientation.w
         );
+        imu_data_sender();
     }
 
     void thrust_callback(const std_msgs::msg::Float64MultiArray::ConstSharedPtr& msg)
     {
         //Recievs current thruster commands for Kalman filter
         thrust_ = {msg->data[0], msg->data[1], msg->data[2], msg->data[3], msg->data[4], msg->data[5], msg->data[6], msg->data[7]};
+        imu_data_sender();
     }
 
     void imu_data_sender()
@@ -197,6 +202,7 @@ private:
 
         if (recieved_counter == 0)
         {
+            sensor_handler_.non_measurement_pose_update(thrust_);
             return;
         }
 
