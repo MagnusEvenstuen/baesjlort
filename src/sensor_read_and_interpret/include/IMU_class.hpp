@@ -105,10 +105,9 @@ public:
 
         prev_gyro_ = {gyro_rot.x, gyro_rot.y, gyro_rot.z};
 
-        acc_ = imu_to_robot_frame_.rotate_vector(acc_);
+        acc_ = imu_to_robot_frame_.rotate_vector_inverse(imu_to_robot_frame_.rotate_vector_inverse(acc_));
         acc_ = {-acc_.x, -acc_.y, -acc_.z};
-        rotated_gyro_ = imu_to_robot_frame_.rotate_vector(rotated_gyro_);
-        rotated_gyro_ = {-rotated_gyro_.x, -rotated_gyro_.y, -rotated_gyro_.z};
+        rotated_gyro_ = imu_to_robot_frame_.rotate_vector_inverse(imu_to_robot_frame_.rotate_vector_inverse(rotated_gyro_));
     }
 
     Vector3 get_acceleration() const

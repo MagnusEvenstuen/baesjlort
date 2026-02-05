@@ -335,8 +335,8 @@ private:
             pose.translation().z()
         };
 
-        //Vector3 position_rotated = quat_non_eigen.rotate_vector(position);
-        Vector3 position_corrected = orientation_.rotate_vector_inverse(position);
+        Vector3 position_rotated = quat_non_eigen.rotate_vector(position);
+        Vector3 position_corrected = orientation_.rotate_vector(position_rotated);
 
         //Set position and orientation
         pose_msg.pose.position.x = position_corrected.x;

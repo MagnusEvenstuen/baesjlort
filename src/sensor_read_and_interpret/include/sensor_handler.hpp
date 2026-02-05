@@ -88,10 +88,12 @@ public:
         }
         //Update position and orientation from SLAM pose estimate
         Vector3 estimated_SLAM_speed = {
-            -(pos_x - prev_SLAM_pos_.x) / dt,
-            -(pos_z - prev_SLAM_pos_.z) / dt,
+            (pos_x - prev_SLAM_pos_.x) / dt,
+            (pos_z - prev_SLAM_pos_.z) / dt,
             (pos_y - prev_SLAM_pos_.y) / dt
         };
+
+        estimated_SLAM_speed = orientation_.rotate_vector(estimated_SLAM_speed);
 
         Quaternion estimated_SLAM_delta_orientation = {
             (quat_w - prev_SLAM_orientation_.w) / dt,
@@ -110,9 +112,9 @@ public:
             alpha = 0.3f;
         }
 
-        //current_speed_.x = alpha*current_speed_.x + (1-alpha)*estimated_SLAM_speed.x;
-        //current_speed_.y = alpha*current_speed_.y + (1-alpha)*estimated_SLAM_speed.y;
-        //current_speed_.z = alpha*current_speed_.z + (1-alpha)*estimated_SLAM_speed.z;
+        current_speed_.x = alpha*current_speed_.x + (1-alpha)*estimated_SLAM_speed.x;
+        current_speed_.y = alpha*current_speed_.y + (1-alpha)*estimated_SLAM_speed.y;
+        current_speed_.z = alpha*current_speed_.z + (1-alpha)*estimated_SLAM_speed.z;
 
         current_position_acc_ = current_position_;
         //Update prev values for speed calculation
@@ -225,8 +227,8 @@ public:
             //Logs data to CSV file for plotting
             csv_file_ << std::fixed << std::setprecision(6)
                      << elapsed << ","
-                     << acc_y << "," << acc_x << "," << acc_z << ","
-                     << current_speed_.x << "," << current_speed_.y << "," << current_speed_.z << ","
+                     << acc_y << "," << -acc_x << "," << acc_z << ","
+                     << current_speed_.x << "," << -current_speed_.y << "," << current_speed_.z << ","
                      << current_position_.x << "," << current_position_.y << "," << -current_position_.z << ","
                      << perfect_acceleration_.x << "," << perfect_acceleration_.y << "," << perfect_acceleration_.z << ","
                      << perfect_speed_.x << "," << perfect_speed_.y << "," << perfect_speed_.z << ","
