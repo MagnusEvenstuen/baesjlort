@@ -248,7 +248,6 @@
         </sensor>
 
         <!-- IMU at center of mass -->
-<<<<<<< Updated upstream
         <sensor name="imuCenter" type="imu" rate="1000.0">
             <range angular_velocity="35.0 35.0 35.0"
                 linear_acceleration="155.0 155.0 155.0"/>
