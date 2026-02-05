@@ -27,6 +27,7 @@
 
 // OpenCV
 #include <opencv2/opencv.hpp>
+#include <opencv2/imgproc.hpp>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
@@ -152,7 +153,7 @@ private:
         std::lock_guard<std::mutex> lock(image_mutex_);
         //Convert ROS image to OpenCV format
         cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg, "bgr8");
-        left_image_ = cv_ptr->image;
+        left_image_ = apply_clahe(cv_ptr->image);
         //Set flag and process if both images are received
         left_received_ = true;
         image_msg_ = msg;
@@ -164,7 +165,7 @@ private:
         std::lock_guard<std::mutex> lock(image_mutex_);
         //Convert ROS image to OpenCV format
         cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg, "bgr8");
-        right_image_ = cv_ptr->image;
+        right_image_ = apply_clahe(cv_ptr->image);
         //Set flag and process if both images are received
         right_received_ = true;
         image_msg_ = msg;
@@ -175,6 +176,7 @@ private:
     //This function could be improved with better synchronization if needed
     void process_stereo_pair(const std_msgs::msg::Header& header)
     {
+        static unsigned int pose_identity_counter_ = 0;
         //RCLCPP_INFO(this->get_logger(), "Processing my balls...");
         //Check if both images have been received
         if (!left_received_ || !right_received_) 
@@ -191,9 +193,18 @@ private:
         if (!pose.matrix().isIdentity()) 
         {
             publishPose(pose, header);
+            pose_identity_counter_ = 0;  //Reset counter if we get a valid pose
         } else 
         {
             RCLCPP_WARN(this->get_logger(), "Pose is identity, not publishing...");
+            pose_identity_counter_++;
+            if (pose_identity_counter_ >= 5)
+            {
+                //Reseting SLAM system after consecutive identity poses
+                RCLCPP_WARN(this->get_logger(), "Pose is identity, to long. Resetting...");
+                pose_identity_counter_ = 0;
+                slam_system_->Reset();
+            }
         }
 
         //Reset flags
@@ -251,6 +262,28 @@ private:
 
         //Publish pose
         pose_publisher_->publish(pose_msg);
+    }
+
+    cv::Mat apply_clahe(const cv::Mat& image) {
+        cv::Mat lab_image, result;
+        
+        //Convert to LAB color space
+        cv::cvtColor(image, lab_image, cv::COLOR_BGR2Lab);
+        
+        //Split channels
+        std::vector<cv::Mat> lab_planes;
+        cv::split(lab_image, lab_planes);
+        
+        //Apply CLAHE
+        cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE();
+        clahe->setClipLimit(2.0);
+        clahe->apply(lab_planes[0], lab_planes[0]);
+        
+        //Merge back and convert to BGR
+        cv::merge(lab_planes, lab_image);
+        cv::cvtColor(lab_image, result, cv::COLOR_Lab2BGR);
+        
+        return result;
     }
 
 private:
