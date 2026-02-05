@@ -206,6 +206,8 @@ public:
         current_position_.x -= current_speed_.x * dt + 0.5f * acc_filtered.x * dt * dt;
         current_position_.y -= current_speed_.y * dt + 0.5f * acc_filtered.y * dt * dt;
         current_position_.z -= current_speed_.z * dt + 0.5f * acc_filtered.z * dt * dt;
+        //Update depth with pressure sensor data using complementary filter
+        current_position_.z = 0.1*current_position_.z + 0.9*depth_;
         current_speed_.x += acc_filtered.x * dt;
         current_speed_.y += acc_filtered.y * dt;
         current_speed_.z += acc_filtered.z * dt;
@@ -237,7 +239,7 @@ public:
                      << current_position_.x << "," << -current_position_.y << "," << -current_position_.z << ","
                      << perfect_acceleration_.x << "," << perfect_acceleration_.y << "," << perfect_acceleration_.z << ","
                      << perfect_speed_.x << "," << perfect_speed_.y << "," << perfect_speed_.z << ","
-                     << perfect_position_.x << ", " << perfect_position_.y << ", " << perfect_position_.z << ", " << depth_ << ","
+                     << perfect_position_.x << ", " << perfect_position_.y << ", " << -perfect_position_.z << ", " << depth_ << ","
                      << orientation_.x << ", " << orientation_.y << ", " << orientation_.z << ", "
                      << perfect_orientation_.x << ", " << perfect_orientation_.y << ", " << perfect_orientation_.z
                      << "\n";

@@ -160,6 +160,9 @@ private:
         //Apply CLAHE
         left_image_ = apply_clahe(left_img_->image);
         right_image_ = apply_clahe(right_img_->image);
+
+        //left_image_ = (left_img_->image);
+        //right_image_ = (right_img_->image);
         
         // Process stereo pair immediately (message_filters ensures both are available)
         process_stereo_pair(left_msg->header);
@@ -272,7 +275,7 @@ private:
         
         //Apply CLAHE
         cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE();
-        clahe->setClipLimit(2.0);
+        clahe->setClipLimit(4.0);
         clahe->apply(lab_planes[0], lab_planes[0]);
         
         //Merge back and convert to BGR
