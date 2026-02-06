@@ -169,13 +169,13 @@ private:
         };
 
         //Get correction from PID controller
-        Vector3 correction = PID_corrector(error, length_acc, dt);
-        orientation_ = orientation_ * Quaternion(
-            1.0f,
-            correction.x * dt * 0.5f,
-            correction.y * dt * 0.5f,
-            0.0f
-        );
+        //Vector3 correction = PID_corrector(error, length_acc, dt);
+        //orientation_ = orientation_ * Quaternion(
+        //    1.0f,
+        //    correction.x * dt * 0.5f,
+        //    correction.y * dt * 0.5f,
+        //    0.0f
+        //);
         orientation_.normalize();
 
         return orientation_;

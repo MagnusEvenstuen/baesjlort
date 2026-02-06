@@ -117,7 +117,6 @@ public:
         current_position_.x -= current_speed_.x * dt + 0.5f * acc_est.x * dt * dt;
         current_position_.y -= current_speed_.y * dt + 0.5f * acc_est.y * dt * dt;
         current_position_.z -= current_speed_.z * dt + 0.5f * acc_est.z * dt * dt;
-        //Update depth with pressure sensor data using complementary filter
         current_position_.z = 0.1*current_position_.z + 0.9*depth_;
         current_speed_.x += acc_est.x * dt;
         current_speed_.y += acc_est.y * dt;
@@ -204,7 +203,7 @@ public:
         perfect_orientation_.z = quat_z;
         perfect_orientation_ = world_correction_ * perfect_orientation_;
         perfect_orientation_.normalize();
-        perfect_speed_ = perfect_orientation_.rotate_vector_inverse(perfect_speed_);
+        perfect_speed_ = perfect_orientation_.rotate_vector(perfect_speed_);
     }
 
 
@@ -291,7 +290,7 @@ public:
                      << elapsed << ","
                      << acc_y << "," << -acc_x << "," << acc_z << ","
                      << current_speed_.x << "," << -current_speed_.y << "," << current_speed_.z << ","
-                     << current_position_.x << "," << -current_position_.y << "," << -current_position_.z << ","
+                     << current_position_.x << "," << -current_position_.y << "," << current_position_.z << ","
                      << perfect_acceleration_.x << "," << perfect_acceleration_.y << "," << perfect_acceleration_.z << ","
                      << perfect_speed_.x << "," << perfect_speed_.y << "," << perfect_speed_.z << ","
                      << perfect_position_.x << ", " << perfect_position_.y << ", " << -perfect_position_.z << ", " << depth_ << ","

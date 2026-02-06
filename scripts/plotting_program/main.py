@@ -43,6 +43,16 @@ correct_orientation_z = data[:, 25]
 
 depth = data[:, 19]
 
+#Changes start value of true positions to be same as on measured (Only check position compared to start)
+#1 is used instead of 0 as index, because sometimes the first value is from before data is rescieved from the odometry sensor
+correct_pos_x_start = data[:, 16][1]
+correct_pos_y_start = data[:, 17][1]
+correct_pos_z_start = data[:, 18][1]
+for i in range(len(correct_pos_x)):
+    correct_pos_x[i] -= correct_pos_x_start
+    correct_pos_y[i] -= correct_pos_y_start
+    correct_pos_z[i] -= correct_pos_z_start
+
 plt.figure()
 plt.subplot(4,1,1)
 plt.title("Acceleration")
@@ -59,11 +69,11 @@ plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 plt.subplot(4,1,2)
 plt.title("Velocity")
 plt.plot(timestamp, vel_x, label="velocity_x")
-plt.plot(timestamp, vel_y, label="velocity_y")
-plt.plot(timestamp, vel_z, label="velocity_z")
-plt.plot(timestamp, correct_vel_x, label="correct_velocity_x", linestyle="--")
+#plt.plot(timestamp, vel_y, label="velocity_y")
+#plt.plot(timestamp, vel_z, label="velocity_z")
+#plt.plot(timestamp, correct_vel_x, label="correct_velocity_x", linestyle="--")
 plt.plot(timestamp, correct_vel_y, label="correct_velocity_y", linestyle="--")
-plt.plot(timestamp, correct_vel_z, label="correct_velocity_z", linestyle="--")
+#plt.plot(timestamp, correct_vel_z, label="correct_velocity_z", linestyle="--")
 plt.xlabel("Time")
 plt.ylabel("Speed (m/s)")
 plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
@@ -71,11 +81,11 @@ plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 plt.subplot(4,1,3)
 plt.title("Position")
 plt.plot(timestamp, pos_x, label="position_x")
-plt.plot(timestamp, pos_y, label="position_y")
-plt.plot(timestamp, pos_z, label="position_z")
+#plt.plot(timestamp, pos_y, label="position_y")
+#plt.plot(timestamp, pos_z, label="position_z")
 plt.plot(timestamp, correct_pos_x, label="correct_position_x", linestyle="--")
-plt.plot(timestamp, correct_pos_y, label="correct_position_y", linestyle="--")
-plt.plot(timestamp, correct_pos_z, label="correct_position_z", linestyle="--")
+#plt.plot(timestamp, correct_pos_y, label="correct_position_y", linestyle="--")
+#plt.plot(timestamp, correct_pos_z, label="correct_position_z", linestyle="--")
 #plt.plot(timestamp, depth, label="depth")
 plt.xlabel("Time")
 plt.ylabel("Position (m)")

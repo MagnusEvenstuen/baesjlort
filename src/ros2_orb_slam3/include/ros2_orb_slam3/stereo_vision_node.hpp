@@ -92,21 +92,21 @@ public:
         init_start_time_ = this->now().seconds();
         
         //init_timer_ = this->create_wall_timer(
-        //    std::chrono::milliseconds(100),
-        //    std::bind(&stereo_vision_node::init, this)
+            //std::chrono::milliseconds(100),
+            //std::bind(&stereo_vision_node::init, this)
         //);
         
 
-        //this->create_wall_timer(
-        //    std::chrono::seconds(250),
-        //    [this]() {
-        //        RCLCPP_INFO(this->get_logger(), "Initialization complete!");
-        //        init_timer_->cancel();  // Stopp initialiseringsløkken
-        //        auto msg = std_msgs::msg::Float64MultiArray();
-        //        msg.data = std::vector<double>({0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f});
-        //        thrust_publisher_->publish(msg);
-        //    }
-        //);
+        this->create_wall_timer(
+            std::chrono::seconds(300),
+            [this]() {
+                RCLCPP_INFO(this->get_logger(), "Initialization complete!");
+                init_timer_->cancel();  // Stopp initialiseringsløkken
+                auto msg = std_msgs::msg::Float64MultiArray();
+                msg.data = std::vector<double>({0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f});
+                thrust_publisher_->publish(msg);
+            }
+        );
     }
 
     ~stereo_vision_node()
@@ -128,24 +128,31 @@ private:
         } else if(this->now().seconds() - init_start_time_ < 10.0)      //Left
         {
             auto msg = std_msgs::msg::Float64MultiArray();
-            msg.data = std::vector<double>({3.0f, -6.0f, 3.0f, -6.0f, 0.0f, 0.0f, 0.0f, 0.0f});
+            msg.data = std::vector<double>({6.0f, -6.0f, 6.0f, -6.0f, 0.0f, 0.0f, 0.0f, 0.0f});
             thrust_publisher_->publish(msg);
         } else if(this->now().seconds() - init_start_time_ < 15.0)      //Forward
         {
             auto msg = std_msgs::msg::Float64MultiArray();
-            msg.data = std::vector<double>({3.0f, 3.0f, -3.0f, -3.0f, -10.0f, -10.0f, -10.0f, 0.0f});
+            msg.data = std::vector<double>({3.0f, 3.0f, -3.0f, -3.0f, 0.0f, 0.0f, 0.0f, 0.0f});
             thrust_publisher_->publish(msg);
-        } else if(this->now().seconds() - init_start_time_ < 20.0)      //Right
+        } else if (this->now().seconds() - init_start_time_ < 30.0)      //Rotate right
         {
             auto msg = std_msgs::msg::Float64MultiArray();
-            msg.data = std::vector<double>({-3.0f, 3.0f, -3.0f, 3.0f, 0.0f, 0.0f, 0.0f, 0.0f});
+            msg.data = std::vector<double>({-3.0f, 3.0f, 3.0f, -3.0f, 0.0f, 0.0f, 0.0f, 0.0f});
+            thrust_publisher_->publish(msg);
+        } else if(this->now().seconds() - init_start_time_ < 35.0)      //Right
+        {
+            auto msg = std_msgs::msg::Float64MultiArray();
+            msg.data = std::vector<double>({-5.0f, 5.0f, -5.0f, 5.0f, 0.0f, 0.0f, 0.0f, 0.0f});
             thrust_publisher_->publish(msg);
         }
-        else if(this->now().seconds() - init_start_time_ < 25.0)        //Still
+        else if(this->now().seconds() - init_start_time_ < 60.0)        //Still
         {
             auto msg = std_msgs::msg::Float64MultiArray();
             msg.data = std::vector<double>({0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f});
             thrust_publisher_->publish(msg);
+        } else                                                              //Reset
+        {
             init_start_time_ = this->now().seconds();
         }
     }
@@ -275,7 +282,7 @@ private:
         
         //Apply CLAHE
         cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE();
-        clahe->setClipLimit(4.0);
+        clahe->setClipLimit(3.0);
         clahe->apply(lab_planes[0], lab_planes[0]);
         
         //Merge back and convert to BGR

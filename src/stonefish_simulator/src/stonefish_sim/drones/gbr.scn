@@ -368,14 +368,14 @@
         </sensor>
 
         <!-- Pressure sensor -->
-        <!-- <sensor name="pressure" type="pressure" rate="150.0"> -->
-        <!--     <range pressure="100000.0"/> -->
-        <!--     <noise pressure="50.0"/> -->
-        <!--     <history samples="1"/> -->
-        <!--     <origin xyz="0.0 0.0 -0.05" rpy="0.0 0.0 0.0"/> -->
-        <!--     <link name="Base"/> -->
-        <!--     <ros_publisher topic="/gbr/pressure"/> -->
-        <!-- </sensor> -->
+        <sensor name="pressure" type="pressure" rate="150.0">
+            <range pressure="100000.0"/>
+            <noise pressure="50.0"/>
+            <history samples="1"/>
+            <origin xyz="0.0 0.0 -0.05" rpy="0.0 0.0 0.0"/>
+            <link name="Base"/>
+            <ros_publisher topic="/gbr/pressure"/>
+        </sensor>
 
 
         <world_transform xyz="2.0 2.0 0.5" rpy="3.14159 0.0 0.0"/>
