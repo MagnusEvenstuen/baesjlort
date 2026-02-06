@@ -282,7 +282,7 @@ private:
         
         //Apply CLAHE
         cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE();
-        clahe->setClipLimit(3.0);
+        clahe->setClipLimit(2.0);
         clahe->apply(lab_planes[0], lab_planes[0]);
         
         //Merge back and convert to BGR

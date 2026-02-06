@@ -144,7 +144,7 @@ private:
         );
 
         //Return if acceleration is out of expected range
-        if (length_acc < length_gravity*0.9 || length_acc > length_gravity*1.1)
+        if (length_acc < length_gravity*0.95 || length_acc > length_gravity*1.05)
         {
             return orientation_;
         }
@@ -169,13 +169,13 @@ private:
         };
 
         //Get correction from PID controller
-        //Vector3 correction = PID_corrector(error, length_acc, dt);
-        //orientation_ = orientation_ * Quaternion(
-        //    1.0f,
-        //    correction.x * dt * 0.5f,
-        //    correction.y * dt * 0.5f,
-        //    0.0f
-        //);
+        ///Vector3 correction = PID_corrector(error, length_acc, dt);
+        ///orientation_ = orientation_ * Quaternion(
+        ///    1.0f,
+        ///    correction.x * dt * 0.5f,
+        ///    correction.y * dt * 0.5f,
+        ///    0.0f
+        ///);
         orientation_.normalize();
 
         return orientation_;
@@ -184,7 +184,7 @@ private:
     Vector3 PID_corrector(Vector3 error, float acc_length, float dt)
     {
         //PID controller constants
-        constexpr float Kp = 1.2f;
+        constexpr float Kp = 0.7f;
         constexpr float Ki = 0.003f;
         constexpr float Kd = 0.0f;
         constexpr float weight = 0.2f;
