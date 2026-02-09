@@ -86,15 +86,19 @@ public:
             prev_SLAM_orientation_ = {quat_w, quat_x, quat_y, quat_z};
             return;
         }
+
+        Quaternion slam_quat = {quat_w, quat_x, quat_y, quat_z};
+
         //Update position and orientation from SLAM pose estimate
         Vector3 estimated_SLAM_speed = {
             (pos_x - prev_SLAM_pos_.x) / dt,
             (pos_z - prev_SLAM_pos_.z) / dt,
             (pos_y - prev_SLAM_pos_.y) / dt
         };
-
-        //Rotates the estimated speed to the correct frame. Rotations work, but is a mess
-        estimated_SLAM_speed = orientation_.rotate_vector(estimated_SLAM_speed);
+        
+        Quaternion slam_to_world = slam_quat*orientation_;
+        slam_to_world.normalize();
+        estimated_SLAM_speed = slam_to_world.rotate_vector(estimated_SLAM_speed);
 
         Quaternion estimated_SLAM_delta_orientation = {
             (quat_w - prev_SLAM_orientation_.w) / dt,

@@ -235,15 +235,10 @@ private:
             pose.translation().z()
         };
 
-        //Correct position with orientation for IMU coordinate frame
-        Quaternion correction = orientation_ * quat_non_eigen;
-        correction.normalize();
-        Vector3 position_corrected = correction.rotate_vector(position);
-
         //Set position and orientation
-        pose_msg.pose.position.x = position_corrected.x;
-        pose_msg.pose.position.y = position_corrected.y;
-        pose_msg.pose.position.z = position_corrected.z;
+        pose_msg.pose.position.x = position.x;
+        pose_msg.pose.position.y = position.y;
+        pose_msg.pose.position.z = position.z;
         pose_msg.pose.orientation.x = quat.x();
         pose_msg.pose.orientation.y = quat.y();
         pose_msg.pose.orientation.z = quat.z();
