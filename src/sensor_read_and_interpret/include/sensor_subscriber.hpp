@@ -61,7 +61,7 @@ public:
         // Subscribers for IMU messages
         for (const auto& [topic_name, imu_index] : imu_topic_map_) {
             auto subscriber = this->create_subscription<sensor_msgs::msg::Imu>(
-                topic_name, rclcpp::SensorDataQoS(),
+                topic_name, 100,
                 [this, imu_index](const sensor_msgs::msg::Imu::ConstSharedPtr& msg) {
                     imu_callback(msg, imu_index);
                 });
@@ -86,107 +86,59 @@ public:
 
         // Subscriber for Fluid Pressure messages
         pressure_ = this->create_subscription<sensor_msgs::msg::FluidPressure>(
-            "/gbr/pressure", 10, 
+            "/gbr/pressure", 100, 
             std::bind(&sensor_subscriber::pressure_callback, this, std::placeholders::_1));
 
         // Subscriber odemetry
         odometry_subscription_ = this->create_subscription<nav_msgs::msg::Odometry>(
-            "/gbr/odometry_perfect", rclcpp::SensorDataQoS(),
+            "/gbr/odometry_perfect", 100,
             std::bind(&sensor_subscriber::odometry_callback, this, std::placeholders::_1));
-    }
-
-    void outlier_rejector()
-    {
-        //The orientation part isn't implemented yet, as it isn't used anywhere. Might be implemented later.
-        unsigned int recieved_counter = 0;
-        Vector3 acc_avg{0.0f, 0.0f, 0.0f};
-        Vector3 gyro_avg{0.0f, 0.0f, 0.0f};
-        Quaternion orientation_avg{0.0f, 0.0f, 0.0f, 0.0f};
-        for (int i = 0; i < recieved_.size(); i++)
-        {
-            if (recieved_[i])
-            {
-                //Calculate average values from the recieved IMU messages
-                Vector3 acc = imu_objects_[i].get_acceleration();
-                Quaternion orientation = imu_objects_[i].get_orientation();
-                Vector3 gyro = imu_objects_[i].get_gyro();
-                
-                acc_avg.x += acc.x;
-                acc_avg.y += acc.y;
-                acc_avg.z += acc.z;
-                gyro_avg.x += gyro.x;
-                gyro_avg.y += gyro.y;
-                gyro_avg.z += gyro.z;
-                recieved_counter++;
-            }
-        }
-
-        acc_avg = acc_avg/recieved_counter;
-        gyro_avg = gyro_avg/recieved_counter;
-
-        acc_ = {0.0f, 0.0f, 0.0f};
-        gyro_ = {0.0f, 0.0f, 0.0f};
-        orientation_ = {0.0f, 0.0f, 0.0f, 0.0f};
-        for (int i = 0; i < recieved_.size(); i++)
-        {
-            if (recieved_[i])
-            {
-                Vector3 acc = imu_objects_[i].get_acceleration();
-                Vector3 gyro = imu_objects_[i].get_gyro();
-                Quaternion orientation = imu_objects_[i].get_orientation();
-
-                if (abs(acc.x - acc_avg.x) > 0.2f || abs(acc.y - acc_avg.y) > 0.2f || abs(acc.z - acc_avg.z) > 0.2f ||
-                    abs(gyro.x - gyro_avg.x) > 0.2f || abs(gyro.y - gyro_avg.y) > 0.2f || abs(gyro.z - gyro_avg.z) > 0.2f)
-                {
-                    recieved_[i] = false;
-                } else {
-                    acc_.x += acc.x;
-                    acc_.y += acc.y;
-                    acc_.z += acc.z;
-                    gyro_.x += gyro.x;
-                    gyro_.y += gyro.y;
-                    gyro_.z += gyro.z;
-                    orientation_.w += orientation.w;
-                    orientation_.x += orientation.x;
-                    orientation_.y += orientation.y;
-                    orientation_.z += orientation.z;
-                }
-            }
-        }
     }
 
 private:
     void image_right_callback(const sensor_msgs::msg::Image::ConstSharedPtr& msg)
     {
         display_and_handle.display_image(msg, "Right Camera", this->get_logger());
-        imu_data_sender();
     }
 
     void image_left_callback(const sensor_msgs::msg::Image::ConstSharedPtr& msg)
     {
         display_and_handle.display_image(msg, "Left Camera", this->get_logger());
-        imu_data_sender();
     }
 
     void imu_callback(const sensor_msgs::msg::Imu::ConstSharedPtr& msg, int imu_index)
     {
         //Updates stuff from each IMU
-        auto& imu_obj = imu_objects_[imu_index];
-        imu_obj.update(
-            msg->linear_acceleration.x,
-            msg->linear_acceleration.y,
-            msg->linear_acceleration.z,
-            msg->angular_velocity.x,
-            msg->angular_velocity.y,
-            msg->angular_velocity.z);
-        
-        Vector3 acc = imu_obj.get_acceleration();
-        Quaternion orientation = imu_obj.get_orientation();
-        Vector3 gyro = imu_obj.get_gyro();
+        if (!recieved[imu_index])
+        {
+            auto& imu_obj = imu_objects_[imu_index];
+            imu_obj.update(
+                msg->linear_acceleration.x,
+                msg->linear_acceleration.y,
+                msg->linear_acceleration.z,
+                msg->angular_velocity.x,
+                msg->angular_velocity.y,
+                msg->angular_velocity.z);
             
-        recieved_[imu_index] = true;
-
-        outlier_rejector();
+            Vector3 acc = imu_obj.get_acceleration();
+            Quaternion orientation = imu_obj.get_orientation();
+            Vector3 gyro = imu_obj.get_gyro();
+            
+            acc_.x += acc.x;
+            acc_.y += acc.y;
+            acc_.z += acc.z;
+            
+            orientation_.w += orientation.w;
+            orientation_.x += orientation.x;
+            orientation_.y += orientation.y;
+            orientation_.z += orientation.z;
+            
+            gyro_.x += gyro.x;
+            gyro_.y += gyro.y;
+            gyro_.z += gyro.z;
+            
+            recieved[imu_index] = true;
+        }
     }
 
     void pose_callback(const geometry_msgs::msg::PoseStamped::ConstSharedPtr& msg)
@@ -208,7 +160,6 @@ private:
             dt
         );
         last_time = this->now().seconds();
-        imu_data_sender();
     }
 
     void odometry_callback(const nav_msgs::msg::Odometry::ConstSharedPtr& msg)
@@ -226,21 +177,19 @@ private:
             msg->pose.pose.orientation.z,
             msg->pose.pose.orientation.w
         );
-        imu_data_sender();
     }
 
     void thrust_callback(const std_msgs::msg::Float64MultiArray::ConstSharedPtr& msg)
     {
         //Recievs current thruster commands for Kalman filter
         thrust_ = {msg->data[0], msg->data[1], msg->data[2], msg->data[3], msg->data[4], msg->data[5], msg->data[6], msg->data[7]};
-        imu_data_sender();
     }
 
     void imu_data_sender()
     {
         //Check how many IMU messages have been recieved
         unsigned int recieved_counter = 0;
-        for (bool r : recieved_)
+        for (bool r : recieved)
         {
             if (r)
                 recieved_counter++;
@@ -248,7 +197,6 @@ private:
 
         if (recieved_counter == 0)
         {
-            sensor_handler_.non_measurement_pose_update(thrust_);
             return;
         }
 
@@ -284,14 +232,14 @@ private:
         orientation_publisher_->publish(orientation_msg);
 
         //Reset recieved flags
-        recieved_[0] = false;
-        recieved_[1] = false;
-        recieved_[2] = false;
-        recieved_[3] = false;
-        recieved_[4] = false;
-        recieved_[5] = false;
-        recieved_[6] = false;
-        recieved_[7] = false;
+        recieved[0] = false;
+        recieved[1] = false;
+        recieved[2] = false;
+        recieved[3] = false;
+        recieved[4] = false;
+        recieved[5] = false;
+        recieved[6] = false;
+        recieved[7] = false;
         //Updates sensor handler with averaged IMU data
         sensor_handler_.update(avg_acc, avg_gyro, thrust_);
 
@@ -307,7 +255,6 @@ private:
 
     void pressure_callback(const sensor_msgs::msg::FluidPressure::ConstSharedPtr& msg)
     {
-        RCLCPP_INFO(this->get_logger(), "Received pressure: %.2f", msg->fluid_pressure);
         sensor_handler_.update_depth(msg->fluid_pressure);
         imu_data_sender();
     }
@@ -349,7 +296,7 @@ private:
     Vector3 acc_ = {0.0f, 0.0f, 0.0f};
     Quaternion orientation_ = {0.0f, 0.0f, 0.0f, 0.0f};
     Quaternion last_orientation_ = {0.0f, 0.0f, 0.0f, 0.0f};
-    std::array<bool, 8> recieved_ = {false, false, false, false, false, false, false, false};
+    std::array<bool, 8> recieved = {false, false, false, false, false, false, false, false};
     IMU IMU_center_;
     IMU IMU_center1_;
     IMU IMU_center2_;

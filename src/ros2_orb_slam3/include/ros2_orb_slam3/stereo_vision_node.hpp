@@ -20,9 +20,6 @@
 #include <std_msgs/msg/float64_multi_array.hpp>
 #include <sensor_msgs/msg/imu.hpp>
 #include <cv_bridge/cv_bridge.hpp>
-#include <message_filters/subscriber.h>
-#include <message_filters/sync_policies/approximate_time.h>
-#include <message_filters/synchronizer.h>
 
 // ORB_SLAM3
 #include "System.h"
@@ -30,7 +27,6 @@
 
 // OpenCV
 #include <opencv2/opencv.hpp>
-#include <opencv2/imgproc.hpp>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
@@ -55,22 +51,21 @@ public:
             30
         );
 
-        left_subscriber_.subscribe(
-            this, 
+        left_subscriber_ = this->create_subscription<sensor_msgs::msg::Image>(
             "/gbr/cam_left/image_color",
-            rclcpp::SensorDataQoS().get_rmw_qos_profile()
-        );
-        
-        right_subscriber_.subscribe(
-            this,
-            "/gbr/cam_right/image_color",
-            rclcpp::SensorDataQoS().get_rmw_qos_profile()
+            10,
+            std::bind(&stereo_vision_node::left_image_callback, this, std::placeholders::_1)
         );
 
+        right_subscriber_ = this->create_subscription<sensor_msgs::msg::Image>(
+            "/gbr/cam_right/image_color",
+            10,
+            std::bind(&stereo_vision_node::right_image_callback, this, std::placeholders::_1)
+        );
 
         orientation_subscriber_ = this->create_subscription<std_msgs::msg::Float32MultiArray>(
             "/average_orientation",
-            rclcpp::SensorDataQoS(),
+            100,
             std::bind(&stereo_vision_node::orientation_callback, this, std::placeholders::_1)
         );
 
@@ -80,33 +75,24 @@ public:
             10
         );
 
-        //Synchronizer for stereo image topics. Written by AI
-        sync_ = std::make_shared<message_filters::Synchronizer<SyncPolicy>>(
-            SyncPolicy(10),
-            left_subscriber_,
-            right_subscriber_
-        );
-        
-        sync_->registerCallback(&stereo_vision_node::stereo_callback, this);
-
         init_start_time_ = this->now().seconds();
         
         //init_timer_ = this->create_wall_timer(
-            //std::chrono::milliseconds(100),
-            //std::bind(&stereo_vision_node::init, this)
+        //    std::chrono::milliseconds(100),
+        //    std::bind(&stereo_vision_node::init, this)
         //);
         
 
-        this->create_wall_timer(
-            std::chrono::seconds(300),
-            [this]() {
-                RCLCPP_INFO(this->get_logger(), "Initialization complete!");
-                init_timer_->cancel();  // Stopp initialiseringsløkken
-                auto msg = std_msgs::msg::Float64MultiArray();
-                msg.data = std::vector<double>({0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f});
-                thrust_publisher_->publish(msg);
-            }
-        );
+        //this->create_wall_timer(
+        //    std::chrono::seconds(250),
+        //    [this]() {
+        //        RCLCPP_INFO(this->get_logger(), "Initialization complete!");
+        //        init_timer_->cancel();  // Stopp initialiseringsløkken
+        //        auto msg = std_msgs::msg::Float64MultiArray();
+        //        msg.data = std::vector<double>({0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f});
+        //        thrust_publisher_->publish(msg);
+        //    }
+        //);
     }
 
     ~stereo_vision_node()
@@ -128,54 +114,29 @@ private:
         } else if(this->now().seconds() - init_start_time_ < 10.0)      //Left
         {
             auto msg = std_msgs::msg::Float64MultiArray();
-            msg.data = std::vector<double>({6.0f, -6.0f, 6.0f, -6.0f, 0.0f, 0.0f, 0.0f, 0.0f});
+            msg.data = std::vector<double>({3.0f, -6.0f, 3.0f, -6.0f, 0.0f, 0.0f, 0.0f, 0.0f});
             thrust_publisher_->publish(msg);
         } else if(this->now().seconds() - init_start_time_ < 15.0)      //Forward
         {
             auto msg = std_msgs::msg::Float64MultiArray();
-            msg.data = std::vector<double>({3.0f, 3.0f, -3.0f, -3.0f, 0.0f, 0.0f, 0.0f, 0.0f});
+            msg.data = std::vector<double>({3.0f, 3.0f, -3.0f, -3.0f, -10.0f, -10.0f, -10.0f, 0.0f});
             thrust_publisher_->publish(msg);
-        } else if (this->now().seconds() - init_start_time_ < 30.0)      //Rotate right
+        } else if(this->now().seconds() - init_start_time_ < 20.0)      //Right
         {
             auto msg = std_msgs::msg::Float64MultiArray();
-            msg.data = std::vector<double>({-3.0f, 3.0f, 3.0f, -3.0f, 0.0f, 0.0f, 0.0f, 0.0f});
-            thrust_publisher_->publish(msg);
-        } else if(this->now().seconds() - init_start_time_ < 35.0)      //Right
-        {
-            auto msg = std_msgs::msg::Float64MultiArray();
-            msg.data = std::vector<double>({-5.0f, 5.0f, -5.0f, 5.0f, 0.0f, 0.0f, 0.0f, 0.0f});
+            msg.data = std::vector<double>({-3.0f, 3.0f, -3.0f, 3.0f, 0.0f, 0.0f, 0.0f, 0.0f});
             thrust_publisher_->publish(msg);
         }
-        else if(this->now().seconds() - init_start_time_ < 60.0)        //Still
+        else if(this->now().seconds() - init_start_time_ < 25.0)        //Still
         {
             auto msg = std_msgs::msg::Float64MultiArray();
             msg.data = std::vector<double>({0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f});
             thrust_publisher_->publish(msg);
-        } else                                                              //Reset
-        {
             init_start_time_ = this->now().seconds();
         }
     }
 
-    void stereo_callback(const sensor_msgs::msg::Image::ConstSharedPtr& left_msg,
-        const sensor_msgs::msg::Image::ConstSharedPtr& right_msg)
-    {
-        //Convert images
-        cv_bridge::CvImagePtr left_img_ = cv_bridge::toCvCopy(left_msg, "bgr8");
-        cv_bridge::CvImagePtr right_img_ = cv_bridge::toCvCopy(right_msg, "bgr8");
-        
-        //Apply CLAHE
-        left_image_ = apply_clahe(left_img_->image);
-        right_image_ = apply_clahe(right_img_->image);
-
-        //left_image_ = (left_img_->image);
-        //right_image_ = (right_img_->image);
-        
-        // Process stereo pair immediately (message_filters ensures both are available)
-        process_stereo_pair(left_msg->header);
-    }
-
-        void orientation_callback(const std_msgs::msg::Float32MultiArray::SharedPtr msg)
+    void orientation_callback(const std_msgs::msg::Float32MultiArray::SharedPtr msg)
     {
         //Sets the correct orientation from IMU data
         orientation_ = {
@@ -186,10 +147,42 @@ private:
         };
     }
 
+    void left_image_callback(const sensor_msgs::msg::Image::SharedPtr msg)
+    {
+        std::lock_guard<std::mutex> lock(image_mutex_);
+        //Convert ROS image to OpenCV format
+        cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg, "bgr8");
+        left_image_ = cv_ptr->image;
+        //Set flag and process if both images are received
+        left_received_ = true;
+        image_msg_ = msg;
+        process_stereo_pair(image_msg_->header);
+    }
+
+    void right_image_callback(const sensor_msgs::msg::Image::SharedPtr msg)
+    {
+        std::lock_guard<std::mutex> lock(image_mutex_);
+        //Convert ROS image to OpenCV format
+        cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg, "bgr8");
+        right_image_ = cv_ptr->image;
+        //Set flag and process if both images are received
+        right_received_ = true;
+        image_msg_ = msg;
+        process_stereo_pair(image_msg_->header);
+    }
+
+
     //This function could be improved with better synchronization if needed
     void process_stereo_pair(const std_msgs::msg::Header& header)
     {
-        static unsigned int pose_identity_counter_ = 0;
+        static unsigned int pose_identity_counter = 0;
+        //RCLCPP_INFO(this->get_logger(), "Processing my balls...");
+        //Check if both images have been received
+        if (!left_received_ || !right_received_) 
+        {
+            return;
+        }
+
         //Process stereo images with ORB_SLAM3
         Sophus::SE3f pose = slam_system_->TrackStereo(left_image_, 
                                                     right_image_, 
@@ -199,16 +192,16 @@ private:
         if (!pose.matrix().isIdentity()) 
         {
             publishPose(pose, header);
-            pose_identity_counter_ = 0;  //Reset counter if we get a valid pose
+            pose_identity_counter = 0;  //Reset counter if we get a valid pose
         } else 
         {
             RCLCPP_WARN(this->get_logger(), "Pose is identity, not publishing...");
-            pose_identity_counter_++;
-            if (pose_identity_counter_ >= 5)
+            pose_identity_counter++;
+            if (pose_identity_counter >= 5)
             {
-                //Reseting SLAM system after consecutive identity poses
+                //Reseting SLAM system after consecutive identity poses to improve speed estimation
                 RCLCPP_WARN(this->get_logger(), "Pose is identity, to long. Resetting...");
-                pose_identity_counter_ = 0;
+                pose_identity_counter = 0;
                 slam_system_->Reset();
             }
         }
@@ -243,8 +236,9 @@ private:
         };
 
         //Correct position with orientation for IMU coordinate frame
-        Vector3 position_rotated = quat_non_eigen.rotate_vector(position);
-        Vector3 position_corrected = orientation_.rotate_vector(position_rotated);
+        Quaternion correction = orientation_ * quat_non_eigen;
+        correction.normalize();
+        Vector3 position_corrected = correction.rotate_vector(position);
 
         //Set position and orientation
         pose_msg.pose.position.x = position_corrected.x;
@@ -270,6 +264,7 @@ private:
         pose_publisher_->publish(pose_msg);
     }
 
+    //This isn't used as it also enhances noise. Can maybe be used later with better tuning
     cv::Mat apply_clahe(const cv::Mat& image) {
         cv::Mat lab_image, result;
         
@@ -293,21 +288,12 @@ private:
     }
 
 private:
-    //The message filter part is written by AI
-    typedef message_filters::sync_policies::ApproximateTime<
-        sensor_msgs::msg::Image,
-        sensor_msgs::msg::Image
-    > SyncPolicy;
-    
-    // Message filters subscribers
-    message_filters::Subscriber<sensor_msgs::msg::Image> left_subscriber_;
-    message_filters::Subscriber<sensor_msgs::msg::Image> right_subscriber_;
-    std::shared_ptr<message_filters::Synchronizer<SyncPolicy>> sync_;
-
     //Defines stuff
     std::unique_ptr<ORB_SLAM3::System> slam_system_;
     cv::Mat left_image_;
     cv::Mat right_image_;
+    rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr left_subscriber_;
+    rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr right_subscriber_;
     rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pose_publisher_;
     rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr thrust_publisher_;
     rclcpp::Subscription<std_msgs::msg::Float32MultiArray>::SharedPtr orientation_subscriber_;

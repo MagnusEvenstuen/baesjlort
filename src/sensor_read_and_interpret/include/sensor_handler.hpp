@@ -7,7 +7,6 @@
 #include <fstream>
 #include <iomanip>
 #include <cmath>
-#include <thread> 
 
 class sensor_handler
 {
@@ -70,59 +69,6 @@ public:
         {
             csv_file_.close();
         }
-    }
-
-    void non_measurement_pose_update(const std::array<float, 8>& thruster_gain)
-    {
-        //-----------------------------------------------------------------------------------------------------------------------//
-        //POSSIBLE IMPROVEMENT: This function should update the prediction of what the state should be, and not the actual state.
-        //Then a complementary filter can be used on the rescieved measurements for the actual state update.
-        //This function might also be abolished all together, if on the actual ROV the IMU updates are consistent and don't have long delays.
-        //Capich bitch???????????????????????????????????????????????????????????????????????
-        //-----------------------------------------------------------------------------------------------------------------------//
-
-        //Continuously updates pose estimate based on last SLAM pose and IMU data. Solves the problem with inconsistent IMU updates
-        auto current_time = std::chrono::steady_clock::now();
-        double dt = std::chrono::duration<double>(current_time - last_update_time_).count();
-
-        Eigen::VectorXd gain(8); 
-        gain << thruster_gain[0], thruster_gain[1], thruster_gain[2], thruster_gain[3], thruster_gain[4], thruster_gain[5], thruster_gain[6], thruster_gain[7];
-        Eigen::VectorXd predicted_pose = kalmann.predict_state(gain, dt);
-
-        Vector3 acc_est = {
-            static_cast<float>(predicted_pose[0]),
-            static_cast<float>(predicted_pose[1]),
-            static_cast<float>(predicted_pose[2])
-        };
-        
-        Vector3 gyro_est = {
-            static_cast<float>(predicted_pose[3]),
-            static_cast<float>(predicted_pose[4]),
-            static_cast<float>(predicted_pose[5])
-        };
-
-        //Update orientation based on filtered gyroscope data
-        delta_orientation = Quaternion{
-            1.0f,
-            gyro_est.x * dt * 0.5f,
-            gyro_est.y * dt * 0.5f,
-            gyro_est.z * dt * 0.5f
-        };
-        orientation_ = orientation_ * delta_orientation;
-        orientation_.normalize();
-
-        acc_est = orientation_.rotate_vector(acc_est);
-
-        //Update position and speed based on filtered accelerometer data
-        current_position_.x -= current_speed_.x * dt + 0.5f * acc_est.x * dt * dt;
-        current_position_.y -= current_speed_.y * dt + 0.5f * acc_est.y * dt * dt;
-        current_position_.z -= current_speed_.z * dt + 0.5f * acc_est.z * dt * dt;
-        current_position_.z = 0.1*current_position_.z + 0.9*depth_;
-        current_speed_.x += acc_est.x * dt;
-        current_speed_.y += acc_est.y * dt;
-        current_speed_.z += acc_est.z * dt;
-
-        last_update_time_ = current_time;
     }
 
     void update_pose_estimate(const float pos_x, const float pos_y, const float pos_z,
@@ -203,7 +149,7 @@ public:
         perfect_orientation_.z = quat_z;
         perfect_orientation_ = world_correction_ * perfect_orientation_;
         perfect_orientation_.normalize();
-        perfect_speed_ = perfect_orientation_.rotate_vector(perfect_speed_);
+        perfect_speed_ = perfect_orientation_.rotate_vector_inverse(perfect_speed_);
     }
 
 
@@ -260,7 +206,6 @@ public:
         current_position_.x -= current_speed_.x * dt + 0.5f * acc_filtered.x * dt * dt;
         current_position_.y -= current_speed_.y * dt + 0.5f * acc_filtered.y * dt * dt;
         current_position_.z -= current_speed_.z * dt + 0.5f * acc_filtered.z * dt * dt;
-        //Update depth with pressure sensor data using complementary filter
         current_position_.z = 0.1*current_position_.z + 0.9*depth_;
         current_speed_.x += acc_filtered.x * dt;
         current_speed_.y += acc_filtered.y * dt;
@@ -289,11 +234,11 @@ public:
             csv_file_ << std::fixed << std::setprecision(6)
                      << elapsed << ","
                      << acc_y << "," << -acc_x << "," << acc_z << ","
-                     << current_speed_.x << "," << -current_speed_.y << "," << current_speed_.z << ","
-                     << current_position_.x << "," << -current_position_.y << "," << current_position_.z << ","
+                     << -current_speed_.x << "," << -current_speed_.y << "," << current_speed_.z << ","
+                     << current_position_.x << "," << -current_position_.y << "," << -current_position_.z << ","
                      << perfect_acceleration_.x << "," << perfect_acceleration_.y << "," << perfect_acceleration_.z << ","
                      << perfect_speed_.x << "," << perfect_speed_.y << "," << perfect_speed_.z << ","
-                     << perfect_position_.x << ", " << perfect_position_.y << ", " << -perfect_position_.z << ", " << depth_ << ","
+                     << perfect_position_.x << ", " << perfect_position_.y << ", " << perfect_position_.z << ", " << depth_ << ","
                      << orientation_.x << ", " << orientation_.y << ", " << orientation_.z << ", "
                      << perfect_orientation_.x << ", " << perfect_orientation_.y << ", " << perfect_orientation_.z
                      << "\n";
@@ -324,7 +269,6 @@ private:
     const float gravity_ = 9.81f;              //m/s^2
     bool set_surface_pressure_ = false;
     bool first_update_ = true;
-    std::mutex state_mutex_;
 };
 
 #endif // SENSOR_HANDLER_HPP
