@@ -15,9 +15,9 @@ public:
                         //A, B, and C matrices found using sysID in python
                       // A-matrix (9x9)
                       (Eigen::MatrixXd(9, 9) << 
-                        1.01474855e+00, -3.64004525e-03,  6.28674112e-03, -4.47525821e-03,  2.05615813e-03, -6.08400975e-03, -5.11822564e-02, -5.66985020e-02,  3.06323981e-02,
-                       -8.23657083e-03,  1.01450252e+00,  2.17234618e-03,  7.74917768e-03, -4.44659960e-04, -9.30973716e-04,  7.47567143e-02, -2.23738564e-02,  1.59409683e-02,
-                       -7.08858487e-04, -3.46455935e-03,  1.00273585e+00,  3.63134556e-03, -3.34290771e-03,  4.82507888e-05, -8.84471126e-03, -1.20440629e-02, -3.50992498e-02,
+                        1.0e+00, -3.64004525e-03,  6.28674112e-03, -4.47525821e-03,  2.05615813e-03, -6.08400975e-03, -5.11822564e-02, -5.66985020e-02,  3.06323981e-02,
+                       -8.23657083e-03,  1.0e+00,  2.17234618e-03,  7.74917768e-03, -4.44659960e-04, -9.30973716e-04,  7.47567143e-02, -2.23738564e-02,  1.59409683e-02,
+                       -7.08858487e-04, -3.46455935e-03,  1.0e+00,  3.63134556e-03, -3.34290771e-03,  4.82507888e-05, -8.84471126e-03, -1.20440629e-02, -3.50992498e-02,
                        -6.71560612e-03, -5.67478798e-03, -7.15709703e-03,  9.74354415e-01,  2.11145598e-03,  1.78921063e-03, -5.42824152e-04,  2.28382584e-02, -3.30980702e-05,
                         2.51902544e-03,  3.47544406e-03,  6.12675686e-03,  3.11435782e-03,  9.69184449e-01, -3.30665253e-03,  2.62446794e-03, -1.00846802e-02, -1.00980802e-02,
                        -1.42501047e-03, -1.08763272e-03, -3.10551936e-03, -1.16572494e-03, -1.60035718e-03,  9.68092797e-01, -3.26301049e-03,  3.26529025e-03,  2.60026154e-04,
@@ -87,7 +87,7 @@ public:
             return;
         }
 
-        Quaternion slam_quat = {quat_w, quat_x, quat_y, quat_z};
+        Quaternion slam_quat = {-quat_w, -quat_x, -quat_y, -quat_z};
 
         //Update position and orientation from SLAM pose estimate
         Vector3 estimated_SLAM_speed = {
@@ -107,14 +107,14 @@ public:
             (quat_y - prev_SLAM_orientation_.y) / dt
         };
 
-        float alpha = 0.7f;
+        float alpha = 0.8f;
 
-        if (dt > 0.3f)
+        if (dt > 0.6f)
         {
-            alpha = 1.0f;
-        } else if (dt < 0.1f)
+            alpha = 0.1f;
+        } else if (dt < 0.3f)
         {
-            alpha = 0.3f;
+            alpha = 0.9f;
         }
 
         //Complementary filter for speed. Higher weight on current speed due to IMU having higher update rate
@@ -156,6 +156,56 @@ public:
         perfect_speed_ = perfect_orientation_.rotate_vector_inverse(perfect_speed_);
     }
 
+    void non_measurement_prediction(std::array<float, 8> thrust)
+    {
+        //-----------------------------------------------------------------------------------------------------------------------//
+        //POSSIBLE IMPROVEMENT: This function should update the prediction of what the state should be, and not the actual state.
+        //Then a complementary filter can be used on the rescieved measurements for the actual state update.
+        //This function might also be abolished all together, if on the actual ROV the IMU updates are consistent and don't have long delays.
+        //Capich bitch???????????????????????????????????????????????????????????????????????
+        //-----------------------------------------------------------------------------------------------------------------------//
+        static auto last_update = std::chrono::steady_clock::now();
+        auto current_time = std::chrono::steady_clock::now();
+        double dt = std::chrono::duration<double>(current_time - last_update).count();
+        Eigen::VectorXd gain(8); 
+        gain << thrust[0], thrust[1], thrust[2], thrust[3], thrust[4], thrust[5], thrust[6], thrust[7];
+        Eigen::VectorXd filtered_values = kalmann.predict_state(gain, dt);
+        //Gets filtered measurements from Kalman filter
+        Vector3 acc_predicted = {
+            static_cast<float>(filtered_values[0]),
+            static_cast<float>(filtered_values[1]),
+            static_cast<float>(filtered_values[2])
+        };
+        
+        Vector3 gyro_predicted = {
+            static_cast<float>(filtered_values[3]),
+            static_cast<float>(filtered_values[4]),
+            static_cast<float>(filtered_values[5])
+        };
+
+        //This should be changed to it's own variables later, for instance predicted_speed.
+        delta_orientation = Quaternion{
+            1.0f,
+            gyro_predicted.x * dt * 0.5f,
+            gyro_predicted.y * dt * 0.5f,
+            gyro_predicted.z * dt * 0.5f
+        };
+        //orientation_ = orientation_ * delta_orientation;
+        //orientation_.normalize();
+
+        acc_predicted = orientation_.rotate_vector(acc_predicted);
+
+        //Update position and speed based on filtered accelerometer data
+        //current_position_.x -= current_speed_.x * dt + 0.5f * acc_predicted.x * dt * dt;
+        //current_position_.y -= current_speed_.y * dt + 0.5f * acc_predicted.y * dt * dt;
+        //current_position_.z -= current_speed_.z * dt + 0.5f * acc_predicted.z * dt * dt;
+        //current_position_.z = 0.1*current_position_.z + 0.9*depth_;
+        predicted_speed_.x += acc_predicted.x * dt;
+        predicted_speed_.y += acc_predicted.y * dt;
+        predicted_speed_.z += acc_predicted.z * dt;
+
+        last_update = current_time;
+    }
 
     void update_depth(float current_pressure)
     {
@@ -206,15 +256,20 @@ public:
 
         acc_filtered = orientation_.rotate_vector(acc_filtered);
 
-        //Update position and speed based on filtered accelerometer data
-        current_position_.x -= current_speed_.x * dt + 0.5f * acc_filtered.x * dt * dt;
-        current_position_.y -= current_speed_.y * dt + 0.5f * acc_filtered.y * dt * dt;
-        current_position_.z -= current_speed_.z * dt + 0.5f * acc_filtered.z * dt * dt;
-        current_position_.z = 0.1*current_position_.z + 0.9*depth_;
-        current_speed_.x += acc_filtered.x * dt;
-        current_speed_.y += acc_filtered.y * dt;
-        current_speed_.z += acc_filtered.z * dt;
+        //If long between IMU measurements, trust prediction more.
+        float prediction_weight = std::min(1.0f, dt);
 
+        Vector3 imu_speed = {current_speed_.x + acc_filtered.x * dt, current_speed_.y + acc_filtered.y * dt, current_speed_.z + acc_filtered.z * dt};
+        //Update position and speed based on filtered accelerometer data
+        current_speed_.x = (1-prediction_weight)*(imu_speed.x) + prediction_weight * predicted_speed_.x;
+        current_speed_.y = (1-prediction_weight)*(imu_speed.y) + prediction_weight * predicted_speed_.y;
+        current_speed_.z = (1-prediction_weight)*(imu_speed.z) + prediction_weight * predicted_speed_.z;
+        current_position_.x -= current_speed_.x * dt;
+        current_position_.y -= current_speed_.y * dt;
+        current_position_.z -= current_speed_.z * dt;
+        current_position_.z = 0.1*current_position_.z + 0.9*depth_;
+
+        predicted_speed_ = current_speed_;
         log_to_csv(acc_filtered.x, acc_filtered.y, acc_filtered.z);
     }
 
@@ -254,6 +309,7 @@ private:
     klamann_shit kalmann;
     Vector3 current_position_ = {0.0f, 0.0f, 0.0f};
     Vector3 current_speed_ = {0.0f, 0.0f, 0.0f};
+    Vector3 predicted_speed_ = {0.0f, 0.0f, 0.0f};
     Vector3 perfect_acceleration_ = {0.0f, 0.0f, 0.0f};
     Vector3 perfect_speed_ = {0.0f, 0.0f, 0.0f};
     Vector3 perfect_position_ = {0.0f, 0.0f, 0.0f};

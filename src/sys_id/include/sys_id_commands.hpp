@@ -145,12 +145,19 @@ private:
             return;
         }
 
-        if (elapsed < 80000)
+        if (elapsed < 180000)
         {
             if (!going_down_complete_)
             {
                 RCLCPP_INFO(this->get_logger(), "Going down... %lld ms", elapsed - 10000);
                 send_thrust_command(multiply_array(down_, 100.0));
+                
+                static int interval = 3000;
+                static int duration = 250;
+                
+                if ((elapsed % interval) < duration) {
+                    send_thrust_command(multiply_array(pitch_down_, 100.0));
+                }
             }
             return;
         }
@@ -167,7 +174,7 @@ private:
         auto sys_id_elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
             now - sys_id_start_time_).count();
 
-        if (sys_id_elapsed < 300000)  // 5 minutter
+        if (sys_id_elapsed < 900000)  // 15 minutter
         {
             run_system_identification();
         }
@@ -218,7 +225,7 @@ private:
 
     void setup_csv_file()
     {
-        std::filesystem::path dir_path = "/home/gud/Skole/baesjlort/sys_id/data_files";
+        std::filesystem::path dir_path = "/home/gud/Skole/baesjlort/src/sys_id/data_files";
         auto now = std::chrono::system_clock::now();
         auto now_time_t = std::chrono::system_clock::to_time_t(now);
         std::stringstream filename;

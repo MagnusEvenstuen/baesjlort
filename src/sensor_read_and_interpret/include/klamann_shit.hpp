@@ -36,7 +36,7 @@ public:
 
         Eigen::MatrixXd I = Eigen::MatrixXd::Identity(9, 9);        //Updates covarians using Joseph form for numerical stability
         p_ = (I - k_ * c_matrix_) * p_pre_ * (I - k_ * c_matrix_).transpose() + 
-             k_ * r_ * k_.transpose();
+            k_ * r_ * k_.transpose();
         
         return c_matrix_*x_hat_;
     }
@@ -44,10 +44,11 @@ public:
     //Predicts the current state without measurements. Is used to solve the problem with inconsistent IMU updates.
     Eigen::VectorXd predict_state(const Eigen::VectorXd& u, float dt)
     { 
-        x_hat_pre_ = a_matrix_ * x_hat_ + b_matrix_ * u;
-        return c_matrix_ * x_hat_pre_;
-    }
+        x_hat_ = a_matrix_ * x_hat_ + b_matrix_ * u;
+        p_ = a_matrix_ * p_ * a_matrix_.transpose() + q_;
 
+        return c_matrix_ * x_hat_;
+    }
 private:
     Eigen::MatrixXd a_matrix_;
     Eigen::MatrixXd b_matrix_;

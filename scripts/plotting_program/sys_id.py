@@ -50,7 +50,7 @@ input_training = np.array([thruster0_t, thruster1_t, thruster2_t, thruster3_t, t
 input_validation = np.array([data_validation[:,1], data_validation[:,2], data_validation[:,3], data_validation[:,4], data_validation[:,5], data_validation[:,6], data_validation[:,7], data_validation[:,8]])
 output_validation = np.array([data_validation[:,9], data_validation[:,10], data_validation[:,11], data_validation[:,12], data_validation[:,13], data_validation[:,14]])
 
-modelArx = sysid(output_training, input_training, 'CVA', tsample=ts)
+modelArx = sysid(output_training, input_training, 'N4SID', tsample=ts)
 print("A = ", modelArx.A)
 print("B = ", modelArx.B)
 print("C = ", modelArx.C)
@@ -93,7 +93,7 @@ plt.xlabel('Time (s)')
 plt.ylabel('Amplitude')
 #plt.show()
 
-input_arr = np.array([0, 0, 0, 0, 20, 20, -20, -20])
+input_arr = np.array([3.0, 3.0, -3.0, -3.0, 0.0, 0.0, 0.0, 0.0])
 num_steps = 600
 T = np.arange(num_steps) * sysSS.dt
 step_start = 30

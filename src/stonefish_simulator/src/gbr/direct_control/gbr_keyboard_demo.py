@@ -29,18 +29,18 @@ thrust_map = {
 }
 """
 thrust_map = {
-    'w': [10.0, 10.0, -10.0, -10.0, 0.0, 0.0, 0.0, 0.0],        # Forward (positive Y)
-    's': [-10.0, -10.0, 10.0, 10.0, 0.0, 0.0, 0.0, 0.0],        # Backward (negative Y)
-    'a': [10.0, -10.0, 10.0, -10.0, 0.0, 0.0, 0.0, 0.0],        # Left turn (negative X)
-    'd': [-10.0, 10.0, -10.0, 10.0, 0.0, 0.0, 0.0, 0.0],        # Right turn (positive X)
-    'q': [0.0, 0.0, 0.0, 0.0, -5.0, -5.0, -5.0, -5.0],      # Down (positive Z)
-    'e': [0.0, 0.0, 0.0, 0.0, 5.0, 5.0, 5.0, 5.0],          # Up (negative Z)
-    'Key.up': [0.0, 0.0, 0.0, 0.0, -5.0, -5.0, 5.0, 5.0],   # Negative pitch (points down)
-    'Key.down': [0.0, 0.0, 0.0, 0.0, 5.0, 5.0, -5.0, -5.0], # Positive pitch (points up)
-    'Key.left': [0.0, 0.0, 0.0, 0.0, 5.0, -5.0, 5.0, -5.0], # Positive Roll (rolls left)
-    'Key.right': [0.0, 0.0, 0.0, 0.0, -5.0, 5.0, -5.0, 5.0], # Negative Roll (rolls right)
-    'Key.page_up': [5.0, -5.0, -5.0, 5.0, 0.0, 0.0, 0.0, 0.0],   # Negative yaw (turns left)
-    'Key.page_down': [-5.0, 5.0, 5.0, -5.0, 0.0, 0.0, 0.0, 0.0], # Positive yaw (turns right)
+    'w': [3.0, 3.0, -3.0, -3.0, 0.0, 0.0, 0.0, 0.0],          # Forward (positive Y)
+    's': [-3.0, -3.0, 3.0, 3.0, 0.0, 0.0, 0.0, 0.0],          # Backward (negative Y)
+    'a': [3.0, -3.0, 3.0, -3.0, 0.0, 0.0, 0.0, 0.0],          # Left turn (negative X)
+    'd': [-3.0, 3.0, -3.0, 3.0, 0.0, 0.0, 0.0, 0.0],          # Right turn (positive X)
+    'q': [0.0, 0.0, 0.0, 0.0, -3.0, -3.0, -3.0, -3.0],        # Down (positive Z)
+    'e': [0.0, 0.0, 0.0, 0.0, 3.0, 3.0, 3.0, 3.0],            # Up (negative Z)
+    'Key.up': [0.0, 0.0, 0.0, 0.0, -3.0, -3.0, 3.0, 3.0],     # Negative pitch (points down)
+    'Key.down': [0.0, 0.0, 0.0, 0.0, 3.0, 3.0, -3.0, -3.0],   # Positive pitch (points up)
+    'Key.left': [0.0, 0.0, 0.0, 0.0, 3.0, -3.0, 3.0, -3.0],   # Positive Roll (rolls left)
+    'Key.right': [0.0, 0.0, 0.0, 0.0, -3.0, 3.0, -3.0, 3.0],  # Negative Roll (rolls right)
+    'Key.page_up': [3.0, -3.0, -3.0, 3.0, 0.0, 0.0, 0.0, 0.0],    # Negative yaw (turns left)
+    'Key.page_down': [-3.0, 3.0, 3.0, -3.0, 0.0, 0.0, 0.0, 0.0],  # Positive yaw (turns right)
 }
 
 def on_press(key):

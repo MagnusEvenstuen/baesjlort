@@ -23,14 +23,14 @@ class sensor_subscriber : public rclcpp::Node
 public:
     sensor_subscriber() : Node("sensor_subscriber"),
         //Setup IMU objects with their positions on the robot and initial orientations
-        IMU_center_(Vector3{0.0f, -0.003f, -0.0013}-center_of_gravity_, Quaternion{0.924f, 0.0f, 0.0f, -0.383f}),
-        IMU_center1_(Vector3{0.04f, -0.003f, -0.0013}-center_of_gravity_, Quaternion{0.924f, 0.0f, 0.0f, 0.383f}),
-        IMU_center2_(Vector3{-0.04f, -0.003f, -0.0013}-center_of_gravity_, Quaternion{0.924f, 0.0f, 0.0f, 0.383f}),
-        IMU_front1_(Vector3{-0.03f, 0.05f, -0.0013}-center_of_gravity_, Quaternion{0.924f, 0.0f, 0.0f, 0.383f}),
-        IMU_front2_(Vector3{0.03f, 0.05f, -0.0013}-center_of_gravity_, Quaternion{0.924f, 0.0f, 0.0f, 0.383f}),
-        IMU_rear1_(Vector3{-0.03f, -0.05f, -0.0013}-center_of_gravity_, Quaternion{0.924f, 0.0f, 0.0f, -0.383f}),
-        IMU_rear2_(Vector3{0.03f, -0.05f, -0.0013}-center_of_gravity_, Quaternion{0.924f, 0.0f, 0.0f, -0.383f}),
-        IMU_rear3_(Vector3{0.00f, -0.05f, -0.0013}-center_of_gravity_, Quaternion{0.924f, 0.0f, 0.0f, -0.383f}),
+        IMU_center_(Vector3{0.0f, -0.003f, -0.0013}, Quaternion{0.924f, 0.0f, 0.0f, -0.383f}),
+        IMU_center1_(Vector3{0.04f, -0.003f, -0.0013}, Quaternion{0.924f, 0.0f, 0.0f, 0.383f}),
+        IMU_center2_(Vector3{-0.04f, -0.003f, -0.0013}, Quaternion{0.924f, 0.0f, 0.0f, 0.383f}),
+        IMU_front1_(Vector3{-0.03f, 0.05f, -0.0013}, Quaternion{0.924f, 0.0f, 0.0f, 0.383f}),
+        IMU_front2_(Vector3{0.03f, 0.05f, -0.0013}, Quaternion{0.924f, 0.0f, 0.0f, 0.383f}),
+        IMU_rear1_(Vector3{-0.03f, -0.05f, -0.0013}, Quaternion{0.924f, 0.0f, 0.0f, -0.383f}),
+        IMU_rear2_(Vector3{0.03f, -0.05f, -0.0013}, Quaternion{0.924f, 0.0f, 0.0f, -0.383f}),
+        IMU_rear3_(Vector3{0.00f, -0.05f, -0.0013}, Quaternion{0.924f, 0.0f, 0.0f, -0.383f}),
 
         imu_objects_{IMU_center_, IMU_center1_, IMU_center2_, IMU_front1_, IMU_front2_, IMU_rear1_, IMU_rear2_, IMU_rear3_},
         imu_topic_map_{
@@ -47,6 +47,13 @@ public:
     {
         time_ = std::chrono::steady_clock::now();
         prev_time_ = time_;
+        processing_thread_ = std::thread([this]() {
+            while (running_)
+            {
+                imu_data_sender();
+                std::this_thread::sleep_for(std::chrono::nanoseconds(10));
+            }
+        });
     }
 
     void init()
@@ -197,6 +204,7 @@ private:
 
         if (recieved_counter == 0)
         {
+            //sensor_handler_.non_measurement_prediction(thrust_);
             return;
         }
 
@@ -256,7 +264,6 @@ private:
     void pressure_callback(const sensor_msgs::msg::FluidPressure::ConstSharedPtr& msg)
     {
         sensor_handler_.update_depth(msg->fluid_pressure);
-        imu_data_sender();
     }
 
 private:
@@ -307,6 +314,7 @@ private:
     IMU IMU_rear3_;
     std::unordered_map<std::string, int> imu_topic_map_;
     std::array<IMU, 8> imu_objects_;
-
+    std::thread processing_thread_;
+    bool running_ = true;
 };
 #endif // SENSOR_SUBSCRIBER_HPP
