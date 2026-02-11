@@ -107,12 +107,12 @@ public:
             (quat_y - prev_SLAM_orientation_.y) / dt
         };
 
-        float alpha = 0.8f;
+        float alpha = 0.5f;
 
-        if (dt > 0.6f)
+        if (dt > 0.5f)
         {
             alpha = 0.1f;
-        } else if (dt < 0.3f)
+        } else if (dt < 0.15f)
         {
             alpha = 0.9f;
         }
@@ -193,8 +193,6 @@ public:
         //orientation_ = orientation_ * delta_orientation;
         //orientation_.normalize();
 
-        acc_predicted = orientation_.rotate_vector(acc_predicted);
-
         //Update position and speed based on filtered accelerometer data
         //current_position_.x -= current_speed_.x * dt + 0.5f * acc_predicted.x * dt * dt;
         //current_position_.y -= current_speed_.y * dt + 0.5f * acc_predicted.y * dt * dt;
@@ -203,6 +201,8 @@ public:
         predicted_speed_.x += acc_predicted.x * dt;
         predicted_speed_.y += acc_predicted.y * dt;
         predicted_speed_.z += acc_predicted.z * dt;
+
+        predicted_speed_ = orientation_.rotate_vector(predicted_speed_);
 
         last_update = current_time;
     }

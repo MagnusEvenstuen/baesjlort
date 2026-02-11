@@ -41,7 +41,7 @@ public:
     }
 
     void update(const float acc_x, const float acc_y, const float acc_z,
-                const float gyro_x, const float gyro_y, const float gyro_z)
+                const float gyro_x, const float gyro_y, const float gyro_z, const bool fuse_sensors)
     {
         //Calculates the delta time
         float dt = std::chrono::duration<float>(std::chrono::steady_clock::now() - last_update_time_).count();
@@ -71,7 +71,10 @@ public:
         orientation_.normalize();
 
         //Fuse accelerometer and gyroscope data for better orientation
-        orientation_ = fuse_acceleration_gyroscope_for_orientation(acc_rot, dt);
+        if (fuse_sensors)
+        {
+            orientation_ = fuse_acceleration_gyroscope_for_orientation(acc_rot, dt);
+        }
         //Compensate acceleration for angular velocity
         acc_ = compansate_acc_for_angular_velocity(acc_rot, {gyro_rot.x, gyro_rot.y, gyro_rot.z}, dt);
         //Rotate acceleration to correct frame
@@ -144,7 +147,7 @@ private:
         );
 
         //Return if acceleration is out of expected range
-        if (length_acc < length_gravity*0.98 || length_acc > length_gravity*1.02)
+        if (length_acc < length_gravity*0.95 || length_acc > length_gravity*1.05)
         {
             return orientation_;
         }

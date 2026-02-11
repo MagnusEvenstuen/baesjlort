@@ -51,7 +51,7 @@ public:
             while (running_)
             {
                 imu_data_sender();
-                std::this_thread::sleep_for(std::chrono::nanoseconds(10));
+                std::this_thread::sleep_for(std::chrono::milliseconds(5));
             }
         });
     }
@@ -118,14 +118,28 @@ private:
         //Updates stuff from each IMU
         if (!recieved[imu_index])
         {
+            bool fuse_sensors = true;
             auto& imu_obj = imu_objects_[imu_index];
+
+            //Only fuse sensors when thrusters are not generating force. Also check in function to make sure no fusion happens when
+            //to high non lineary acceleration.
+            for (int i = 0; i < thrust_.size(); i++)
+            {
+                if (thrust_[i] != 0.0)
+                {
+                    fuse_sensors = false;
+                    break;
+                }
+            }
+
             imu_obj.update(
                 msg->linear_acceleration.x,
                 msg->linear_acceleration.y,
                 msg->linear_acceleration.z,
                 msg->angular_velocity.x,
                 msg->angular_velocity.y,
-                msg->angular_velocity.z);
+                msg->angular_velocity.z,
+                fuse_sensors);
             
             Vector3 acc = imu_obj.get_acceleration();
             Quaternion orientation = imu_obj.get_orientation();
