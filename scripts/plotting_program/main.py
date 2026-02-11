@@ -2,7 +2,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 
-
 file_path = 'data_files/sensor_data.csv'
 data = np.genfromtxt(file_path, delimiter=',', skip_header=1)
 
@@ -41,6 +40,10 @@ correct_orientation_x = data[:, 23]
 correct_orientation_y = data[:, 24]
 correct_orientation_z = data[:, 25]
 
+gyro_x = data[:, 26]
+gyro_y = data[:, 27]
+gyro_z = data[:, 28]
+
 depth = data[:, 19]
 
 #Changes start value of true positions to be same as on measured (Only check position compared to start)
@@ -48,6 +51,11 @@ depth = data[:, 19]
 correct_pos_x_start = data[:, 16][1]
 correct_pos_y_start = data[:, 17][1]
 correct_pos_z_start = data[:, 18][1]
+
+#This is used for finding the R matrix in the kalman filter. Placed here and not in SYSID due to SYSID not having implemented stationary data yet. Might be done later
+print("ax:", acc_x.var(), "ay:", acc_y.var(), "az:", acc_z.var())
+print("gx:", gyro_x.var(), "gy:", gyro_y.var(), "gz:", gyro_z.var())
+
 for i in range(len(correct_pos_x)):
     correct_pos_x[i] -= correct_pos_x_start
     correct_pos_y[i] -= correct_pos_y_start

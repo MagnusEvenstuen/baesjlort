@@ -59,7 +59,8 @@ public:
             csv_file_ << "timestamp,acc_x,acc_y,acc_z,vel_x,vel_y,vel_z,pos_x,pos_y,pos_z,"
                         "correct_acc_x,correct_acc_y,correct_acc_z, correct_vel_x,correct_vel_y,"
                         "correct_vel_z, correct_pos_x,correct_pos_y,correct_pos_z, depth_by_pressure,"
-                        "orientation_x, orientation_y, orientation_z, truth_orientation_x, truth_orientation_y, truth_orientation_z\n";
+                        "orientation_x, orientation_y, orientation_z, truth_orientation_x, truth_orientation_y, truth_orientation_z,"
+                        "gyro_x, gyro_y, gyro_z\n";
         }
     }
     ~sensor_handler()
@@ -159,9 +160,7 @@ public:
     void non_measurement_prediction(std::array<float, 8> thrust)
     {
         //-----------------------------------------------------------------------------------------------------------------------//
-        //POSSIBLE IMPROVEMENT: This function should update the prediction of what the state should be, and not the actual state.
-        //Then a complementary filter can be used on the rescieved measurements for the actual state update.
-        //This function might also be abolished all together, if on the actual ROV the IMU updates are consistent and don't have long delays.
+        //This function might also be all together, if on the actual ROV the IMU updates are consistent and don't have long delays.
         //Capich bitch???????????????????????????????????????????????????????????????????????
         //-----------------------------------------------------------------------------------------------------------------------//
         static auto last_update = std::chrono::steady_clock::now();
@@ -255,6 +254,8 @@ public:
         orientation_.normalize();
 
         acc_filtered = orientation_.rotate_vector(acc_filtered);
+        acc_filtered = acc;
+        gyro_filtered = gyro;
 
         //If long between IMU measurements, trust prediction more.
         float prediction_weight = std::min(1.0f, dt);
@@ -270,7 +271,7 @@ public:
         current_position_.z = 0.1*current_position_.z + 0.9*depth_;
 
         predicted_speed_ = current_speed_;
-        log_to_csv(acc_filtered.x, acc_filtered.y, acc_filtered.z);
+        log_to_csv(acc_filtered.x, acc_filtered.y, acc_filtered.z, gyro_filtered.x, gyro_filtered.y, gyro_filtered.z);
     }
 
     Vector3 get_position() const
@@ -283,7 +284,7 @@ public:
         return orientation_;
     }
 
-    void log_to_csv(float acc_x, float acc_y, float acc_z)
+    void log_to_csv(float acc_x, float acc_y, float acc_z, float gyro_x, float gyro_y, float gyro_z)
     {
         if (csv_file_.is_open())
         {
@@ -299,7 +300,8 @@ public:
                      << perfect_speed_.x << "," << perfect_speed_.y << "," << perfect_speed_.z << ","
                      << perfect_position_.x << ", " << perfect_position_.y << ", " << perfect_position_.z << ", " << depth_ << ","
                      << orientation_.x << ", " << orientation_.y << ", " << orientation_.z << ", "
-                     << perfect_orientation_.x << ", " << perfect_orientation_.y << ", " << perfect_orientation_.z
+                     << perfect_orientation_.x << ", " << perfect_orientation_.y << ", " << perfect_orientation_.z << ", "
+                     << gyro_x << ", " << gyro_y << ", " << gyro_z
                      << "\n";
             csv_file_.flush();
         }

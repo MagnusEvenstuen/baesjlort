@@ -173,7 +173,7 @@ private:
         auto left_img_ = cv_bridge::toCvShare(left_msg, "bgr8");
         auto right_img_ = cv_bridge::toCvShare(right_msg, "bgr8");
         
-        //Apply CLAHE
+        //Apply CLAHE (this might not be nessacerry)
         left_image_ = apply_clahe(left_img_->image);
         right_image_ = apply_clahe(right_img_->image);
 

@@ -16,7 +16,14 @@ public:
         p_(Eigen::MatrixXd::Identity(9, 9) * 10),
         p_pre_(Eigen::MatrixXd::Identity(9, 9)),
         q_(Eigen::MatrixXd::Identity(9, 9) * 0.001),
-        r_(Eigen::MatrixXd::Identity(6, 6) * 0.01),
+        r_((Eigen::MatrixXd(6, 6) << 
+        acc_var_x, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, acc_var_y, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, acc_var_z, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, gyro_var_x, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, gyro_var_y, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, gyro_var_z
+        ).finished()),
         k_(Eigen::MatrixXd::Zero(9, 6))
     {
 
@@ -44,11 +51,12 @@ public:
     //Predicts the current state without measurements. Is used to solve the problem with inconsistent IMU updates.
     Eigen::VectorXd predict_state(const Eigen::VectorXd& u, float dt)
     { 
-        x_hat_ = a_matrix_ * x_hat_ + b_matrix_ * u;
-        p_ = a_matrix_ * p_ * a_matrix_.transpose() + q_;
+        x_hat_pre_ = a_matrix_ * x_hat_ + b_matrix_ * u;
+        p_pre_ = a_matrix_ * p_ * a_matrix_.transpose() + q_;
 
-        return c_matrix_ * x_hat_;
+        return c_matrix_ * x_hat_pre_;
     }
+
 private:
     Eigen::MatrixXd a_matrix_;
     Eigen::MatrixXd b_matrix_;
@@ -62,6 +70,13 @@ private:
     Eigen::MatrixXd r_;     //Measurement noise
     Eigen::MatrixXd k_;     //Kalman gain
     Eigen::MatrixXd I = Eigen::MatrixXd::Identity(9, 9);
+
+    const float acc_var_x = 0.001788;
+    const float acc_var_y = 0.001610;
+    const float acc_var_z = 0.001994;
+    const float gyro_var_x = 0.000002603;
+    const float gyro_var_y = 0.000002754;
+    const float gyro_var_z = 0.000002742;
 };
 
 #endif //KLAMANN_SHIT_HPP
