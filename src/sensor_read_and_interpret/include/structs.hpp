@@ -95,6 +95,16 @@ struct Quaternion
             w*b.z + x*b.y - y*b.x + z*b.w
         );
     }
+
+    Quaternion operator*(const float& b) const
+    {
+        return Quaternion(
+            w*b,
+            x*b,
+            y*b,
+            z*b
+        );
+    }
 };
 
 #endif // STRUCTS_HPP

@@ -108,6 +108,11 @@ public:
             (quat_y - prev_SLAM_orientation_.y) / dt
         };
 
+        Quaternion estimated_SLAM_orientation = orientation_ * estimated_SLAM_delta_orientation;
+        estimated_SLAM_orientation.normalize();
+        orientation_ = (orientation_*0.9f) * (estimated_SLAM_orientation * 0.1f);
+        orientation_.normalize();
+
         float alpha = 0.5f;
 
         if (dt > 0.5f)
@@ -182,7 +187,6 @@ public:
             static_cast<float>(filtered_values[5])
         };
 
-        //This should be changed to it's own variables later, for instance predicted_speed.
         delta_orientation = Quaternion{
             1.0f,
             gyro_predicted.x * dt * 0.5f,
