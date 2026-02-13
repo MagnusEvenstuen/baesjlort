@@ -41,16 +41,16 @@ public:
         IMUs[id].skewed_position_matrix = skew(position);
     }
 
-    void update(const std::vector<Eigen::Vector3d>& acc, const std::vector<Eigen::Vector3d>& gyro, const std::vector<int>& imu_ids, const float dt)
+    void update(const std::vector<Eigen::Vector3d>& acc, const std::vector<Eigen::Vector3d>& gyro, const std::vector<int>& imu_ids)
     {
-        //Needs more than 2 IMUs to compute as explained in https://www.mdpi.com/1424-8220/11/7/6771#Processing_Speed_of_Architectures_and_Number_of_IMUs section 2.1
+        //Needs more than 2 IMUs to compute as explained in the paper https://www.mdpi.com/1424-8220/11/7/6771#Processing_Speed_of_Architectures_and_Number_of_IMUs section 2.1
         if (acc.size() <= 2)
         {
             return;
         }
 
         //Stacking matricess as explained in section 3 of the paper
-        Eigen::MatrixXd H(6*acc.size(), 9);
+        Eigen::MatrixXd H = Eigen::MatrixXd::Zero(6*acc.size(), 9);
         Eigen::VectorXd Z(6*acc.size());
         Eigen::MatrixXd R_total = Eigen::MatrixXd::Zero(6*acc.size(), 6*acc.size());
 
@@ -58,7 +58,7 @@ public:
         for(int i = 0; i < acc.size(); i++) {
             int IMU_id = imu_ids[i];
 
-            Eigen::MatrixXd H_i(6,9);
+            Eigen::MatrixXd H_i = Eigen::MatrixXd::Zero(6,9);
             H_i.block<3,3>(0,3) = IMUs[IMU_id].rotational_matrix;
 
             //Section 2.1 of the paper. Linearization for the H matrix
@@ -87,6 +87,7 @@ public:
         }
 
         update_adaptive_noise();
+        p_ = p_ + q_;
 
         //Updates kalman gain and state
         Eigen::MatrixXd S = H * p_ * H.transpose() + R_total;
@@ -97,9 +98,14 @@ public:
         p_ = (I - K * H) * p_ * (I - K * H).transpose() + K * R_total * K.transpose();
     }
 
-    Eigen::VectorXd get_states()
+    Eigen::Vector3d get_acceleration()
     {
-        return x_;
+        return x_.segment<3>(0);
+    }
+
+    Eigen::Vector3d get_gyro()
+    {
+        return x_.segment<3>(3);
     }
 
 private:
@@ -159,6 +165,14 @@ private:
     }
 
 private:
+    //Estimated IMU noise
+    const double acc_var_x = 0.001788 * 3;
+    const double acc_var_y = 0.001610 * 3;
+    const double acc_var_z = 0.001994 * 3;
+    const double gyro_var_x = 0.000002603 * 3;
+    const double gyro_var_y = 0.000002754 * 3;
+    const double gyro_var_z = 0.000002742 * 3;
+
     //Defines klamann stuff
     Eigen::VectorXd x_;
     Eigen::MatrixXd p_;
@@ -169,14 +183,6 @@ private:
     std::array<Eigen::Vector3d, 50> omega_buffer_ = {Eigen::Vector3d::Zero()};      //If at 100Hz, 50 samples corresponds to 0.5 seconds of data.
     std::array<Eigen::Vector3d, 50> acc_buffer_ = {Eigen::Vector3d::Zero()};
     std::vector<IMU_geometry> IMUs;
-
-    //Estimated IMU noise
-    const double acc_var_x = 0.001788 * 3;
-    const double acc_var_y = 0.001610 * 3;
-    const double acc_var_z = 0.001994 * 3;
-    const double gyro_var_x = 0.000002603 * 3;
-    const double gyro_var_y = 0.000002754 * 3;
-    const double gyro_var_z = 0.000002742 * 3;
 };
 
 #endif // VIMU_FILTER_HPP

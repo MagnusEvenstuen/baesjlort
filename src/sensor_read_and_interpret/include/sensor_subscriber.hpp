@@ -13,6 +13,7 @@
 #include <nav_msgs/msg/odometry.hpp>
 #include <array>
 #include <chrono>
+#include <mutex>
 #include "image_display_and_handle.hpp"
 #include "structs.hpp"
 #include "sensor_handler.hpp"
@@ -53,7 +54,7 @@ public:
             while (running_)
             {
                 imu_data_sender();
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
             }
         });
         vimu_filter.set_imu_geometry(Eigen::Vector3d(0.0f, -0.003f, -0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f), 0);
@@ -150,7 +151,7 @@ private:
                 }
             }
 
-            imu_obj.update(
+            imu_obj.update2_electric_boogalo(
                 msg->linear_acceleration.x,
                 msg->linear_acceleration.y,
                 msg->linear_acceleration.z,
@@ -163,18 +164,25 @@ private:
             Quaternion orientation = imu_obj.get_orientation();
             Vector3 gyro = imu_obj.get_gyro();
             
-            acc_.x += acc.x;
-            acc_.y += acc.y;
-            acc_.z += acc.z;
+            {
+                const std::lock_guard<std::mutex> lock(vector_mutex);
+                acc_vector.emplace_back(Eigen::Vector3d(acc.x, acc.y, acc.z));
+                gyro_vector.emplace_back(Eigen::Vector3d(gyro.x, gyro.y, gyro.z));
+                id_vector.emplace_back(imu_index);
+            }            
+
+            //acc_.x += acc.x;
+            //acc_.y += acc.y;
+            //acc_.z += acc.z;
             
-            orientation_.w += orientation.w;
-            orientation_.x += orientation.x;
-            orientation_.y += orientation.y;
-            orientation_.z += orientation.z;
+            //orientation_.w += orientation.w;
+            //orientation_.x += orientation.x;
+            //orientation_.y += orientation.y;
+            //orientation_.z += orientation.z;
             
-            gyro_.x += gyro.x;
-            gyro_.y += gyro.y;
-            gyro_.z += gyro.z;
+            //gyro_.x += gyro.x;
+            //gyro_.y += gyro.y;
+            //gyro_.z += gyro.z;
             
             recieved[imu_index] = true;
         }
@@ -241,20 +249,32 @@ private:
         }
 
         //Calculate average values from the recieved IMU messages
-        Vector3 avg_acc = acc_/recieved_counter;
-        RCLCPP_INFO(this->get_logger(), "Acc - x: %.4f, y: %.4f, z: %.4f", avg_acc.y, avg_acc.x,  avg_acc.z);
-        
-        //Updates orientation based on stuff from IMU data
-        Quaternion avg_orientation = {
-            orientation_.w / recieved_counter,
-            orientation_.x / recieved_counter,
-            orientation_.y / recieved_counter,
-            orientation_.z / recieved_counter
-        };
+        //Vector3 avg_acc = acc_/recieved_counter;
+        {
+            const std::lock_guard<std::mutex> lock(vector_mutex);
+            vimu_filter.update(acc_vector, gyro_vector, id_vector);
+            acc_vector.clear();
+            gyro_vector.clear();
+            id_vector.clear();
+        }
+        Eigen::Vector3d vimu_acc = vimu_filter.get_acceleration();
+        Eigen::Vector3d vimu_gyro = vimu_filter.get_gyro();
+        Vector3 avg_acc = {vimu_acc.x(), vimu_acc.y(), vimu_acc.z()};
+        Vector3 avg_gyro = {vimu_gyro.x(), vimu_gyro.y(), vimu_gyro.z()};
 
-        avg_orientation.normalize();
-        last_orientation_ = avg_orientation;
-        Vector3 avg_gyro = gyro_/recieved_counter;
+        RCLCPP_INFO(this->get_logger(), "Acc - x: %.4f, y: %.4f, z: %.4f", avg_acc.y, avg_acc.x,  avg_acc.z);
+
+        //Updates orientation based on stuff from IMU data
+        //Quaternion avg_orientation = {
+        //    orientation_.w / recieved_counter,
+        //    orientation_.x / recieved_counter,
+        //    orientation_.y / recieved_counter,
+        //    orientation_.z / recieved_counter
+        //};
+
+        //avg_orientation.normalize();
+        //last_orientation_ = avg_orientation;
+        //Vector3 avg_gyro = gyro_/recieved_counter;
         
         //Publish data for SYSID
         auto gyro_msg = std_msgs::msg::Float32MultiArray();
@@ -322,7 +342,11 @@ private:
     rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr pose_subscriber_;
     std::vector<rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr> imu_subscribers_;
     Vector3 gyro_ = {0, 0, 0};
+    std::mutex vector_mutex;
     
+    std::vector<Eigen::Vector3d> acc_vector;
+    std::vector<Eigen::Vector3d> gyro_vector;
+    std::vector<int> id_vector;
     std::shared_ptr<image_transport::ImageTransport> it_;
     image_display_and_handle display_and_handle;
     sensor_handler sensor_handler_;

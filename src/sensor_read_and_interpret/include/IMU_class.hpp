@@ -40,6 +40,27 @@ public:
         gyro_bias_.z += gyro_z/calibration_needed_;
     }
 
+    void update2_electric_boogalo(const float acc_x, const float acc_y, const float acc_z, const float gyro_x, 
+                                    const float gyro_y, const float gyro_z, const bool fuse_sensors)
+    {
+        float dt = std::chrono::duration<float>(std::chrono::steady_clock::now() - last_update_time_).count();
+        last_update_time_ = std::chrono::steady_clock::now();
+
+        if (calibration_count_ < calibration_needed_)
+        {
+            calibrate_gravity(acc_x, acc_y, acc_z);
+            calibrate_gyro(gyro_x, gyro_y, gyro_z);
+            return;
+        }
+
+        acc_.x = acc_x - gravitational_vector_.x;
+        acc_.y = acc_y - gravitational_vector_.y;
+        acc_.z = acc_z - gravitational_vector_.z;
+        rotated_gyro_.x = gyro_x - gyro_bias_.x;
+        rotated_gyro_.y = gyro_y - gyro_bias_.y;
+        rotated_gyro_.z = gyro_z - gyro_bias_.z;
+    }
+
     void update(const float acc_x, const float acc_y, const float acc_z,
                 const float gyro_x, const float gyro_y, const float gyro_z, const bool fuse_sensors)
     {
@@ -231,9 +252,9 @@ private:
 private:
     //Variables and shit
     Vector3 position_;
-    Vector3 acc_;
-    Quaternion orientation_;
-    Quaternion delta_orientation_;
+    Vector3 acc_ = {0.0f, 0.0f, 0.0f};
+    Quaternion orientation_ = {1.0f, 0.0f, 0.0f, 0.0f};
+    Quaternion delta_orientation_ = {1.0f, 0.0f, 0.0f, 0.0f};
     Quaternion imu_to_robot_frame_;
     Vector3 gravitational_vector_ = {0.0f, 0.0f, 0.0f};
     Vector3 gyro_bias_ = {0.0f, 0.0f, 0.0f};
