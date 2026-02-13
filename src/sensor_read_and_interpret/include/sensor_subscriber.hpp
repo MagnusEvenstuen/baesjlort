@@ -17,6 +17,7 @@
 #include "structs.hpp"
 #include "sensor_handler.hpp"
 #include "IMU_class.hpp"
+#include "VIMU_filter.hpp"
 
 class sensor_subscriber : public rclcpp::Node
 {
@@ -43,7 +44,8 @@ public:
             {"/gbr/imu_rear1", 5},
             {"/gbr/imu_rear2", 6},
             {"/gbr/imu_rear3", 7}
-        }
+        },
+        vimu_filter(8)
     {
         time_ = std::chrono::steady_clock::now();
         prev_time_ = time_;
@@ -54,6 +56,22 @@ public:
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
         });
+        vimu_filter.set_imu_geometry(Eigen::Vector3d(0.0f, -0.003f, -0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f), 0);
+        vimu_filter.set_imu_geometry(Eigen::Vector3d(0.04f, -0.003f, -0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, 0.383f), 1);
+        vimu_filter.set_imu_geometry(Eigen::Vector3d(-0.04f, -0.003f, -0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, 0.383f), 2);
+        vimu_filter.set_imu_geometry(Eigen::Vector3d(-0.03f, 0.05f, -0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, 0.383f), 3);
+        vimu_filter.set_imu_geometry(Eigen::Vector3d(0.03f, 0.05f, -0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, 0.383f), 4);
+        vimu_filter.set_imu_geometry(Eigen::Vector3d(-0.03f, -0.05f, -0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f), 5);
+        vimu_filter.set_imu_geometry(Eigen::Vector3d(0.03f, -0.05f, -0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f), 6);
+        vimu_filter.set_imu_geometry(Eigen::Vector3d(0.00f, -0.05f, -0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f), 7);
+    }
+
+    ~sensor_subscriber()
+    {
+        if (processing_thread_.joinable())
+        {
+            processing_thread_.join();
+        }
     }
 
     void init()
@@ -326,6 +344,7 @@ private:
     IMU IMU_rear1_;
     IMU IMU_rear2_;
     IMU IMU_rear3_;
+    VIMU_filter vimu_filter;
     std::unordered_map<std::string, int> imu_topic_map_;
     std::array<IMU, 8> imu_objects_;
     std::thread processing_thread_;
