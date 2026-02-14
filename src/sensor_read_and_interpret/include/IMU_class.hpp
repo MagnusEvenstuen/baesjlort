@@ -40,25 +40,42 @@ public:
         gyro_bias_.z += gyro_z/calibration_needed_;
     }
 
-    void update2_electric_boogalo(const float acc_x, const float acc_y, const float acc_z, const float gyro_x, 
-                                    const float gyro_y, const float gyro_z, const bool fuse_sensors)
+    void update2_electric_boogalo(const float acc_x, const float acc_y, const float acc_z,
+                             const float gyro_x, const float gyro_y, const float gyro_z,
+                             const bool fuse_sensors)
     {
         float dt = std::chrono::duration<float>(std::chrono::steady_clock::now() - last_update_time_).count();
         last_update_time_ = std::chrono::steady_clock::now();
 
-        if (calibration_count_ < calibration_needed_)
-        {
+        if (calibration_count_ < calibration_needed_) {
             calibrate_gravity(acc_x, acc_y, acc_z);
             calibrate_gyro(gyro_x, gyro_y, gyro_z);
             return;
         }
 
-        acc_.x = acc_x - gravitational_vector_.x;
-        acc_.y = acc_y - gravitational_vector_.y;
-        acc_.z = acc_z - gravitational_vector_.z;
-        rotated_gyro_.x = gyro_x - gyro_bias_.x;
-        rotated_gyro_.y = gyro_y - gyro_bias_.y;
-        rotated_gyro_.z = gyro_z - gyro_bias_.z;
+        // Fjern gravitasjon og bias i sensorramme
+        Vector3 acc_sensor = {acc_x - gravitational_vector_.x, 
+                            acc_y - gravitational_vector_.y, 
+                            acc_z - gravitational_vector_.z};
+        
+        Vector3 gyro_sensor = {gyro_x - gyro_bias_.x,
+                            gyro_y - gyro_bias_.y,
+                            gyro_z - gyro_bias_.z};
+
+        // Oppdater orientering basert på gyrodata
+        Quaternion delta_orientation(
+            1.0f,
+            gyro_sensor.x * dt * 0.5f,
+            gyro_sensor.y * dt * 0.5f,
+            gyro_sensor.z * dt * 0.5f
+        );
+        
+        orientation_ = orientation_ * delta_orientation;
+        orientation_.normalize();
+
+        // Roter akselerasjon og gyro til ROV-ramme
+        acc_ = orientation_.rotate_vector(acc_sensor);
+        rotated_gyro_ = orientation_.rotate_vector(gyro_sensor);
     }
 
     void update(const float acc_x, const float acc_y, const float acc_z,
@@ -97,7 +114,7 @@ public:
             orientation_ = fuse_acceleration_gyroscope_for_orientation(acc_rot, dt);
         }
         //Compensate acceleration for angular velocity
-        acc_ = compansate_acc_for_angular_velocity(acc_rot, {gyro_rot.x, gyro_rot.y, gyro_rot.z}, dt);
+        //acc_ = compansate_acc_for_angular_velocity(acc_rot, {gyro_rot.x, gyro_rot.y, gyro_rot.z}, dt);
         //Rotate acceleration to correct frame
         acc_ = orientation_.rotate_vector({acc_.x, acc_.y, acc_.z});
 

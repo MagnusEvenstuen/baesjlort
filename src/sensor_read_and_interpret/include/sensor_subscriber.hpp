@@ -57,14 +57,14 @@ public:
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
             }
         });
-        vimu_filter.set_imu_geometry(Eigen::Vector3d(0.0f, -0.003f, -0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f), 0);
-        vimu_filter.set_imu_geometry(Eigen::Vector3d(0.04f, -0.003f, -0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, 0.383f), 1);
-        vimu_filter.set_imu_geometry(Eigen::Vector3d(-0.04f, -0.003f, -0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, 0.383f), 2);
-        vimu_filter.set_imu_geometry(Eigen::Vector3d(-0.03f, 0.05f, -0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, 0.383f), 3);
-        vimu_filter.set_imu_geometry(Eigen::Vector3d(0.03f, 0.05f, -0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, 0.383f), 4);
-        vimu_filter.set_imu_geometry(Eigen::Vector3d(-0.03f, -0.05f, -0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f), 5);
-        vimu_filter.set_imu_geometry(Eigen::Vector3d(0.03f, -0.05f, -0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f), 6);
-        vimu_filter.set_imu_geometry(Eigen::Vector3d(0.00f, -0.05f, -0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f), 7);
+        vimu_filter.set_imu_geometry(Eigen::Vector3d(0.0f, 0.003f, 0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, 0.383f), 0);
+        vimu_filter.set_imu_geometry(Eigen::Vector3d(-0.04f, 0.003f, 0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f), 1);
+        vimu_filter.set_imu_geometry(Eigen::Vector3d(0.04f, 0.003f, 0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f), 2);
+        vimu_filter.set_imu_geometry(Eigen::Vector3d(0.03f, -0.05f, 0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f), 3);
+        vimu_filter.set_imu_geometry(Eigen::Vector3d(-0.03f, -0.05f, 0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f), 4);
+        vimu_filter.set_imu_geometry(Eigen::Vector3d(0.03f, 0.05f, 0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, 0.383f), 5);
+        vimu_filter.set_imu_geometry(Eigen::Vector3d(-0.03f, 0.05f, 0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, 0.383f), 6);
+        vimu_filter.set_imu_geometry(Eigen::Vector3d(-0.00f, 0.05f, 0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, 0.383f), 7);
     }
 
     ~sensor_subscriber()
@@ -250,9 +250,10 @@ private:
 
         //Calculate average values from the recieved IMU messages
         //Vector3 avg_acc = acc_/recieved_counter;
+        RCLCPP_INFO(this->get_logger(), "AccBefore - x: %.4f, y: %.4f, z: %.4f", acc_vector.back().y(), acc_vector.back().x(), acc_vector.back().z());
         {
             const std::lock_guard<std::mutex> lock(vector_mutex);
-            vimu_filter.update(acc_vector, gyro_vector, id_vector);
+            vimu_filter.update(acc_vector, gyro_vector, id_vector, 0.01);
             acc_vector.clear();
             gyro_vector.clear();
             id_vector.clear();

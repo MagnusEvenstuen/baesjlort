@@ -41,7 +41,7 @@ public:
         IMUs[id].skewed_position_matrix = skew(position);
     }
 
-    void update(const std::vector<Eigen::Vector3d>& acc, const std::vector<Eigen::Vector3d>& gyro, const std::vector<int>& imu_ids)
+    void update(const std::vector<Eigen::Vector3d>& acc, const std::vector<Eigen::Vector3d>& gyro, const std::vector<int>& imu_ids, const float dt)
     {
         //Needs more than 2 IMUs to compute as explained in the paper https://www.mdpi.com/1424-8220/11/7/6771#Processing_Speed_of_Architectures_and_Number_of_IMUs section 2.1
         if (acc.size() <= 2)
@@ -49,10 +49,16 @@ public:
             return;
         }
 
+        Eigen::Matrix<double,9,9> F = Eigen::Matrix<double,9,9>::Identity() * 1.0;
+        F.block<3,3>(3,6) = Eigen::Matrix3d::Identity() * dt;
+
         //Stacking matricess as explained in section 3 of the paper
         Eigen::MatrixXd H = Eigen::MatrixXd::Zero(6*acc.size(), 9);
         Eigen::VectorXd Z(6*acc.size());
         Eigen::MatrixXd R_total = Eigen::MatrixXd::Zero(6*acc.size(), 6*acc.size());
+
+        x_ = F * x_;
+        p_ = F * p_ * F.transpose() + q_;
 
         //Goes through all the IMUs
         for(int i = 0; i < acc.size(); i++) {
@@ -86,8 +92,7 @@ public:
             R_total.block(i*6, i*6, 6, 6) = r_;
         }
 
-        update_adaptive_noise();
-        p_ = p_ + q_;
+        update_adaptive_noise(acc.back(), gyro.back());
 
         //Updates kalman gain and state
         Eigen::MatrixXd S = H * p_ * H.transpose() + R_total;
@@ -109,30 +114,31 @@ public:
     }
 
 private:
-    void update_adaptive_noise()
+    void update_adaptive_noise(const Eigen::Vector3d& acc_raw, const Eigen::Vector3d& gyro_raw)
     {
         Eigen::Vector3d acc = x_.segment<3>(0);
         Eigen::Vector3d omega = x_.segment<3>(3);
         //Based on section 2.2 of the paper
         std::rotate(omega_buffer_.begin(), omega_buffer_.begin() + 1, omega_buffer_.end());
         std::rotate(acc_buffer_.begin(), acc_buffer_.begin() + 1, acc_buffer_.end());
+
         omega_buffer_.back() = omega;
         acc_buffer_.back() = acc;
 
         //Calculates the average
         Eigen::Vector3d average_omega = Eigen::Vector3d::Zero();
         Eigen::Vector3d average_acc = Eigen::Vector3d::Zero();
-        for (int i = 0; i < 50; i++) {
+        for (int i = 0; i < 10; i++) {
             average_omega += omega_buffer_[i];
             average_acc += acc_buffer_[i];
         }
-        average_omega /= 50.0f;
-        average_acc /= 50.0f;
+        average_omega /= 10.0f;
+        average_acc /= 10.0f;
 
         //Calculates the variance
         Eigen::Vector3d omega_variance = Eigen::Vector3d::Zero();
         Eigen::Vector3d acc_variance = Eigen::Vector3d::Zero();
-        for (int i = 0; i < 50; i++) {
+        for (int i = 0; i < 10; i++) {
             Eigen::Vector3d omega_difference = omega_buffer_[i] - average_omega;
             omega_variance.x() += omega_difference.x() * omega_difference.x();
             omega_variance.y() += omega_difference.y() * omega_difference.y();
@@ -143,16 +149,16 @@ private:
             acc_variance.y() += acc_difference.y() * acc_difference.y();
             acc_variance.z() += acc_difference.z() * acc_difference.z();
         }
-        omega_variance /= 49.0f;
-        acc_variance /= 49.0f;
+        omega_variance /= 9.0f;
+        acc_variance /= 9.0f;
 
         //Uses the max variance to prevent under estimation
         double max_omega_variance = std::max({omega_variance.x(), omega_variance.y(), omega_variance.z()});
         double max_acc_variance = std::max({acc_variance.x(), acc_variance.y(), acc_variance.z()});
 
-        q_.block<3,3>(0,0) = Eigen::Matrix3d::Identity() * max_acc_variance * 0.1;
-        q_.block<3,3>(3,3) = Eigen::Matrix3d::Identity() * max_omega_variance * 0.1;
-        q_.block<3,3>(6,6) = Eigen::Matrix3d::Identity() * max_omega_variance * 0.01;
+        q_.block<3,3>(0,0) = Eigen::Matrix3d::Identity() * max_acc_variance;
+        q_.block<3,3>(3,3) = Eigen::Matrix3d::Identity() * max_omega_variance;
+        q_.block<3,3>(6,6) = Eigen::Matrix3d::Identity() * max_omega_variance;
     }
 
     Eigen::Matrix3d skew(const Eigen::Vector3d& v)
@@ -166,12 +172,12 @@ private:
 
 private:
     //Estimated IMU noise
-    const double acc_var_x = 0.001788 * 3;
-    const double acc_var_y = 0.001610 * 3;
-    const double acc_var_z = 0.001994 * 3;
-    const double gyro_var_x = 0.000002603 * 3;
-    const double gyro_var_y = 0.000002754 * 3;
-    const double gyro_var_z = 0.000002742 * 3;
+    const double acc_var_x = 0.001788;
+    const double acc_var_y = 0.001610;
+    const double acc_var_z = 0.001994;
+    const double gyro_var_x = 0.000002603;
+    const double gyro_var_y = 0.000002754;
+    const double gyro_var_z = 0.000002742;
 
     //Defines klamann stuff
     Eigen::VectorXd x_;
@@ -180,8 +186,8 @@ private:
     Eigen::MatrixXd r_;
 
     //Defines buffers
-    std::array<Eigen::Vector3d, 50> omega_buffer_ = {Eigen::Vector3d::Zero()};      //If at 100Hz, 50 samples corresponds to 0.5 seconds of data.
-    std::array<Eigen::Vector3d, 50> acc_buffer_ = {Eigen::Vector3d::Zero()};
+    std::array<Eigen::Vector3d, 10> omega_buffer_ = {Eigen::Vector3d::Zero()};      //If at 100Hz, 50 samples corresponds to 0.5 seconds of data.
+    std::array<Eigen::Vector3d, 10> acc_buffer_ = {Eigen::Vector3d::Zero()};
     std::vector<IMU_geometry> IMUs;
 };
 
