@@ -8,9 +8,9 @@ import json
 import time 
 
 from std_msgs.msg import Float64MultiArray
-from sensor_msgs.msg import NavSatFix
 from sensor_msgs.msg import Imu
 from nav_msgs.msg import Odometry
+from mavros_msgs.msg import GPSINPUT
 
 from tf_transformations import quaternion_from_euler, euler_from_quaternion
 
@@ -49,11 +49,12 @@ class Patch(Node):
 
         # Subscribers
         self.create_subscription(Imu, "/gbr/imu_center_perfect", self._imu_callback, 1),
-        # self.create_subscription(NavSatFix, "gps", self._gps_callback, 1),
+        # self.create_subscription(NavSatFix, "/mavros/global_position/raw/fix", self._gps_callback, 1),
         self.create_subscription(Odometry, "/gbr/odometry_perfect", self._odom_callback, 1),
 
         # Publishers
         self.pub_pwm = self.create_publisher(Float64MultiArray, "/gbr/thrusters", 1)
+        self.pub_fake_gps = self.create_publisher(GPSINPUT, "/mavros/gps_input/gps_input", 1)
 
         # Publish everything
         self.timer = self.create_timer(1/50, self.looper)
@@ -68,14 +69,11 @@ class Patch(Node):
         # self.gps = None
         self.odom = None
 
-        # self.gps_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # IPV4, UDP
-        # self.gps_addr = ("127.0.0.1", 25100)
+        self.gps_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # IPV4, UDP
+        self.gps_addr = ("127.0.0.1", 25100)
 
     def _imu_callback(self, msg):
         self.imu = msg
-
-    def _gps_callback(self, msg):
-        self.gps = msg
 
     def _odom_callback(self, msg):
         self.odom = msg
@@ -197,31 +195,31 @@ class Patch(Node):
         # Send to AP
         self.sock_sitl.sendto(bytes(JSON_string,"ascii"), address)
 
-        # print(self.gps.latitude)
+        fake_gps = GPSINPUT()
 
-        # gps_data = {
-        #         'time_usec' : int(c_time/1e3),                        # (uint64_t) Timestamp (micros since boot or Unix epoch)
-        #         'gps_id' : 0,                           # (uint8_t) ID of the GPS for multiple GPS inputs
-        #         # 'ignore_flags' : 8,                     # (uint16_t) Flags indicating which fields to ignore (see GPS_INPUT_IGNORE_FLAGS enum). All other fields must be provided.
-        #         # 'time_week_ms' : 0,                     # (uint32_t) GPS time (milliseconds from start of GPS week)
-        #         # 'time_week' : 0,                        # (uint16_t) GPS week number
-        #         # 'fix_type' : 3,                         # (uint8_t) 0-1: no fix, 2: 2D fix, 3: 3D fix. 4: 3D with DGPS. 5: 3D with RTK
-        #         'lat' : int((56.026930+pose_position[0]/111320.0)*1e7),                              # (int32_t) Latitude (WGS84), in degrees * 1E7
-        #         'lon' : int((-3.385670+pose_position[1]/111320.0)*1e7),                              # (int32_t) Longitude (WGS84), in degrees * 1E7
-        #         'alt' : pose_position[2],                              # (float) Altitude (AMSL, not WGS84), in m (positive for up)
-        #         # 'hdop' : 1,                             # (float) GPS HDOP horizontal dilution of position in m
-        #         # 'vdop' : 1,                             # (float) GPS VDOP vertical dilution of position in m
-        #         # 'vn' : 0,                               # (float) GPS velocity in m/s in NORTH direction in earth-fixed NED frame
-        #         # 've' : 0,                               # (float) GPS velocity in m/s in EAST direction in earth-fixed NED frame
-        #         # 'vd' : 0,                               # (float) GPS velocity in m/s in DOWN direction in earth-fixed NED frame
-        #         # 'speed_accuracy' : 0,                   # (float) GPS speed accuracy in m/s
-        #         # 'horiz_accuracy' : 0,                   # (float) GPS horizontal accuracy in m
-        #         # 'vert_accuracy' : 0,                    # (float) GPS vertical accuracy in m
-        #         # 'satellites_visible' : 7                # (uint8_t) Number of satellites visible.
-        # }
+        fake_gps.header.stamp = self.get_clock().now().to_msg()
+        fake_gps.gps_id = 0
+        fake_gps.ignore_flags = 8
+        fake_gps.time_week_ms = 0
+        fake_gps.time_week = 0
+        fake_gps.fix_type = 3
+        fake_gps.lat = int((56.026930+pose_position[0]/111320.0)*1e7)
+        fake_gps.lon = int((-3.385670+pose_position[1]/111320.0)*1e7)
+        # fake_gps.lat = int(56.026930*1e7)
+        # fake_gps.lon = int(-3.385670*1e7)
+        fake_gps.alt = pose_position[2]
+        fake_gps.hdop = 1.0
+        fake_gps.vdop = 1.0
+        fake_gps.vn = 0.0
+        fake_gps.ve = 0.0
+        fake_gps.vd = 0.0
+        fake_gps.speed_accuracy = 0.0
+        fake_gps.horiz_accuracy = 0.0
+        fake_gps.vert_accuracy = 0.0
+        fake_gps.satellites_visible = 7
 
-        # gps_data = json.dumps(gps_data)
-        # self.gps_sock.sendto(gps_data.encode(), ("127.0.0.1", 25100))
+        self.pub_fake_gps.publish(fake_gps)
+
 
 def main(args=None):
     rclpy.init(args=args)
