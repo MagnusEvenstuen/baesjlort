@@ -253,7 +253,7 @@ private:
         RCLCPP_INFO(this->get_logger(), "AccBefore - x: %.4f, y: %.4f, z: %.4f", acc_vector.back().y(), acc_vector.back().x(), acc_vector.back().z());
         {
             const std::lock_guard<std::mutex> lock(vector_mutex);
-            vimu_filter.update(acc_vector, gyro_vector, id_vector, 0.01);
+            vimu_filter.update(acc_vector, gyro_vector, id_vector);
             acc_vector.clear();
             gyro_vector.clear();
             id_vector.clear();

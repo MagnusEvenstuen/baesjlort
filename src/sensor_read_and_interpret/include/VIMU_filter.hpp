@@ -41,7 +41,7 @@ public:
         IMUs[id].skewed_position_matrix = skew(position);
     }
 
-    void update(const std::vector<Eigen::Vector3d>& acc, const std::vector<Eigen::Vector3d>& gyro, const std::vector<int>& imu_ids, const float dt)
+    void update(const std::vector<Eigen::Vector3d>& acc, const std::vector<Eigen::Vector3d>& gyro, const std::vector<int>& imu_ids)
     {
         //Needs more than 2 IMUs to compute as explained in the paper https://www.mdpi.com/1424-8220/11/7/6771#Processing_Speed_of_Architectures_and_Number_of_IMUs section 2.1
         if (acc.size() <= 2)
@@ -49,23 +49,17 @@ public:
             return;
         }
 
-        Eigen::Matrix<double,9,9> F = Eigen::Matrix<double,9,9>::Identity() * 1.0;
-        F.block<3,3>(3,6) = Eigen::Matrix3d::Identity() * dt;
-
         //Stacking matricess as explained in section 3 of the paper
         Eigen::MatrixXd H = Eigen::MatrixXd::Zero(6*acc.size(), 9);
         Eigen::VectorXd Z(6*acc.size());
         Eigen::MatrixXd R_total = Eigen::MatrixXd::Zero(6*acc.size(), 6*acc.size());
-
-        x_ = F * x_;
-        p_ = F * p_ * F.transpose() + q_;
 
         //Goes through all the IMUs
         for(int i = 0; i < acc.size(); i++) {
             int IMU_id = imu_ids[i];
 
             Eigen::MatrixXd H_i = Eigen::MatrixXd::Zero(6,9);
-            H_i.block<3,3>(0,3) = IMUs[IMU_id].rotational_matrix;
+            H_i.block<3,3>(3,3) = IMUs[IMU_id].rotational_matrix;
 
             //Section 2.1 of the paper. Linearization for the H matrix
             Eigen::Matrix3d omega_skew = skew(x_.segment<3>(3));
@@ -74,25 +68,26 @@ public:
             Eigen::Matrix3d linearization = omega_skew * r_skew + omega_cross_position_skew;
 
             //Second line of equation 3 in the paper
-            H_i.block<3,3>(3,0) = IMUs[IMU_id].rotational_matrix;           //linear acc effect
-            H_i.block<3,3>(3,3) = -IMUs[IMU_id].rotational_matrix * linearization;      //Rotational speed effect 
-            H_i.block<3,3>(3,6) = -IMUs[IMU_id].rotational_matrix * r_skew; //Rotational acceleration effect
+            H_i.block<3,3>(0,0) = IMUs[IMU_id].rotational_matrix;           //linear acc effect
+            H_i.block<3,3>(0,3) = -IMUs[IMU_id].rotational_matrix * linearization;      //Rotational speed effect 
+            H_i.block<3,3>(0,6) = -IMUs[IMU_id].rotational_matrix * r_skew; //Rotational acceleration effect
 
             //Predictions (implementation of equation 2 in the paper)
             Eigen::Vector3d gyro_pred = IMUs[IMU_id].rotational_matrix * x_.segment<3>(3);
-            Z.segment<3>(i*6) = gyro[i] - gyro_pred;
+            Z.segment<3>(i*6+3) = gyro[i] - gyro_pred;
             Eigen::Vector3d acc_pred = IMUs[IMU_id].rotational_matrix * 
                 (x_.segment<3>(0) +                         //Predicted linear acc
                 x_.segment<3>(6).cross(IMUs[IMU_id].position) +               //Predicted linear acc from tangential acc
                 x_.segment<3>(3).cross(x_.segment<3>(3).cross(IMUs[IMU_id].position)));       //Predicted linear acc from sentripital acc
-            Z.segment<3>(i*6+3) = acc[i] - acc_pred;
+            Z.segment<3>(i*6) = acc[i] - acc_pred;
 
             //Stacks H_i to the H matrix 
             H.block(i*6, 0, 6, 9) = H_i;
             R_total.block(i*6, i*6, 6, 6) = r_;
         }
 
-        update_adaptive_noise(acc.back(), gyro.back());
+        update_adaptive_noise();
+        p_ = p_ + q_;
 
         //Updates kalman gain and state
         Eigen::MatrixXd S = H * p_ * H.transpose() + R_total;
@@ -114,7 +109,7 @@ public:
     }
 
 private:
-    void update_adaptive_noise(const Eigen::Vector3d& acc_raw, const Eigen::Vector3d& gyro_raw)
+    void update_adaptive_noise()
     {
         Eigen::Vector3d acc = x_.segment<3>(0);
         Eigen::Vector3d omega = x_.segment<3>(3);

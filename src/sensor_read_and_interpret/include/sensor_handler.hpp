@@ -266,9 +266,10 @@ public:
 
         Vector3 imu_speed = {current_speed_.x + acc_filtered.x * dt, current_speed_.y + acc_filtered.y * dt, current_speed_.z + acc_filtered.z * dt};
         //Update position and speed based on filtered accelerometer data
-        current_speed_.x = (1-prediction_weight)*(imu_speed.x) + prediction_weight * predicted_speed_.x;
-        current_speed_.y = (1-prediction_weight)*(imu_speed.y) + prediction_weight * predicted_speed_.y;
-        current_speed_.z = (1-prediction_weight)*(imu_speed.z) + prediction_weight * predicted_speed_.z;
+        //current_speed_.x = (1-prediction_weight)*(imu_speed.x) + prediction_weight * predicted_speed_.x;
+        //current_speed_.y = (1-prediction_weight)*(imu_speed.y) + prediction_weight * predicted_speed_.y;
+        //current_speed_.z = (1-prediction_weight)*(imu_speed.z) + prediction_weight * predicted_speed_.z;
+        current_speed_ = acc;
         current_position_.x -= current_speed_.x * dt;
         current_position_.y -= current_speed_.y * dt;
         current_position_.z -= current_speed_.z * dt;
