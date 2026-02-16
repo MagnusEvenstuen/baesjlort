@@ -3,7 +3,10 @@
 
 #include "structs.hpp"
 #include "klamann_shit.hpp"
+#include <Eigen/Dense>
+#include <Eigen/Geometry>
 #include <chrono>
+#include <array>
 #include <fstream>
 #include <iomanip>
 #include <cmath>
@@ -11,7 +14,7 @@
 class sensor_handler
 {
 public:
-    sensor_handler(): orientation_({1.0f, 0.0f, 0.0f, 0.0f}), kalmann(
+    sensor_handler(): orientation_(Eigen::Quaterniond::Identity()), kalmann(
                         //A, B, and C matrices found using sysID in python
                       // A-matrix (9x9)
                       (Eigen::MatrixXd(9, 9) << 
@@ -79,38 +82,38 @@ public:
         if (first_update_)
         {
             //On first update, set position directly to SLAM position to avoid large jumps
-            current_position_.x = pos_x;
-            current_position_.y = pos_y;
-            current_position_.z = pos_z;
+            current_position_.x() = pos_x;
+            current_position_.y() = pos_y;
+            current_position_.z() = pos_z;
             first_update_ = false;
             prev_SLAM_pos_ = {pos_x, pos_y, pos_z};
-            prev_SLAM_orientation_ = {quat_w, quat_x, quat_y, quat_z};
+            prev_SLAM_orientation_ = Eigen::Quaterniond(quat_w, quat_x, quat_y, quat_z);
             return;
         }
 
-        Quaternion slam_quat = {-quat_w, -quat_x, -quat_y, -quat_z};
+        Eigen::Quaterniond slam_quat(-quat_w, -quat_x, -quat_y, -quat_z);
 
         //Update position and orientation from SLAM pose estimate
-        Vector3 estimated_SLAM_speed = {
-            (pos_x - prev_SLAM_pos_.x) / dt,
-            (pos_z - prev_SLAM_pos_.z) / dt,
-            (pos_y - prev_SLAM_pos_.y) / dt
-        };
-        
-        Quaternion slam_to_world = slam_quat*orientation_;
+        Eigen::Vector3d estimated_SLAM_speed(
+            (pos_x - prev_SLAM_pos_.x()) / dt,
+            (pos_z - prev_SLAM_pos_.z()) / dt,
+            (pos_y - prev_SLAM_pos_.y()) / dt
+        );
+
+        Eigen::Quaterniond slam_to_world = slam_quat*orientation_;
         slam_to_world.normalize();
-        estimated_SLAM_speed = slam_to_world.rotate_vector(estimated_SLAM_speed);
+        estimated_SLAM_speed = slam_to_world * estimated_SLAM_speed;
 
-        Quaternion estimated_SLAM_delta_orientation = {
-            (quat_w - prev_SLAM_orientation_.w) / dt,
-            -(quat_x - prev_SLAM_orientation_.x) / dt,
-            -(quat_z - prev_SLAM_orientation_.z) / dt,
-            (quat_y - prev_SLAM_orientation_.y) / dt
+        Eigen::Quaterniond estimated_SLAM_delta_orientation = {
+            (quat_w - prev_SLAM_orientation_.w()) / dt,
+            -(quat_x - prev_SLAM_orientation_.x()) / dt,
+            -(quat_z - prev_SLAM_orientation_.z()) / dt,
+            (quat_y - prev_SLAM_orientation_.y()) / dt
         };
 
-        Quaternion estimated_SLAM_orientation = orientation_ * estimated_SLAM_delta_orientation;
+        Eigen::Quaterniond estimated_SLAM_orientation = orientation_ * estimated_SLAM_delta_orientation;
         estimated_SLAM_orientation.normalize();
-        orientation_ = (orientation_*0.9f) * (estimated_SLAM_orientation * 0.1f);
+        orientation_ = orientation_.slerp(0.1, estimated_SLAM_orientation);
         orientation_.normalize();
 
         float alpha = 0.5f;
@@ -125,9 +128,9 @@ public:
 
         //Complementary filter for speed. Higher weight on current speed due to IMU having higher update rate
         //SLAM speed is noisy due to low frame rate
-        current_speed_.x = alpha*current_speed_.x + (1-alpha)*estimated_SLAM_speed.x;
-        current_speed_.y = alpha*current_speed_.y + (1-alpha)*estimated_SLAM_speed.y;
-        current_speed_.z = alpha*current_speed_.z + (1-alpha)*estimated_SLAM_speed.z;
+        current_speed_.x() = alpha*current_speed_.x() + (1-alpha)*estimated_SLAM_speed.x();
+        current_speed_.y() = alpha*current_speed_.y() + (1-alpha)*estimated_SLAM_speed.y();
+        current_speed_.z() = alpha*current_speed_.z() + (1-alpha)*estimated_SLAM_speed.z();
 
         //Update prev values for speed calculation
         prev_SLAM_pos_ = {pos_x, pos_y, pos_z};
@@ -139,27 +142,27 @@ public:
                            float quat_x, float quat_y, float quat_z, float quat_w)
     {
         //Update perfect position, speed, acceleration and orientation from truth odometry sensor
-        Vector3 prev_speed = perfect_speed_;
+        Eigen::Vector3d prev_speed = perfect_speed_;
         auto current_time = std::chrono::steady_clock::now();
         float dt = std::chrono::duration<float>(current_time - last_truth_update_time_).count();
         last_truth_update_time_ = current_time;
-        perfect_position_.x = pos_x;
-        perfect_position_.y = pos_y;
-        perfect_position_.z = pos_z;
-        perfect_speed_.x = vel_x;
-        perfect_speed_.y = vel_y;
-        perfect_speed_.z = vel_z;
-        perfect_acceleration_.x = (perfect_speed_.x - prev_speed.x) / dt;
-        perfect_acceleration_.y = (perfect_speed_.y - prev_speed.y) / dt;
-        perfect_acceleration_.z = (perfect_speed_.z - prev_speed.z) / dt;
+        perfect_position_.x() = pos_x;
+        perfect_position_.y() = pos_y;
+        perfect_position_.z() = pos_z;
+        perfect_speed_.x() = vel_x;
+        perfect_speed_.y() = vel_y;
+        perfect_speed_.z() = vel_z;
+        perfect_acceleration_.x() = (perfect_speed_.x() - prev_speed.x()) / dt;
+        perfect_acceleration_.y() = (perfect_speed_.y() - prev_speed.y()) / dt;
+        perfect_acceleration_.z() = (perfect_speed_.z() - prev_speed.z()) / dt;
         
-        perfect_orientation_.w = quat_w;
-        perfect_orientation_.x = quat_x;
-        perfect_orientation_.y = quat_y;
-        perfect_orientation_.z = quat_z;
+        perfect_orientation_.w() = quat_w;
+        perfect_orientation_.x() = quat_x;
+        perfect_orientation_.y() = quat_y;
+        perfect_orientation_.z() = quat_z;
         perfect_orientation_ = world_correction_ * perfect_orientation_;
         perfect_orientation_.normalize();
-        perfect_speed_ = perfect_orientation_.rotate_vector_inverse(perfect_speed_);
+        perfect_speed_ = perfect_orientation_.conjugate() * perfect_speed_;
     }
 
     void non_measurement_prediction(std::array<float, 8> thrust)
@@ -175,24 +178,24 @@ public:
         gain << thrust[0], thrust[1], thrust[2], thrust[3], thrust[4], thrust[5], thrust[6], thrust[7];
         Eigen::VectorXd filtered_values = kalmann.predict_state(gain, dt);
         //Gets filtered measurements from Kalman filter
-        Vector3 acc_predicted = {
+        Eigen::Vector3d acc_predicted(
             static_cast<float>(filtered_values[0]),
             static_cast<float>(filtered_values[1]),
             static_cast<float>(filtered_values[2])
-        };
+        );
         
-        Vector3 gyro_predicted = {
+        Eigen::Vector3d gyro_predicted(
             static_cast<float>(filtered_values[3]),
             static_cast<float>(filtered_values[4]),
             static_cast<float>(filtered_values[5])
-        };
+        );
 
-        delta_orientation = Quaternion{
+        delta_orientation = Eigen::Quaterniond(
             1.0f,
-            gyro_predicted.x * dt * 0.5f,
-            gyro_predicted.y * dt * 0.5f,
-            gyro_predicted.z * dt * 0.5f
-        };
+            gyro_predicted.x() * dt * 0.5f,
+            gyro_predicted.y() * dt * 0.5f,
+            gyro_predicted.z() * dt * 0.5f
+        );
         //orientation_ = orientation_ * delta_orientation;
         //orientation_.normalize();
 
@@ -201,11 +204,11 @@ public:
         //current_position_.y -= current_speed_.y * dt + 0.5f * acc_predicted.y * dt * dt;
         //current_position_.z -= current_speed_.z * dt + 0.5f * acc_predicted.z * dt * dt;
         //current_position_.z = 0.1*current_position_.z + 0.9*depth_;
-        predicted_speed_.x += acc_predicted.x * dt;
-        predicted_speed_.y += acc_predicted.y * dt;
-        predicted_speed_.z += acc_predicted.z * dt;
+        predicted_speed_.x() += acc_predicted.x() * dt;
+        predicted_speed_.y() += acc_predicted.y() * dt;
+        predicted_speed_.z() += acc_predicted.z() * dt;
 
-        predicted_speed_ = orientation_.rotate_vector(predicted_speed_);
+        predicted_speed_ = orientation_ * predicted_speed_;
 
         last_update = current_time;
     }
@@ -221,7 +224,7 @@ public:
         depth_ = -(current_pressure - surface_pressure_) / (water_density_ * gravity_);
     }
 
-    void update(const Vector3& acc, const Vector3& gyro, const std::array<float, 8>& thruster_gain)
+    void update(const Eigen::Vector3d& acc, const Eigen::Vector3d& gyro, const std::array<float, 8>& thruster_gain)
     {
         //Updates delta time
         auto current_time = std::chrono::steady_clock::now();
@@ -230,60 +233,60 @@ public:
         
         //Transfers vectors to Eigen for Kalman filter
         Eigen::VectorXd measurement(6);
-        measurement << acc.x, acc.y, acc.z, gyro.x, gyro.y, gyro.z;
+        measurement << acc.x(), acc.y(), acc.z(), gyro.x(), gyro.y(), gyro.z();
         Eigen::VectorXd gain(8); 
         gain << thruster_gain[0], thruster_gain[1], thruster_gain[2], thruster_gain[3], thruster_gain[4], thruster_gain[5], thruster_gain[6], thruster_gain[7];
         Eigen::VectorXd filtered_values = kalmann.update(gain, measurement);
         //Gets filtered measurements from Kalman filter
-        Vector3 acc_filtered = {
+        Eigen::Vector3d acc_filtered(
             static_cast<float>(filtered_values[0]),
             static_cast<float>(filtered_values[1]),
             static_cast<float>(filtered_values[2])
-        };
+        );
         
-        Vector3 gyro_filtered = {
+        Eigen::Vector3d gyro_filtered(
             static_cast<float>(filtered_values[3]),
             static_cast<float>(filtered_values[4]),
             static_cast<float>(filtered_values[5])
-        };
+        );
 
         //Update orientation based on filtered gyroscope data
-        delta_orientation = Quaternion{
+        delta_orientation = Eigen::Quaterniond(
             1.0f,
-            gyro_filtered.x * dt * 0.5f,
-            gyro_filtered.y * dt * 0.5f,
-            gyro_filtered.z * dt * 0.5f
-        };
+            gyro_filtered.x() * dt * 0.5f,
+            gyro_filtered.y() * dt * 0.5f,
+            gyro_filtered.z() * dt * 0.5f
+        );
         orientation_ = orientation_ * delta_orientation;
         orientation_.normalize();
 
-        acc_filtered = orientation_.rotate_vector(acc_filtered);
-        acc_filtered = {-acc.x, -acc.y, -acc.z};
+        acc_filtered = orientation_ * acc_filtered;
+        acc_filtered = {-acc.x(), -acc.y(), -acc.z()};
         gyro_filtered = gyro;
 
         //If long between IMU measurements, trust prediction more.
         float prediction_weight = std::min(1.0f, dt);
 
-        Vector3 imu_speed = {current_speed_.x + acc_filtered.x * dt, current_speed_.y + acc_filtered.y * dt, current_speed_.z + acc_filtered.z * dt};
+        Eigen::Vector3d imu_speed(current_speed_.x() + acc_filtered.x() * dt, current_speed_.y() + acc_filtered.y() * dt, current_speed_.z() + acc_filtered.z() * dt);
         //Update position and speed based on filtered accelerometer data
-        current_speed_.x = ((1-prediction_weight)*(imu_speed.x) + prediction_weight * predicted_speed_.x);
-        current_speed_.y = ((1-prediction_weight)*(imu_speed.y) + prediction_weight * predicted_speed_.y);
-        current_speed_.z = ((1-prediction_weight)*(imu_speed.z) + prediction_weight * predicted_speed_.z);
-        current_position_.x -= current_speed_.x * dt;
-        current_position_.y -= current_speed_.y * dt;
-        current_position_.z -= current_speed_.z * dt;
-        current_position_.z = 0.1*current_position_.z + 0.9*depth_;
+        current_speed_.x() = ((1-prediction_weight)*(imu_speed.x()) + prediction_weight * predicted_speed_.x());
+        current_speed_.y() = ((1-prediction_weight)*(imu_speed.y()) + prediction_weight * predicted_speed_.y());
+        current_speed_.z() = ((1-prediction_weight)*(imu_speed.z()) + prediction_weight * predicted_speed_.z());
+        current_position_.x() -= current_speed_.x() * dt;
+        current_position_.y() -= current_speed_.y() * dt;
+        current_position_.z() -= current_speed_.z() * dt;
+        current_position_.z() = 0.1*current_position_.z() + 0.9*depth_;
 
         predicted_speed_ = current_speed_;
-        log_to_csv(acc_filtered.x, acc_filtered.y, acc_filtered.z, gyro_filtered.x, gyro_filtered.y, gyro_filtered.z);
+        log_to_csv(acc_filtered.x(), acc_filtered.y(), acc_filtered.z(), gyro_filtered.x(), gyro_filtered.y(), gyro_filtered.z());
     }
 
-    Vector3 get_position() const
+    Eigen::Vector3d get_position() const
     {
         return current_position_;
     }
 
-    Quaternion get_orientation() const
+    Eigen::Quaterniond get_orientation() const
     {
         return orientation_;
     }
@@ -298,13 +301,13 @@ public:
             csv_file_ << std::fixed << std::setprecision(6)
                      << elapsed << ","
                      << acc_y << "," << -acc_x << "," << acc_z << ","
-                     << -current_speed_.x << "," << -current_speed_.y << "," << current_speed_.z << ","
-                     << current_position_.x << "," << -current_position_.y << "," << -current_position_.z << ","
-                     << perfect_acceleration_.x << "," << perfect_acceleration_.y << "," << perfect_acceleration_.z << ","
-                     << perfect_speed_.x << "," << perfect_speed_.y << "," << perfect_speed_.z << ","
-                     << perfect_position_.x << ", " << perfect_position_.y << ", " << perfect_position_.z << ", " << depth_ << ","
-                     << orientation_.x << ", " << orientation_.y << ", " << orientation_.z << ", "
-                     << perfect_orientation_.x << ", " << perfect_orientation_.y << ", " << perfect_orientation_.z << ", "
+                     << -current_speed_.x() << "," << -current_speed_.y() << "," << current_speed_.z() << ","
+                     << current_position_.x() << "," << -current_position_.y() << "," << -current_position_.z() << ","
+                     << perfect_acceleration_.x() << "," << perfect_acceleration_.y() << "," << perfect_acceleration_.z() << ","
+                     << perfect_speed_.x() << "," << perfect_speed_.y() << "," << perfect_speed_.z() << ","
+                     << perfect_position_.x() << ", " << perfect_position_.y() << ", " << perfect_position_.z() << ", " << depth_ << ","
+                     << orientation_.x() << ", " << orientation_.y() << ", " << orientation_.z() << ", "
+                     << perfect_orientation_.x() << ", " << perfect_orientation_.y() << ", " << perfect_orientation_.z() << ", "
                      << gyro_x << ", " << gyro_y << ", " << gyro_z
                      << "\n";
             csv_file_.flush();
@@ -313,18 +316,18 @@ public:
 
 private:
     klamann_shit kalmann;
-    Vector3 current_position_ = {0.0f, 0.0f, 0.0f};
-    Vector3 current_speed_ = {0.0f, 0.0f, 0.0f};
-    Vector3 predicted_speed_ = {0.0f, 0.0f, 0.0f};
-    Vector3 perfect_acceleration_ = {0.0f, 0.0f, 0.0f};
-    Vector3 perfect_speed_ = {0.0f, 0.0f, 0.0f};
-    Vector3 perfect_position_ = {0.0f, 0.0f, 0.0f};
-    Vector3 prev_SLAM_pos_ = {0.0f, 0.0f, 0.0f};
-    Quaternion prev_SLAM_orientation_ = {1.0f, 0.0f, 0.0f, 0.0f};
-    Quaternion orientation_ = {1.0f, 0.0f, 0.0f, 0.0f};
-    Quaternion perfect_orientation_;
-    Quaternion world_correction_ = Quaternion(0.0f, 1.0f, 0.0f, 0.0f);
-    Quaternion delta_orientation = {1.0f, 0.0f, 0.0f, 0.0f};
+    Eigen::Vector3d current_position_ = Eigen::Vector3d::Zero();
+    Eigen::Vector3d current_speed_ = Eigen::Vector3d::Zero();
+    Eigen::Vector3d predicted_speed_ = Eigen::Vector3d::Zero();
+    Eigen::Vector3d perfect_acceleration_ = Eigen::Vector3d::Zero();
+    Eigen::Vector3d perfect_speed_ = Eigen::Vector3d::Zero();
+    Eigen::Vector3d perfect_position_ = Eigen::Vector3d::Zero();
+    Eigen::Vector3d prev_SLAM_pos_ = Eigen::Vector3d::Zero();
+    Eigen::Quaterniond prev_SLAM_orientation_ = Eigen::Quaterniond::Identity();
+    Eigen::Quaterniond orientation_;
+    Eigen::Quaterniond perfect_orientation_;
+    Eigen::Quaterniond world_correction_ = Eigen::Quaterniond(0.0, 1.0, 0.0, 0.0);
+    Eigen::Quaterniond delta_orientation = Eigen::Quaterniond::Identity();
     std::chrono::steady_clock::time_point last_update_time_;
     std::chrono::steady_clock::time_point last_truth_update_time_;
     std::chrono::steady_clock::time_point start_time_;

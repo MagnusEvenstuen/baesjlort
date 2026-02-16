@@ -262,10 +262,10 @@ private:
         }
         Eigen::Vector3d vimu_acc = vimu_filter.get_acceleration();
         Eigen::Vector3d vimu_gyro = vimu_filter.get_gyro();
-        Vector3 avg_acc = {vimu_acc.x(), vimu_acc.y(), vimu_acc.z()};
-        Vector3 avg_gyro = {vimu_gyro.x(), vimu_gyro.y(), vimu_gyro.z()};
+        Eigen::Vector3d avg_acc = vimu_acc;
+        Eigen::Vector3d avg_gyro = vimu_gyro;
 
-        RCLCPP_INFO(this->get_logger(), "Acc - x: %.4f, y: %.4f, z: %.4f", avg_acc.y, avg_acc.x,  avg_acc.z);
+        RCLCPP_INFO(this->get_logger(), "Acc - x: %.4f, y: %.4f, z: %.4f", avg_acc.y(), avg_acc.x(),  avg_acc.z());
 
         //Updates orientation based on stuff from IMU data
         //Quaternion avg_orientation = {
@@ -281,17 +281,17 @@ private:
         
         //Publish data for SYSID
         auto gyro_msg = std_msgs::msg::Float32MultiArray();
-        gyro_msg.data = {avg_gyro.x, avg_gyro.y, avg_gyro.z};
+        gyro_msg.data = {avg_gyro.x(), avg_gyro.y(), avg_gyro.z()};
         avg_gyro_publisher_->publish(gyro_msg);
         
         auto acc_msg = std_msgs::msg::Float32MultiArray();
-        acc_msg.data = {avg_acc.x, avg_acc.y, avg_acc.z};
+        acc_msg.data = {avg_acc.x(), avg_acc.y(), avg_acc.z()};
         avg_acc_publisher_->publish(acc_msg);
 
         //Publish data for Slamming balls
-        Quaternion ori_from_handler = sensor_handler_.get_orientation();
+        Eigen::Quaterniond ori_from_handler = sensor_handler_.get_orientation();
         auto orientation_msg = std_msgs::msg::Float32MultiArray();
-        orientation_msg.data = {ori_from_handler.w, ori_from_handler.x, ori_from_handler.y, ori_from_handler.z};
+        orientation_msg.data = {ori_from_handler.w(), ori_from_handler.x(), ori_from_handler.y(), ori_from_handler.z()};
         orientation_publisher_->publish(orientation_msg);
 
         //Reset recieved flags
@@ -306,14 +306,14 @@ private:
         //Updates sensor handler with averaged IMU data
         sensor_handler_.update(avg_acc, avg_gyro, thrust_);
 
-        Vector3 position = sensor_handler_.get_position();
+        Eigen::Vector3d position = sensor_handler_.get_position();
         RCLCPP_INFO(this->get_logger(), 
             "Posisjon - x: %.2f, y: %.2f, z: %.2f", 
-            position.x, position.y, position.z);
+            position.x(), position.y(), position.z());
 
-        acc_ = {0.0f, 0.0f, 0.0f};
-        gyro_ = {0.0f, 0.0f, 0.0f};
-        orientation_ = {0.0f, 0.0f, 0.0f, 0.0f};
+        acc_ = Eigen::Vector3d::Zero();
+        gyro_ = Eigen::Vector3d::Zero();
+        orientation_ = Eigen::Quaterniond(0.0, 0.0, 0.0, 0.0);
     }
 
     void pressure_callback(const sensor_msgs::msg::FluidPressure::ConstSharedPtr& msg)
@@ -344,7 +344,7 @@ private:
     rclcpp::Subscription<std_msgs::msg::Float64MultiArray>::SharedPtr thrust_subscriber_;
     rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr pose_subscriber_;
     std::vector<rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr> imu_subscribers_;
-    Vector3 gyro_ = {0, 0, 0};
+    Eigen::Vector3d gyro_ = {0.0, 0.0, 0.0};
     std::mutex vector_mutex;
     
     std::vector<Eigen::Vector3d> acc_vector;
@@ -353,15 +353,15 @@ private:
     std::shared_ptr<image_transport::ImageTransport> it_;
     image_display_and_handle display_and_handle;
     sensor_handler sensor_handler_;
-    const Vector3 center_of_gravity_ = {0.0f, -0.003f, -0.0013f};
+    const Eigen::Vector3d center_of_gravity_ = Eigen::Vector3d(0.0, -0.003, -0.0013);
     std::array<float, 8> thrust_ = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
     float current_speed_x = 0.0;
     float current_speed_y = 0.0;
     float current_speed_z = 0.0;
     unsigned int imu_msg_count_ = 0;
-    Vector3 acc_ = {0.0f, 0.0f, 0.0f};
-    Quaternion orientation_ = {0.0f, 0.0f, 0.0f, 0.0f};
-    Quaternion last_orientation_ = {0.0f, 0.0f, 0.0f, 0.0f};
+    Eigen::Vector3d acc_ = Eigen::Vector3d::Zero();
+    Eigen::Quaterniond orientation_ = Eigen::Quaterniond(0.0, 0.0, 0.0, 0.0);
+    Eigen::Quaterniond last_orientation_ = Eigen::Quaterniond(0.0, 0.0, 0.0, 0.0);
     std::array<bool, 8> recieved = {false, false, false, false, false, false, false, false};
     IMU IMU_center_;
     IMU IMU_center1_;
