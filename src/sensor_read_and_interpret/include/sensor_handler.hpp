@@ -256,9 +256,9 @@ public:
         orientation_ = orientation_ * delta_orientation;
         orientation_.normalize();
 
-        acc_filtered = orientation_ * acc_filtered;
-        acc_filtered = {-acc.x(), -acc.y(), -acc.z()};
-        gyro_filtered = gyro;
+        //acc_filtered = orientation_ * acc_filtered;
+        //acc_filtered = acc;
+        //gyro_filtered = gyro;
 
         //If long between IMU measurements, trust prediction more.
         float prediction_weight = std::min(1.0f, dt);
@@ -296,9 +296,9 @@ public:
             //Logs data to CSV file for plotting
             csv_file_ << std::fixed << std::setprecision(6)
                      << elapsed << ","
-                     << acc_y << "," << -acc_x << "," << acc_z << ","
-                     << -current_speed_.x() << "," << -current_speed_.y() << "," << current_speed_.z() << ","
-                     << current_position_.x() << "," << -current_position_.y() << "," << -current_position_.z() << ","
+                     << acc_x << "," << acc_y << "," << acc_z << ","
+                     << current_speed_.x() << "," << current_speed_.y() << "," << current_speed_.z() << ","
+                     << -current_position_.x() << "," << current_position_.y() << "," << -current_position_.z() << ","
                      << perfect_acceleration_.x() << "," << perfect_acceleration_.y() << "," << perfect_acceleration_.z() << ","
                      << perfect_speed_.x() << "," << perfect_speed_.y() << "," << perfect_speed_.z() << ","
                      << perfect_position_.x() << ", " << perfect_position_.y() << ", " << perfect_position_.z() << ", " << depth_ << ","

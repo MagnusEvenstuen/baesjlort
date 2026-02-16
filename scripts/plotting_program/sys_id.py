@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 import control as ct
 import sklearn
 
-file_path_training = 'data_files/training_data.csv'
-file_path_validation = 'data_files/validation_data.csv'
+file_path_training = 'data_files/wra.csv'
+file_path_validation = 'data_files/wra.csv'
 data_validation = np.genfromtxt(file_path_validation, delimiter=',', skip_header=1)
 data = np.genfromtxt(file_path_training, delimiter=',', skip_header=1)
 

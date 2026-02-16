@@ -53,35 +53,35 @@ public:
             return;
         }
 
-        acc_ << acc_x, acc_y, acc_z;
-        acc_ = orientation_ * acc_;
-
         if (fuse_sensors)
         {
             orientation_ = fuse_acceleration_gyroscope_for_orientation(acc_, dt);
         }
+
+        acc_ << acc_x, acc_y, acc_z;
+        acc_ = orientation_ * acc_;
 
         // Fjern gravitasjon og bias i sensorramme
         Eigen::Vector3d acc_sensor = acc_ - gravitational_vector_;
                         
         acc_sensor = orientation_.conjugate() * acc_sensor;
         
+        //Method based on https://lavalle.pl/vr/node279.html
+
         Eigen::Vector3d gyro_sensor(gyro_x - gyro_bias_.x(),
-                            gyro_y - gyro_bias_.y(),
-                            gyro_z - gyro_bias_.z());
+                                    gyro_y - gyro_bias_.y(),
+                                    gyro_z - gyro_bias_.z());
 
-        // Oppdater orientering basert på gyrodata
-        Eigen::Quaterniond delta_orientation(
-            1.0f,
-            gyro_sensor.x() * dt * 0.5f,
-            gyro_sensor.y() * dt * 0.5f,
-            gyro_sensor.z() * dt * 0.5f
-        );
-        
-        orientation_ = orientation_ * delta_orientation;
-        orientation_.normalize();
+        //Finds rotational angle
+        double angle = gyro_sensor.norm() * dt;
 
-        // Roter akselerasjon og gyro til ROV-ramme
+        //Finds rotational axis, creates quaternion and updates
+        Eigen::Vector3d axis = gyro_sensor.normalized();
+        Eigen::Quaterniond delta_quaternion;
+        delta_quaternion = Eigen::AngleAxisd(angle, axis);
+        orientation_ = orientation_ * delta_quaternion;
+
+        //Rotate acc to ROV frame
         acc_ = orientation_ * acc_sensor;
         rotated_gyro_ = orientation_ * gyro_sensor;
     }

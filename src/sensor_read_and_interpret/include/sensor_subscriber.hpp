@@ -56,7 +56,7 @@ public:
             while (running_)
             {
                 imu_data_sender();
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
         });
         vimu_filter.set_imu_geometry(Eigen::Vector3d(0.0f, 0.003f, 0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, 0.383f), 0);
@@ -231,14 +231,13 @@ private:
                 recieved_counter++;
         }
 
-        if (recieved_counter == 0)
+        if (recieved_counter <= 2)
         {
             //sensor_handler_.non_measurement_prediction(thrust_);
             return;
         }
 
         //Calculate average values from the recieved IMU messages
-        RCLCPP_INFO(this->get_logger(), "AccBefore - x: %.4f, y: %.4f, z: %.4f", acc_vector.back().y(), acc_vector.back().x(), acc_vector.back().z());
         {
             const std::lock_guard<std::mutex> lock(vector_mutex);
             vimu_filter.update(acc_vector, gyro_vector, id_vector);
@@ -285,7 +284,7 @@ private:
         Eigen::Vector3d position = sensor_handler_.get_position();
         RCLCPP_INFO(this->get_logger(), 
             "Posisjon - x: %.2f, y: %.2f, z: %.2f", 
-            position.x(), position.y(), position.z());
+            position.x(), -position.y(), position.z());
 
         acc_ = Eigen::Vector3d::Zero();
         gyro_ = Eigen::Vector3d::Zero();
