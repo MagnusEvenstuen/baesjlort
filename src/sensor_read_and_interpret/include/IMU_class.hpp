@@ -2,10 +2,10 @@
 #define IMU_CLASS_HPP
 
 #include <structs.hpp>
-#include <cmath>
 #include <chrono>
 #include <array>
 #include <algorithm>
+#include <Eigen/Dense>
 #include "filter_coeffs_lowpass.hpp"
 #include "klamann_shit.hpp"
 #include <iostream>
@@ -13,8 +13,8 @@
 class IMU
 {
 public:
-    IMU(const Vector3 position_on_robot, const Quaternion initial_orientation)
-        : position_({-position_on_robot.x, position_on_robot.y, position_on_robot.z}), orientation_(1.0f, 0.0f, 0.0f, 0.0f)
+    IMU(const Eigen::Vector3d position_on_robot, const Eigen::Quaterniond initial_orientation)
+        : position_(-position_on_robot.x(), position_on_robot.y(), position_on_robot.z()), orientation_(1.0, 0.0, 0.0, 0.0)
     {
         //Sets up the IMU
         orientation_.normalize();
@@ -26,18 +26,18 @@ public:
     void calibrate_gravity(const float acc_x, const float acc_y, const float acc_z)
     {
         //Calibrates the gravitational vector by averaging over several samples
-        gravitational_vector_.x += acc_x/calibration_needed_;
-        gravitational_vector_.y += acc_y/calibration_needed_;
-        gravitational_vector_.z += acc_z/calibration_needed_;
+        gravitational_vector_.x() += acc_x/calibration_needed_;
+        gravitational_vector_.y() += acc_y/calibration_needed_;
+        gravitational_vector_.z() += acc_z/calibration_needed_;
         calibration_count_++;
     }
 
     void calibrate_gyro(const float gyro_x, const float gyro_y, const float gyro_z)
     {
         //Calibrates the gyroscope bias by averaging over several samples
-        gyro_bias_.x += gyro_x/calibration_needed_;
-        gyro_bias_.y += gyro_y/calibration_needed_;
-        gyro_bias_.z += gyro_z/calibration_needed_;
+        gyro_bias_.x() += gyro_x/calibration_needed_;
+        gyro_bias_.y() += gyro_y/calibration_needed_;
+        gyro_bias_.z() += gyro_z/calibration_needed_;
     }
 
     void update2_electric_boogalo(const float acc_x, const float acc_y, const float acc_z,
@@ -53,139 +53,70 @@ public:
             return;
         }
 
-        acc_ = orientation_.rotate_vector({acc_x, acc_y, acc_z});
+        acc_ << acc_x, acc_y, acc_z;
+        acc_ = orientation_ * acc_;
+
+        if (fuse_sensors)
+        {
+            orientation_ = fuse_acceleration_gyroscope_for_orientation(acc_, dt);
+        }
 
         // Fjern gravitasjon og bias i sensorramme
-        Vector3 acc_sensor = {acc_.x - gravitational_vector_.x, 
-                            acc_.y - gravitational_vector_.y, 
-                            acc_.z - gravitational_vector_.z};
+        Eigen::Vector3d acc_sensor = acc_ - gravitational_vector_;
                         
-        acc_sensor = orientation_.rotate_vector_inverse(acc_sensor);
+        acc_sensor = orientation_.conjugate() * acc_sensor;
         
-        Vector3 gyro_sensor = {gyro_x - gyro_bias_.x,
-                            gyro_y - gyro_bias_.y,
-                            gyro_z - gyro_bias_.z};
+        Eigen::Vector3d gyro_sensor(gyro_x - gyro_bias_.x(),
+                            gyro_y - gyro_bias_.y(),
+                            gyro_z - gyro_bias_.z());
 
         // Oppdater orientering basert på gyrodata
-        Quaternion delta_orientation(
+        Eigen::Quaterniond delta_orientation(
             1.0f,
-            gyro_sensor.x * dt * 0.5f,
-            gyro_sensor.y * dt * 0.5f,
-            gyro_sensor.z * dt * 0.5f
+            gyro_sensor.x() * dt * 0.5f,
+            gyro_sensor.y() * dt * 0.5f,
+            gyro_sensor.z() * dt * 0.5f
         );
         
         orientation_ = orientation_ * delta_orientation;
         orientation_.normalize();
 
         // Roter akselerasjon og gyro til ROV-ramme
-        acc_ = orientation_.rotate_vector(acc_sensor);
-        rotated_gyro_ = orientation_.rotate_vector(gyro_sensor);
-    }
-
-    void update(const float acc_x, const float acc_y, const float acc_z,
-                const float gyro_x, const float gyro_y, const float gyro_z, const bool fuse_sensors)
-    {
-        //Calculates the delta time
-        float dt = std::chrono::duration<float>(std::chrono::steady_clock::now() - last_update_time_).count();
-        last_update_time_ = std::chrono::steady_clock::now();
-        Vector3 acc_rot = imu_to_robot_frame_.rotate_vector({acc_x, acc_y, acc_z});
-        Vector3 gyro_rot = imu_to_robot_frame_.rotate_vector({gyro_x, gyro_y, gyro_z});
-        rotated_gyro_ = gyro_rot - gyro_bias_;
-        //Checks if calibration is done
-        if (calibration_count_ < calibration_needed_)
-        {
-            calibrate_gravity(acc_rot.x, acc_rot.y, acc_rot.z);
-            calibrate_gyro(gyro_rot.x, gyro_rot.y, gyro_rot.z);
-            return;
-        }
-
-        //Update orientation based on gyroscope data
-        Quaternion delta_orientation(
-            1.0f,
-            (gyro_rot.x - gyro_bias_.x) * dt * 0.5f,
-            (gyro_rot.y - gyro_bias_.y) * dt * 0.5f,
-            (gyro_rot.z - gyro_bias_.z) * dt * 0.5f
-        );
-        delta_orientation_ = delta_orientation;
-
-        //Updates and normelizes the orientation
-        orientation_ = orientation_ * delta_orientation;
-        orientation_.normalize();
-
-        //Fuse accelerometer and gyroscope data for better orientation
-        if (fuse_sensors)
-        {
-            orientation_ = fuse_acceleration_gyroscope_for_orientation(acc_rot, dt);
-        }
-        //Compensate acceleration for angular velocity
-        //acc_ = compansate_acc_for_angular_velocity(acc_rot, {gyro_rot.x, gyro_rot.y, gyro_rot.z}, dt);
-        //Rotate acceleration to correct frame
-        acc_ = orientation_.rotate_vector(acc_);
-
-        // Subtract gravity in ROV frame
-        acc_.x -= gravitational_vector_.x;
-        acc_.y -= gravitational_vector_.y;
-        acc_.z -= gravitational_vector_.z;
-
-        acc_ = orientation_.rotate_vector_inverse(acc_);
-
-        //Low pass filter on acceleration data, rotates makes the oldest value the last element
-        std::rotate(acc_x_buffer_.begin(), acc_x_buffer_.begin() + 1, acc_x_buffer_.end());
-        std::rotate(acc_y_buffer_.begin(), acc_y_buffer_.begin() + 1, acc_y_buffer_.end());
-        std::rotate(acc_z_buffer_.begin(), acc_z_buffer_.begin() + 1, acc_z_buffer_.end());
-        acc_x_buffer_.back() = acc_.x;
-        acc_y_buffer_.back() = acc_.y;
-        acc_z_buffer_.back() = acc_.z;
-        Vector3 filtered_acc = {0.0f, 0.0f, 0.0f};
-
-        //Apply low pass filter
-        for (size_t i = 0; i < FILTER_LENGTH; i++)
-        {
-            filtered_acc.x += filter_coeffs[i] * acc_x_buffer_[i];
-            filtered_acc.y += filter_coeffs[i] * acc_y_buffer_[i];
-            filtered_acc.z += filter_coeffs[i] * acc_z_buffer_[i];
-        }
-
-        //acc_ = filtered_acc;
-
-        prev_gyro_ = {gyro_rot.x, gyro_rot.y, gyro_rot.z};
-
-        acc_ = imu_to_robot_frame_.rotate_vector_inverse(imu_to_robot_frame_.rotate_vector_inverse(acc_));
-        acc_ = {-acc_.x, -acc_.y, -acc_.z};
-        rotated_gyro_ = imu_to_robot_frame_.rotate_vector_inverse(imu_to_robot_frame_.rotate_vector_inverse(rotated_gyro_));
+        acc_ = orientation_ * acc_sensor;
+        rotated_gyro_ = orientation_ * gyro_sensor;
     }
 
     //Theese four functions are self documenting. Think instead on if you have remembered to eat today
-    Vector3 get_acceleration() const
+    Eigen::Vector3d get_acceleration() const
     {
         return acc_;
     }
 
-    Quaternion get_orientation() const
+    Eigen::Quaterniond get_orientation() const
     {
         return orientation_;
     }
 
-    Quaternion get_delta_orientation()
+    Eigen::Quaterniond get_delta_orientation()
     {
         return delta_orientation_;
     }
 
-    Vector3 get_gyro()
+    Eigen::Vector3d get_gyro()
     {
         return rotated_gyro_;
     }
 
 private:
-    Quaternion fuse_acceleration_gyroscope_for_orientation(const Vector3& acc, const float dt)
+    Eigen::Quaterniond fuse_acceleration_gyroscope_for_orientation(const Eigen::Vector3d& acc, const float dt)
     {
         //Using a modified version of fusing method proposed in 
         //https://ciis.lcsr.jhu.edu/lib/exe/fetch.php?media=courses:456:2021:projects:456-2021-01:estimatingorientationcontreras.pdf
-        float length_acc = std::sqrt(acc.x*acc.x + acc.y*acc.y + acc.z*acc.z);
+        float length_acc = acc.norm();
         float length_gravity = std::sqrt(
-            gravitational_vector_.x * gravitational_vector_.x +
-            gravitational_vector_.y * gravitational_vector_.y +
-            gravitational_vector_.z * gravitational_vector_.z
+            gravitational_vector_.x() * gravitational_vector_.x() +
+            gravitational_vector_.y() * gravitational_vector_.y() +
+            gravitational_vector_.z() * gravitational_vector_.z()
         );
 
         //Return if acceleration is out of expected range
@@ -194,31 +125,27 @@ private:
             return orientation_;
         }
         //Normalize vectors
-        Vector3 norm_acc = {
-            acc.x / length_acc,
-            acc.y / length_acc,
-            acc.z / length_acc
-        };
+        Eigen::Vector3d norm_acc(
+            acc.x() / length_acc,
+            acc.y() / length_acc,
+            acc.z() / length_acc
+        );
 
-        Vector3 norm_gravity = {
-            gravitational_vector_.x / length_gravity,
-            gravitational_vector_.y / length_gravity,
-            gravitational_vector_.z / length_gravity
-        };
+        Eigen::Vector3d norm_gravity(
+            gravitational_vector_.x() / length_gravity,
+            gravitational_vector_.y() / length_gravity,
+            gravitational_vector_.z() / length_gravity
+        );
         //Calculate error between expected gravity vector and measured gravity vector
-        Vector3 expected_gravity = orientation_.rotate_vector_inverse(norm_gravity);
-        Vector3 error = {
-            norm_acc.y * expected_gravity.z - norm_acc.z * expected_gravity.y,
-            norm_acc.z * expected_gravity.x - norm_acc.x * expected_gravity.z,
-            norm_acc.x * expected_gravity.y - norm_acc.y * expected_gravity.x
-        };
+        Eigen::Vector3d expected_gravity = orientation_.conjugate() *norm_gravity;
+        Eigen::Vector3d error = norm_acc.cross(expected_gravity);
 
         //Get correction from PID controller
-        Vector3 correction = PID_corrector(error, length_acc, dt);
-        orientation_ = orientation_ * Quaternion(
+        Eigen::Vector3d correction = PID_corrector(error, length_acc, dt);
+        orientation_ = orientation_ * Eigen::Quaterniond(
             1.0f,
-            correction.x * dt * 0.5f,
-            correction.y * dt * 0.5f,
+            correction.x() * dt * 0.5f,
+            correction.y() * dt * 0.5f,
             0.0f
         );
         orientation_.normalize();
@@ -226,7 +153,7 @@ private:
         return orientation_;
     }
 
-    Vector3 PID_corrector(Vector3 error, float acc_length, float dt)
+    Eigen::Vector3d PID_corrector(Eigen::Vector3d error, float acc_length, float dt)
     {
         //PID controller constants
         constexpr float Kp = 0.7f;
@@ -234,53 +161,55 @@ private:
         constexpr float Kd = 0.0f;
         constexpr float weight = 0.2f;
         //Static variables to hold integral and previous error
-        static Vector3 integral_error = {0.0f, 0.0f, 0.0f};
-        static Vector3 prev_error = {0.0f, 0.0f, 0.0f};
+        static Eigen::Vector3d integral_error = Eigen::Vector3d::Zero();
+        static Eigen::Vector3d prev_error = Eigen::Vector3d::Zero();
         //Update integral error
-        integral_error.x += error.x * dt * weight;
-        integral_error.y += error.y * dt * weight;
-        integral_error.z += error.z * dt * weight;
+        integral_error.x() += error.x() * dt * weight;
+        integral_error.y() += error.y() * dt * weight;
+        integral_error.z() += error.z() * dt * weight;
         
         //Can't correct z axis (yaw) with accelerometer
-        Vector3 gain = {
-            Kp * error.x + Ki * integral_error.x + Kd * (error.x - prev_error.x) / dt,
-            Kp * error.y + Ki * integral_error.y + Kd * (error.y - prev_error.y) / dt,
+        Eigen::Vector3d gain(
+            Kp * error.x() + Ki * integral_error.x() + Kd * (error.x() - prev_error.x()) / dt,
+            Kp * error.y() + Ki * integral_error.y() + Kd * (error.y() - prev_error.y()) / dt,
             0.0f
-        };
+        );
         prev_error = error;
         return gain;
     }
 
-    Vector3 compansate_acc_for_angular_velocity(Vector3 acc, Vector3 gyro, const float dt)
+    Eigen::Vector3d compansate_acc_for_angular_velocity(Eigen::Vector3d acc, Eigen::Vector3d gyro, const float dt)
     {
         //Equation from https://robotics.stackexchange.com/questions/24276/calculation-of-imu-offset-for-placement-of-inertial-measurement-unit-away-from-c? with some changed signs to fit ROV coordinate system
         //Quick maths
-        Vector3 gyro_acc = {
-            -(gyro.x - prev_gyro_.x) / dt,
-            -(gyro.y - prev_gyro_.y) / dt,
-            (gyro.z - prev_gyro_.z) / dt
-        };
+        Eigen::Vector3d gyro_acc(
+            -(gyro.x() - prev_gyro_.x()) / dt,
+            -(gyro.y() - prev_gyro_.y()) / dt,
+            (gyro.z() - prev_gyro_.z()) / dt
+        );
 
-        Vector3 acc_comp = acc;
+        Eigen::Vector3d acc_comp = acc;
         //Cross product calculations
-        acc_comp.x += -(gyro.y*gyro.y + gyro.z*gyro.z)*position_.x + (gyro.x*gyro.y - gyro_acc.z)*position_.y + (gyro.x*gyro.z + gyro_acc.y)*position_.z;
-        acc_comp.y += (gyro.x*gyro.y + gyro_acc.z)*position_.x + -(gyro.x*gyro.x + gyro.z*gyro.z)*position_.y + (gyro.y*gyro.z - gyro_acc.x)*position_.z;
-        acc_comp.z += (gyro.x*gyro.z - gyro_acc.y)*position_.x + (gyro.y*gyro.z + gyro_acc.x)*position_.y + -(gyro.x*gyro.x + gyro.y*gyro.y)*position_.z;
+        acc_comp.x() += -(gyro.y()*gyro.y() + gyro.z()*gyro.z())*position_.x() + (gyro.x()*gyro.y() - gyro_acc.z())*position_.y() + (gyro.x()*gyro.z() + gyro_acc.y())*position_.z();
+        acc_comp.y() += (gyro.x()*gyro.y() + gyro_acc.z())*position_.x() + -(gyro.x()*gyro.x() + gyro.z()*gyro.z())*position_.y() + (gyro.y()*gyro.z() - gyro_acc.x())*position_.z();
+        acc_comp.z() += (gyro.x()*gyro.z() - gyro_acc.y())*position_.x() + (gyro.y()*gyro.z() + gyro_acc.x())*position_.y() + -(gyro.x()*gyro.x() + gyro.y()*gyro.y())*position_.z();
+
+        prev_gyro_ = gyro;
 
         return acc_comp;
     }
 
 private:
     //Variables and shit
-    Vector3 position_;
-    Vector3 acc_ = {0.0f, 0.0f, 0.0f};
-    Quaternion orientation_ = {1.0f, 0.0f, 0.0f, 0.0f};
-    Quaternion delta_orientation_ = {1.0f, 0.0f, 0.0f, 0.0f};
-    Quaternion imu_to_robot_frame_;
-    Vector3 gravitational_vector_ = {0.0f, 0.0f, 0.0f};
-    Vector3 gyro_bias_ = {0.0f, 0.0f, 0.0f};
-    Vector3 prev_gyro_ = {0.0f, 0.0f, 0.0f};
-    Vector3 rotated_gyro_ = {0.0f, 0.0f, 0.0f};
+    Eigen::Vector3d position_;
+    Eigen::Vector3d acc_ = Eigen::Vector3d::Zero();
+    Eigen::Quaterniond orientation_ = Eigen::Quaterniond::Identity();
+    Eigen::Quaterniond delta_orientation_ = Eigen::Quaterniond::Identity();
+    Eigen::Quaterniond imu_to_robot_frame_;
+    Eigen::Vector3d gravitational_vector_ = Eigen::Vector3d::Zero();
+    Eigen::Vector3d gyro_bias_ = Eigen::Vector3d::Zero();
+    Eigen::Vector3d prev_gyro_ = Eigen::Vector3d::Zero();
+    Eigen::Vector3d rotated_gyro_ = Eigen::Vector3d::Zero();
     unsigned int calibration_count_ = 0;
     unsigned int calibration_needed_ = 500;
     std::chrono::steady_clock::time_point last_update_time_;

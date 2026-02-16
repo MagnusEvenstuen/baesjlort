@@ -14,6 +14,8 @@
 #include <array>
 #include <chrono>
 #include <mutex>
+#include <Eigen/Dense>
+#include <Eigen/Geometry>
 #include "image_display_and_handle.hpp"
 #include "structs.hpp"
 #include "sensor_handler.hpp"
@@ -25,14 +27,14 @@ class sensor_subscriber : public rclcpp::Node
 public:
     sensor_subscriber() : Node("sensor_subscriber"),
         //Setup IMU objects with their positions on the robot and initial orientations
-        IMU_center_(Vector3{0.0f, -0.003f, -0.0013}, Quaternion{0.924f, 0.0f, 0.0f, -0.383f}),
-        IMU_center1_(Vector3{0.04f, -0.003f, -0.0013}, Quaternion{0.924f, 0.0f, 0.0f, 0.383f}),
-        IMU_center2_(Vector3{-0.04f, -0.003f, -0.0013}, Quaternion{0.924f, 0.0f, 0.0f, 0.383f}),
-        IMU_front1_(Vector3{-0.03f, 0.05f, -0.0013}, Quaternion{0.924f, 0.0f, 0.0f, 0.383f}),
-        IMU_front2_(Vector3{0.03f, 0.05f, -0.0013}, Quaternion{0.924f, 0.0f, 0.0f, 0.383f}),
-        IMU_rear1_(Vector3{-0.03f, -0.05f, -0.0013}, Quaternion{0.924f, 0.0f, 0.0f, -0.383f}),
-        IMU_rear2_(Vector3{0.03f, -0.05f, -0.0013}, Quaternion{0.924f, 0.0f, 0.0f, -0.383f}),
-        IMU_rear3_(Vector3{0.00f, -0.05f, -0.0013}, Quaternion{0.924f, 0.0f, 0.0f, -0.383f}),
+        IMU_center_(Eigen::Vector3d(0.0f, -0.003f, -0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f)),
+        IMU_center1_(Eigen::Vector3d(0.04f, -0.003f, -0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, 0.383f)),
+        IMU_center2_(Eigen::Vector3d(-0.04f, -0.003f, -0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, 0.383f)),
+        IMU_front1_(Eigen::Vector3d(-0.03f, 0.05f, -0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, 0.383f)),
+        IMU_front2_(Eigen::Vector3d(0.03f, 0.05f, -0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, 0.383f)),
+        IMU_rear1_(Eigen::Vector3d(-0.03f, -0.05f, -0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f)),
+        IMU_rear2_(Eigen::Vector3d(0.03f, -0.05f, -0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f)),
+        IMU_rear3_(Eigen::Vector3d(0.00f, -0.05f, -0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f)),
 
         imu_objects_{IMU_center_, IMU_center1_, IMU_center2_, IMU_front1_, IMU_front2_, IMU_rear1_, IMU_rear2_, IMU_rear3_},
         imu_topic_map_{
@@ -160,14 +162,14 @@ private:
                 msg->angular_velocity.z,
                 fuse_sensors);
             
-            Vector3 acc = imu_obj.get_acceleration();
-            Quaternion orientation = imu_obj.get_orientation();
-            Vector3 gyro = imu_obj.get_gyro();
+            Eigen::Vector3d acc = imu_obj.get_acceleration();
+            Eigen::Quaterniond orientation = imu_obj.get_orientation();
+            Eigen::Vector3d gyro = imu_obj.get_gyro();
             
             {
                 const std::lock_guard<std::mutex> lock(vector_mutex);
-                acc_vector.emplace_back(Eigen::Vector3d(acc.x, acc.y, acc.z));
-                gyro_vector.emplace_back(Eigen::Vector3d(gyro.x, gyro.y, gyro.z));
+                acc_vector.emplace_back(acc);
+                gyro_vector.emplace_back(gyro);
                 id_vector.emplace_back(imu_index);
             }            
 
