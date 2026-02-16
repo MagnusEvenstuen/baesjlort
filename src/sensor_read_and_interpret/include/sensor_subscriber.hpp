@@ -171,20 +171,7 @@ private:
                 acc_vector.emplace_back(acc);
                 gyro_vector.emplace_back(gyro);
                 id_vector.emplace_back(imu_index);
-            }            
-
-            //acc_.x += acc.x;
-            //acc_.y += acc.y;
-            //acc_.z += acc.z;
-            
-            //orientation_.w += orientation.w;
-            //orientation_.x += orientation.x;
-            //orientation_.y += orientation.y;
-            //orientation_.z += orientation.z;
-            
-            //gyro_.x += gyro.x;
-            //gyro_.y += gyro.y;
-            //gyro_.z += gyro.z;
+            }
             
             recieved[imu_index] = true;
         }
@@ -251,7 +238,6 @@ private:
         }
 
         //Calculate average values from the recieved IMU messages
-        //Vector3 avg_acc = acc_/recieved_counter;
         RCLCPP_INFO(this->get_logger(), "AccBefore - x: %.4f, y: %.4f, z: %.4f", acc_vector.back().y(), acc_vector.back().x(), acc_vector.back().z());
         {
             const std::lock_guard<std::mutex> lock(vector_mutex);
@@ -268,16 +254,6 @@ private:
         RCLCPP_INFO(this->get_logger(), "Acc - x: %.4f, y: %.4f, z: %.4f", avg_acc.y(), avg_acc.x(),  avg_acc.z());
 
         //Updates orientation based on stuff from IMU data
-        //Quaternion avg_orientation = {
-        //    orientation_.w / recieved_counter,
-        //    orientation_.x / recieved_counter,
-        //    orientation_.y / recieved_counter,
-        //    orientation_.z / recieved_counter
-        //};
-
-        //avg_orientation.normalize();
-        //last_orientation_ = avg_orientation;
-        //Vector3 avg_gyro = gyro_/recieved_counter;
         
         //Publish data for SYSID
         auto gyro_msg = std_msgs::msg::Float32MultiArray();

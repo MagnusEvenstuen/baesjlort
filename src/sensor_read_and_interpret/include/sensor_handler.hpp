@@ -200,10 +200,6 @@ public:
         //orientation_.normalize();
 
         //Update position and speed based on filtered accelerometer data
-        //current_position_.x -= current_speed_.x * dt + 0.5f * acc_predicted.x * dt * dt;
-        //current_position_.y -= current_speed_.y * dt + 0.5f * acc_predicted.y * dt * dt;
-        //current_position_.z -= current_speed_.z * dt + 0.5f * acc_predicted.z * dt * dt;
-        //current_position_.z = 0.1*current_position_.z + 0.9*depth_;
         predicted_speed_.x() += acc_predicted.x() * dt;
         predicted_speed_.y() += acc_predicted.y() * dt;
         predicted_speed_.z() += acc_predicted.z() * dt;

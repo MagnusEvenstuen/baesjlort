@@ -188,38 +188,13 @@ private:
     void orientation_callback(const std_msgs::msg::Float32MultiArray::SharedPtr msg)
     {
         //Sets the correct orientation from IMU data
-        orientation_ = {
+        orientation_ = Eigen::Quaterniond(
             msg->data[0],
             msg->data[1],
             msg->data[2],
             msg->data[3]
-        };
+        );
     }
-
-    void left_image_callback(const sensor_msgs::msg::Image::SharedPtr msg)
-    {
-        std::lock_guard<std::mutex> lock(image_mutex_);
-        //Convert ROS image to OpenCV format
-        cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg, "bgr8");
-        left_image_ = cv_ptr->image;
-        //Set flag and process if both images are received
-        //left_received_ = true;
-        image_msg_ = msg;
-        process_stereo_pair(image_msg_->header);
-    }
-
-    void right_image_callback(const sensor_msgs::msg::Image::SharedPtr msg)
-    {
-        std::lock_guard<std::mutex> lock(image_mutex_);
-        //Convert ROS image to OpenCV format
-        cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg, "bgr8");
-        right_image_ = cv_ptr->image;
-        //Set flag and process if both images are received
-        //right_received_ = true;
-        image_msg_ = msg;
-        process_stereo_pair(image_msg_->header);
-    }
-
 
     //This function could be improved with better synchronization if needed
     void process_stereo_pair(const std_msgs::msg::Header& header)
@@ -251,10 +226,6 @@ private:
                 slam_system_->Reset();
             }
         }
-
-        //Reset flags
-        //left_received_ = false;
-        //right_received_ = false;
     }
 
     void publishPose(const Sophus::SE3f& pose, const std_msgs::msg::Header& img_header)
@@ -267,30 +238,17 @@ private:
         pose_msg.header.frame_id = "world";
         
         Eigen::Quaternionf quat(pose.rotationMatrix());
-        //Sets the orientation to custome quaternion. SLAM orientation is not used anywhere else
-        Quaternion quat_non_eigen = {
-            quat.w(),
-            quat.x(),
-            quat.y(),
-            quat.z()
-        };
-        //Sets the position
-        Vector3 position = {
-            pose.translation().x(),
-            pose.translation().y(),
-            pose.translation().z()
-        };
 
         //Set position and orientation
-        pose_msg.pose.position.x = position.x;
-        pose_msg.pose.position.y = position.y;
-        pose_msg.pose.position.z = position.z;
+        pose_msg.pose.position.x = pose.translation().x();
+        pose_msg.pose.position.y = pose.translation().y();
+        pose_msg.pose.position.z = pose.translation().z();
         pose_msg.pose.orientation.x = quat.x();
         pose_msg.pose.orientation.y = quat.y();
         pose_msg.pose.orientation.z = quat.z();
         pose_msg.pose.orientation.w = quat.w();
         
-        //Publishes everything. Orientation from SLAM is not used anywhere else
+        //Publishes everything.
         RCLCPP_INFO(this->get_logger(), "Publishing pose: [x: %.2f, y: %.2f, z: %.2f, w: %.2f, x: %.2f, y: %.2f, z: %.2f]", 
             pose_msg.pose.position.x,
             pose_msg.pose.position.y,
@@ -351,7 +309,7 @@ private:
     std::mutex image_mutex_;
     double init_start_time_;
     rclcpp::TimerBase::SharedPtr init_timer_;
-    Quaternion orientation_;
+    Eigen::Quaterniond orientation_;
 
     std::thread processing_thread_;
     bool new_frame_ = false;
