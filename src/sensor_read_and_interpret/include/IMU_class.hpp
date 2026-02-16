@@ -53,10 +53,14 @@ public:
             return;
         }
 
+        acc_ = orientation_.rotate_vector({acc_x, acc_y, acc_z});
+
         // Fjern gravitasjon og bias i sensorramme
-        Vector3 acc_sensor = {acc_x - gravitational_vector_.x, 
-                            acc_y - gravitational_vector_.y, 
-                            acc_z - gravitational_vector_.z};
+        Vector3 acc_sensor = {acc_.x - gravitational_vector_.x, 
+                            acc_.y - gravitational_vector_.y, 
+                            acc_.z - gravitational_vector_.z};
+                        
+        acc_sensor = orientation_.rotate_vector_inverse(acc_sensor);
         
         Vector3 gyro_sensor = {gyro_x - gyro_bias_.x,
                             gyro_y - gyro_bias_.y,
@@ -116,7 +120,7 @@ public:
         //Compensate acceleration for angular velocity
         //acc_ = compansate_acc_for_angular_velocity(acc_rot, {gyro_rot.x, gyro_rot.y, gyro_rot.z}, dt);
         //Rotate acceleration to correct frame
-        acc_ = orientation_.rotate_vector({acc_.x, acc_.y, acc_.z});
+        acc_ = orientation_.rotate_vector(acc_);
 
         // Subtract gravity in ROV frame
         acc_.x -= gravitational_vector_.x;
@@ -252,8 +256,8 @@ private:
         //Equation from https://robotics.stackexchange.com/questions/24276/calculation-of-imu-offset-for-placement-of-inertial-measurement-unit-away-from-c? with some changed signs to fit ROV coordinate system
         //Quick maths
         Vector3 gyro_acc = {
-            (gyro.x - prev_gyro_.x) / dt,
-            (gyro.y - prev_gyro_.y) / dt,
+            -(gyro.x - prev_gyro_.x) / dt,
+            -(gyro.y - prev_gyro_.y) / dt,
             (gyro.z - prev_gyro_.z) / dt
         };
 
