@@ -238,11 +238,16 @@ private:
         pose_msg.header.frame_id = "world";
         
         Eigen::Quaternionf quat(pose.rotationMatrix());
+        Eigen::Quaternionf orientation = orientation_.cast<float>();
+
+        Eigen::Vector3f position = Eigen::Vector3f(pose.translation().x(), pose.translation().y(), pose.translation().z());
+        position = quat.conjugate() * position;
+        position = orientation * position;
 
         //Set position and orientation
-        pose_msg.pose.position.x = pose.translation().x();
-        pose_msg.pose.position.y = pose.translation().y();
-        pose_msg.pose.position.z = pose.translation().z();
+        pose_msg.pose.position.x = position.x();
+        pose_msg.pose.position.y = position.y();
+        pose_msg.pose.position.z = position.z();
         pose_msg.pose.orientation.x = quat.x();
         pose_msg.pose.orientation.y = quat.y();
         pose_msg.pose.orientation.z = quat.z();

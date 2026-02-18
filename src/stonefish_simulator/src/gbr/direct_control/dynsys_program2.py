@@ -56,6 +56,7 @@ THRUST_MAP = {
     'Key.page_down': [-20.0, 20.0, 20.0, -20.0, 0.0, 0.0, 0.0, 0.0]
 }
 
+
 # Mapping from control dimensions to keys
 CONTROL_MAP = {
     'surge': ('w', 's'),

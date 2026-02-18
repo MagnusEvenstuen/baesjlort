@@ -142,10 +142,11 @@ private:
 
         //Get correction from PID controller
         Eigen::Vector3d correction = PID_corrector(error, length_acc, dt);
+        //Sign on correction might be wrong...
         orientation_ = orientation_ * Eigen::Quaterniond(
             1.0f,
             correction.x() * dt * 0.5f,
-            correction.y() * dt * 0.5f,
+            -correction.y() * dt * 0.5f,
             0.0f
         );
         orientation_.normalize();

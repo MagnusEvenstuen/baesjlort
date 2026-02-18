@@ -95,9 +95,9 @@ public:
 
         //Update position and orientation from SLAM pose estimate
         Eigen::Vector3d estimated_SLAM_speed(
-            (pos_x - prev_SLAM_pos_.x()) / dt,
-            (pos_z - prev_SLAM_pos_.z()) / dt,
-            (pos_y - prev_SLAM_pos_.y()) / dt
+            -(pos_x - prev_SLAM_pos_.x()) / dt,
+            -(pos_z - prev_SLAM_pos_.z()) / dt,
+            -(pos_y - prev_SLAM_pos_.y()) / dt
         );
 
         Eigen::Quaterniond slam_to_world = slam_quat*orientation_;
@@ -113,7 +113,7 @@ public:
 
         Eigen::Quaterniond estimated_SLAM_orientation = orientation_ * estimated_SLAM_delta_orientation;
         estimated_SLAM_orientation.normalize();
-        orientation_ = orientation_.slerp(0.1, estimated_SLAM_orientation);
+        //orientation_ = orientation_.slerp(0.1, estimated_SLAM_orientation);
         orientation_.normalize();
 
         float alpha = 0.5f;

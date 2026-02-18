@@ -56,7 +56,7 @@ public:
             while (running_)
             {
                 imu_data_sender();
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
             }
         });
         vimu_filter.set_imu_geometry(Eigen::Vector3d(0.0f, 0.003f, 0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, 0.383f), 0);
@@ -111,6 +111,9 @@ public:
         //Publishes orientation for SLAMming balls
         orientation_publisher_ = this->create_publisher<std_msgs::msg::Float32MultiArray>(
             "/average_orientation", 100);
+
+        position_publisher_ = this->create_publisher<std_msgs::msg::Float32MultiArray>(
+            "/position", 100);
 
         // Subscriber for Fluid Pressure messages
         pressure_ = this->create_subscription<sensor_msgs::msg::FluidPressure>(
@@ -233,7 +236,7 @@ private:
 
         if (recieved_counter <= 2)
         {
-            //sensor_handler_.non_measurement_prediction(thrust_);
+            sensor_handler_.non_measurement_prediction(thrust_);
             return;
         }
 
@@ -269,6 +272,11 @@ private:
         orientation_msg.data = {ori_from_handler.w(), ori_from_handler.x(), ori_from_handler.y(), ori_from_handler.z()};
         orientation_publisher_->publish(orientation_msg);
 
+        Eigen::Vector3d position = sensor_handler_.get_position();
+        auto position_msg = std_msgs::msg::Float32MultiArray();
+        position_msg.data = {-position.x(), -position.y(), position.z()};
+        position_publisher_->publish(position_msg);
+
         //Reset recieved flags
         recieved[0] = false;
         recieved[1] = false;
@@ -281,10 +289,9 @@ private:
         //Updates sensor handler with averaged IMU data
         sensor_handler_.update(avg_acc, avg_gyro, thrust_);
 
-        Eigen::Vector3d position = sensor_handler_.get_position();
         RCLCPP_INFO(this->get_logger(), 
             "Posisjon - x: %.2f, y: %.2f, z: %.2f", 
-            position.x(), -position.y(), position.z());
+            -position.x(), -position.y(), position.z());
 
         acc_ = Eigen::Vector3d::Zero();
         gyro_ = Eigen::Vector3d::Zero();
@@ -316,6 +323,7 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr avg_gyro_publisher_;
     rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr avg_acc_publisher_;
     rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr orientation_publisher_;
+    rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr position_publisher_;
     rclcpp::Subscription<std_msgs::msg::Float64MultiArray>::SharedPtr thrust_subscriber_;
     rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr pose_subscriber_;
     std::vector<rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr> imu_subscribers_;
