@@ -6,13 +6,14 @@
 #include <rclcpp/rclcpp.hpp>
 #include "PID_controller.hpp"
 #include <Eigen/Dense>
+#include <fstream>
 #include <thread>
 
 class ROV_controller : public rclcpp::Node
 {
 public:
-    ROV_controller() : Node("rov_controller"), PID_x(1.2, 0.0, 0.1), PID_y(1.2, 0.0, 0.1), PID_z(0.8, 0.01, 0.1),
-                        PID_orientation(0.3, 0.001, 0.2)
+    ROV_controller() : Node("rov_controller"), PID_x(0.8, 0.0, 0.1), PID_y(0.8, 0.0, 0.1), PID_z(0.8, 0.01, 0.1),
+                        PID_orientation(1.2, 0.001, 0.8)
     {
         orientation_subscriber_ = this->create_subscription<std_msgs::msg::Float32MultiArray>(
             "/average_orientation", 100,
@@ -29,18 +30,18 @@ public:
             while (true)
             {
                 update_PID();
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
             }
         });
 
         PID_x.set_target_position(0.0);
         PID_y.set_target_position(0.0);
-        PID_z.set_target_position(-1.0);
+        PID_z.set_target_position(0.0);
         PID_orientation.set_target_quaternion(
             Eigen::Quaterniond(
-                Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitX()) *   // roll
-                Eigen::AngleAxisd(3.1415, Eigen::Vector3d::UnitY()) *   // pitch
-                Eigen::AngleAxisd(3.1415, Eigen::Vector3d::UnitZ())     // yaw
+                Eigen::AngleAxisd(-3.1415/2, Eigen::Vector3d::UnitX()) *   // roll
+                Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitY()) *   // pitch
+                Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitZ())     // yaw
             )
         );
     }
@@ -85,6 +86,41 @@ private:
         RCLCPP_INFO(this->get_logger(), 
             "Posisjon - T1: %.2f, T2: %.2f, T3: %.2f, T4: %.2f, T5: %.2f, T6: %.2f, T7: %.2f, T8: %.2f", 
             gain(0), gain(1), gain(2), gain(3), gain(4), gain(5), gain(6), gain(7));
+
+        //Get errors for logging
+        Eigen::Vector3d position_error(
+            PID_x.get_error_float(),
+            PID_y.get_error_float(),
+            PID_z.get_error_float()
+        );
+        Eigen::Vector3d orientation_error = PID_orientation.get_error_quat();
+        log_errors_to_csv(position_error, orientation_error, current_time);
+    }
+
+    void log_errors_to_csv(const Eigen::Vector3d& position_error, const Eigen::Vector3d& orientation_error, double timestamp)
+    {
+        static std::ofstream error_csv_file_;
+        static bool first_open_ = true;
+        
+        if (first_open_)
+        {
+            error_csv_file_.open("/home/gud/Skole/baesjlort/scripts/plotting_program/data_files/error_data.csv", std::ios::app);
+            if (error_csv_file_.is_open())
+            {
+                error_csv_file_ << "timestamp,pos_error_x,pos_error_y,pos_error_z,"
+                                "orient_error_x,orient_error_y,orient_error_z\n";
+            }
+            first_open_ = false;
+        }
+        
+        if (error_csv_file_.is_open())
+        {
+            error_csv_file_ << std::fixed << std::setprecision(6)
+                        << timestamp << ","
+                        << position_error.x() << "," << position_error.y() << "," << position_error.z() << ","
+                        << orientation_error.x() << "," << orientation_error.y() << "," << orientation_error.z() << "\n";
+            error_csv_file_.flush();
+        }
     }
 
 private:

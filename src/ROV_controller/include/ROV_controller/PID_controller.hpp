@@ -33,6 +33,11 @@ public:
         return kp_* error + ki_ * integral_ + kd_ * derivative;
     }
 
+    double get_error_float()
+    {
+        return prev_error_;
+    }
+
     //Overloads the update function to work with quaternions as well.
     Eigen::Vector3d update(const Eigen::Quaterniond& current, const float dt)
     {
@@ -55,6 +60,11 @@ public:
         prev_error_vector_ = error;
         
         return kp_ * error + ki_ * integral_vector_ + kd_ * derivative;
+    }
+
+    Eigen::Vector3d get_error_quat()
+    {
+        return prev_error_vector_;
     }
 
 private:
