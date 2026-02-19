@@ -12,8 +12,8 @@
 class ROV_controller : public rclcpp::Node
 {
 public:
-    ROV_controller() : Node("rov_controller"), PID_x(0.8, 0.0, 0.1), PID_y(0.8, 0.0, 0.1), PID_z(0.8, 0.01, 0.1),
-                        PID_orientation(1.2, 0.001, 0.8)
+    ROV_controller() : Node("rov_controller"), PID_x(3.4, 0.01, 0.4), PID_y(3.4, 0.01, 0.4), PID_z(3.4, 0.01, 0.4),
+                        PID_orientation(0.4, 0.0, 0.0)
     {
         orientation_subscriber_ = this->create_subscription<std_msgs::msg::Float32MultiArray>(
             "/average_orientation", 100,
@@ -39,8 +39,8 @@ public:
         PID_z.set_target_position(0.0);
         PID_orientation.set_target_quaternion(
             Eigen::Quaterniond(
-                Eigen::AngleAxisd(-3.1415/2, Eigen::Vector3d::UnitX()) *   // roll
-                Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitY()) *   // pitch
+                Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitX()) *   // pitch
+                Eigen::AngleAxisd(-3.1415/2, Eigen::Vector3d::UnitY()) *   // roll
                 Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitZ())     // yaw
             )
         );
@@ -71,11 +71,11 @@ private:
         force_world = current_orientation.conjugate() * force_world;
         Eigen::VectorXd forces(6);
 
-        forces << force_world(0),
-                  force_world(1),
-                  force_world(2),
-                  orientation_output(0),
+        forces << 0.0,
+                  0.0,
+                  0.0,
                   orientation_output(1),
+                  orientation_output(0),
                   orientation_output(2);
 
         Eigen::VectorXd gain = thrust_map_matrix*forces;

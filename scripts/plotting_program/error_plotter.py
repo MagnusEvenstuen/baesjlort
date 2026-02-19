@@ -15,6 +15,10 @@ error_ori_x = data[2:, 4]
 error_ori_y = data[2:, 5]
 error_ori_z = data[2:, 6]
 
+startTime = timestamp[0]
+for i in range(len(timestamp)):
+    timestamp[i] = timestamp[i] - startTime
+
 fig, axes = plt.subplots(3, 2, figsize=(12, 10))
 fig.suptitle("Error Plots", fontsize=16)
 
