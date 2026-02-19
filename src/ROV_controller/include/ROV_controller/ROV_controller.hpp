@@ -11,8 +11,8 @@
 class ROV_controller : public rclcpp::Node
 {
 public:
-    ROV_controller() : Node("rov_controller"), PID_x(1.2, 0.01, 0.1), PID_y(1.2, 0.01, 0.1), PID_z(1.2, 0.01, 0.1),
-                        PID_orientation(1.2, 0.01, 0.1)
+    ROV_controller() : Node("rov_controller"), PID_x(1.2, 0.0, 0.1), PID_y(1.2, 0.0, 0.1), PID_z(0.8, 0.01, 0.1),
+                        PID_orientation(0.3, 0.001, 0.2)
     {
         orientation_subscriber_ = this->create_subscription<std_msgs::msg::Float32MultiArray>(
             "/average_orientation", 100,
@@ -35,12 +35,12 @@ public:
 
         PID_x.set_target_position(0.0);
         PID_y.set_target_position(0.0);
-        PID_z.set_target_position(0.0);
+        PID_z.set_target_position(-1.0);
         PID_orientation.set_target_quaternion(
             Eigen::Quaterniond(
                 Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitX()) *   // roll
-                Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitY()) *   // pitch
-                Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitZ())     // yaw
+                Eigen::AngleAxisd(3.1415, Eigen::Vector3d::UnitY()) *   // pitch
+                Eigen::AngleAxisd(3.1415, Eigen::Vector3d::UnitZ())     // yaw
             )
         );
     }
@@ -54,15 +54,14 @@ private:
     void position_callback(const std_msgs::msg::Float32MultiArray::ConstSharedPtr& msg)
     {
         current_position = Eigen::Vector3d(msg->data[0], msg->data[1], msg->data[2]);
-        RCLCPP_INFO(this->get_logger(), 
-            "Posisjon - x: %.2f, y: %.2f, z: %.2f", 
-            current_position.x(), current_position.y(), current_position.z());
     }
 
     void update_PID()
-    {
-        //Endre seinere til å faktisk regne dt
-        float dt = 0.001;
+    { 
+        static double last_time = this->now().seconds();
+        double current_time = this->now().seconds();
+        double dt = current_time - last_time;
+        last_time = current_time;
 
         Eigen::Vector3d orientation_output = PID_orientation.update(current_orientation, dt);
         Eigen::Vector3d force_world = Eigen::Vector3d(PID_x.update(current_position.x(), dt),
@@ -71,18 +70,21 @@ private:
         force_world = current_orientation.conjugate() * force_world;
         Eigen::VectorXd forces(6);
 
-        forces << force_world.x(),
-                  force_world.y(),
-                  force_world.z(),
+        forces << force_world(0),
+                  force_world(1),
+                  force_world(2),
                   orientation_output(0),
                   orientation_output(1),
                   orientation_output(2);
 
         Eigen::VectorXd gain = thrust_map_matrix*forces;
-        gain = gain.cwiseMax(-3.0).cwiseMin(3.0);
+        gain = gain.cwiseMax(-10.0).cwiseMin(10.0);
         auto msg = std_msgs::msg::Float64MultiArray();
         msg.data = std::vector<double>({gain(0), gain(1), gain(2), gain(3), gain(4), gain(5), gain(6), gain(7)});
         thrust_publisher_->publish(msg);
+        RCLCPP_INFO(this->get_logger(), 
+            "Posisjon - T1: %.2f, T2: %.2f, T3: %.2f, T4: %.2f, T5: %.2f, T6: %.2f, T7: %.2f, T8: %.2f", 
+            gain(0), gain(1), gain(2), gain(3), gain(4), gain(5), gain(6), gain(7));
     }
 
 private:
@@ -104,10 +106,10 @@ private:
     1.0, 1.0, 0.0, 0.0, 0.0, -1.0,  //Thruster 2
     -1.0, -1.0, 0.0, 0.0, 0.0, -1.0, //Thruster 3
     1.0, -1.0, 0.0, 0.0, 0.0, 1.0,  //Thruster 4
-    0.0, 0.0, 1.0, 1.0, -1.0, 0.0, //Thruster 5
-    0.0, 0.0, 1.0, -1.0, -1.0, 0.0,  //Thruster 6
-    0.0, 0.0, 1.0, 1.0, 1.0, 0.0,    //Thruster 7
-    0.0, 0.0, 1.0, -1.0, 1.0, 0.0    //Thruster 8
+    0.0, 0.0, 1.0, -1.0, 1.0, 0.0, //Thruster 5
+    0.0, 0.0, 1.0, 1.0, 1.0, 0.0,  //Thruster 6
+    0.0, 0.0, 1.0, -1.0, -1.0, 0.0,    //Thruster 7
+    0.0, 0.0, 1.0, 1.0, -1.0, 0.0    //Thruster 8
     ).finished();
 };
 

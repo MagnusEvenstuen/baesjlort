@@ -36,7 +36,7 @@ public:
     //Overloads the update function to work with quaternions as well.
     Eigen::Vector3d update(const Eigen::Quaterniond& current, const float dt)
     {
-        Eigen::Quaterniond quaternion_error = target_quaternion_ * current.inverse();
+        Eigen::Quaterniond quaternion_error = current.inverse() * target_quaternion_;
         quaternion_error.normalize();
 
         Eigen::Vector3d error;
@@ -59,7 +59,7 @@ public:
 
 private:
     double target_position_;
-    Eigen::Quaterniond target_quaternion_ = Eigen::Quaterniond::Identity();;
+    Eigen::Quaterniond target_quaternion_ = Eigen::Quaterniond::Identity();
     double kp_;
     double ki_;
     double kd_;

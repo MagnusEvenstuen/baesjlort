@@ -89,7 +89,7 @@ public:
         // Subscribers for IMU messages
         for (const auto& [topic_name, imu_index] : imu_topic_map_) {
             auto subscriber = this->create_subscription<sensor_msgs::msg::Imu>(
-                topic_name, 100,
+                topic_name, rclcpp::SensorDataQoS(),
                 [this, imu_index](const sensor_msgs::msg::Imu::ConstSharedPtr& msg) {
                     imu_callback(msg, imu_index);
                 });
@@ -117,7 +117,7 @@ public:
 
         // Subscriber for Fluid Pressure messages
         pressure_ = this->create_subscription<sensor_msgs::msg::FluidPressure>(
-            "/gbr/pressure", 100, 
+            "/gbr/pressure", rclcpp::SensorDataQoS(), 
             std::bind(&sensor_subscriber::pressure_callback, this, std::placeholders::_1));
 
         // Subscriber odemetry

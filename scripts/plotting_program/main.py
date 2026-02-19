@@ -48,9 +48,9 @@ depth = data[:, 19]
 
 #Changes start value of true positions to be same as on measured (Only check position compared to start)
 #1 is used instead of 0 as index, because sometimes the first value is from before data is rescieved from the odometry sensor
-correct_pos_x_start = data[:, 16][1]
-correct_pos_y_start = data[:, 17][1]
-correct_pos_z_start = data[:, 18][1]
+correct_pos_x_start = data[:, 16][10]
+correct_pos_y_start = data[:, 17][10]
+correct_pos_z_start = data[:, 18][10]
 
 #This is used for finding the R matrix in the kalman filter. Placed here and not in SYSID due to SYSID not having implemented stationary data yet. Might be done later
 print("ax:", acc_x.var(), "ay:", acc_y.var(), "az:", acc_z.var())
@@ -70,7 +70,7 @@ plt.plot(timestamp, acc_y, label="acceleration_y", color="blue")
 #plt.plot(timestamp, correct_acc_x, label="correct_acceleration_x", linestyle="--", color="red")
 #plt.plot(timestamp, correct_acc_y, label="correct_acceleration_y", linestyle="--", color="blue")
 #plt.plot(timestamp, correct_acc_z, label="correct_acceleration_z", linestyle="--", color="green")
-plt.xlabel("Time")
+plt.xlabel("Time(s)")
 plt.ylabel("Acceleration (m/s^2)")
 plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 
@@ -82,7 +82,7 @@ plt.plot(timestamp, vel_y, label="velocity_y", color="blue")
 plt.plot(timestamp, correct_vel_x, label="correct_velocity_x", linestyle="--", color="red")
 plt.plot(timestamp, correct_vel_y, label="correct_velocity_y", linestyle="--", color="blue")
 #plt.plot(timestamp, correct_vel_z, label="correct_velocity_z", linestyle="--", color="green")
-plt.xlabel("Time")
+plt.xlabel("Time(s)")
 plt.ylabel("Speed (m/s)")
 plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 
@@ -95,7 +95,7 @@ plt.plot(timestamp, correct_pos_x, label="correct_position_x", linestyle="--", c
 plt.plot(timestamp, correct_pos_y, label="correct_position_y", linestyle="--", color="blue")
 plt.plot(timestamp, correct_pos_z, label="correct_position_z", linestyle="--", color="green")
 #plt.plot(timestamp, depth, label="depth")
-plt.xlabel("Time")
+plt.xlabel("Time(s)")
 plt.ylabel("Position (m)")
 plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 
@@ -107,7 +107,7 @@ plt.plot(timestamp, orientation_z, label="orientation_z", color="green")
 plt.plot(timestamp, correct_orientation_x, label="correct_orientation_x", linestyle="--", color="red")
 plt.plot(timestamp, correct_orientation_y, label="correct_orientation_y", linestyle="--", color="blue")
 plt.plot(timestamp, correct_orientation_z, label="correct_orientation_z", linestyle="--", color="green")
-plt.xlabel("Time")
+plt.xlabel("Time(s)")
 plt.ylabel("Orientation")
 plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 

@@ -91,7 +91,7 @@ public:
             return;
         }
 
-        Eigen::Quaterniond slam_quat(-quat_w, -quat_x, -quat_y, -quat_z);
+        Eigen::Quaterniond slam_quat(-quat_w, -quat_x, -quat_z, -quat_y);
 
         //Update position and orientation from SLAM pose estimate
         Eigen::Vector3d estimated_SLAM_speed(
@@ -100,7 +100,7 @@ public:
             -(pos_y - prev_SLAM_pos_.y()) / dt
         );
 
-        Eigen::Quaterniond slam_to_world = slam_quat*orientation_;
+        Eigen::Quaterniond slam_to_world = slam_quat.conjugate()*orientation_;
         slam_to_world.normalize();
         estimated_SLAM_speed = slam_to_world * estimated_SLAM_speed;
 

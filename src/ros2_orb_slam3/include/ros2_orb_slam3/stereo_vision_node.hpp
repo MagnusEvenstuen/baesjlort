@@ -242,7 +242,7 @@ private:
 
         Eigen::Vector3f position = Eigen::Vector3f(pose.translation().x(), pose.translation().y(), pose.translation().z());
         position = quat.conjugate() * position;
-        position = orientation * position;
+        //position = orientation * position;
 
         //Set position and orientation
         pose_msg.pose.position.x = position.x();
