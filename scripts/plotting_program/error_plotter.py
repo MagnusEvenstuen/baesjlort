@@ -36,11 +36,11 @@ axes[2, 0].set_xlabel("Time (s)")
 axes[2, 0].set_ylabel("Error (m)")
 
 axes[0, 1].plot(timestamp, error_ori_x)
-axes[0, 1].set_title("Roll Error")
+axes[0, 1].set_title("Pitch Error")
 axes[0, 1].set_ylabel("Error (quat)")
 
 axes[1, 1].plot(timestamp, error_ori_y)
-axes[1, 1].set_title("Pitch Error")
+axes[1, 1].set_title("Roll Error")
 axes[1, 1].set_ylabel("Error (quat)")
 
 axes[2, 1].plot(timestamp, error_ori_z)
