@@ -7,22 +7,26 @@
 class PID_controller
 {
 public:
+    //Sets PID values in constructor
     PID_controller(const double kp, const double ki, const double kd): kp_(kp), ki_(ki), kd_(kd)
     {
 
     }
 
+    //Sets the target position (x, y, and z)
     void set_target_position(const double target_position)
     {
         target_position_ = target_position;
     }
 
+    //Sets the target orientation (Quaternion used to prevent GimBall lock)
     void set_target_quaternion(const Eigen::Quaterniond target_quaternion)
     {
         target_quaternion_ = target_quaternion;
         target_quaternion_.normalize();
     }
 
+    //Updates the PID for the target position (x, y, z axis). Standard PID regulator
     double update(const double position, const double dt)
     {
         double error = target_position_ - position;
@@ -33,12 +37,14 @@ public:
         return kp_* error + ki_ * integral_ + kd_ * derivative;
     }
 
+    //Getter used for logging
     double get_error_float()
     {
         return prev_error_;
     }
 
     //Overloads the update function to work with quaternions as well.
+    //Code partially based on information from comments at https://www.reddit.com/r/ControlTheory/comments/1di74gu/quaternion_help/, and partially based on discussions with generative AI
     Eigen::Vector3d update(const Eigen::Quaterniond& current, const float dt)
     {
         Eigen::Quaterniond quaternion_error = current.inverse() * target_quaternion_;

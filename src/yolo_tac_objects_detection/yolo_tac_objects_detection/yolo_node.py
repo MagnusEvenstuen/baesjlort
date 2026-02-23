@@ -34,6 +34,20 @@ class yolo_node(Node):
 
     def process_image(self, msg):
         cv_image = self.bridge.imgmsg_to_cv2(msg, 'bgr8')
+        results = self.model(cv_image, conf=0.5)        #Runs the YOLO algorithm. conf is how confident the model has to be to mark the point
+        
+        for box in results[0].boxes:
+            x1, y1, x2, y2 = box.xyxy[0].tolist()       #Tensor with bounding box coordinates
+            center = (int((x1 + x2) / 2), int((y1 + y2) / 2))       #Center is average position of x and y
+            
+            cv2.circle(cv_image, center, 5, (0, 0, 255), -1)        #Draws circle on the image at the detected center point.
+        
+        cv2.imshow('YOLO deteksjon', cv_image)
+        cv2.waitKey(1)
+
+    #Class that shows what the YOLO model detects. Used when checking wether the YOLO model detects what it should.
+    def process_image_yolo_detection_debugging(self, msg):
+        cv_image = self.bridge.imgmsg_to_cv2(msg, 'bgr8')
         results = self.model(cv_image, conf=0.4)
         annotated_image = results[0].plot()
 
