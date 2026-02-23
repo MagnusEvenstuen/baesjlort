@@ -12,7 +12,7 @@ active_keys = set()
 lock = threading.Lock()
 emergency_stop = False
 latest_thrust_values = [0.0] * 8
-"""
+
 thrust_map = {
     'w': [20.0, 20.0, -20.0, -20.0, 0.0, 0.0, 0.0, 0.0],    # Forward (psoitive Y)
     's': [-20.0, -20.0, 20.0, 20.0, 0.0, 0.0, 0.0, 0.0],    # Backward (negative Y)
@@ -42,7 +42,7 @@ thrust_map = {
     'Key.page_up': [3.0, -3.0, -3.0, 3.0, 0.0, 0.0, 0.0, 0.0],    # Negative yaw (turns left)
     'Key.page_down': [-3.0, 3.0, 3.0, -3.0, 0.0, 0.0, 0.0, 0.0],  # Positive yaw (turns right)
 }
-
+"""
 def on_press(key):
     global active_keys, emergency_stop
     try:
