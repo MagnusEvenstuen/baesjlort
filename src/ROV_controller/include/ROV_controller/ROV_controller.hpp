@@ -13,7 +13,7 @@ class ROV_controller : public rclcpp::Node
 {
 public:
     ROV_controller() : Node("rov_controller"), PID_x(1.2, 0.0, 0.4), PID_y(1.2, 0.0, 0.4), PID_z(1.2, 0.01, 0.1),
-                        PID_orientation(0.8, 0.01, 0.2)
+                        PID_orientation(1.3, 0.01, 0.05)
     {
         //Sets up ROS2 publishers and subscribers
         orientation_subscriber_ = this->create_subscription<std_msgs::msg::Float32MultiArray>(
@@ -88,6 +88,14 @@ private:
                 current_position_.x() - PID_x.get_target_position(), 
                 current_position_.y() - PID_y.get_target_position(), 
                 current_position_.x() - PID_z.get_target_position());
+
+            Eigen::Vector3d direction = target_position_ - current_position_;
+            direction.normalize();
+
+            target_object_direction_ = Eigen::Quaterniond::FromTwoVectors(
+                                                Eigen::Vector3d::UnitY(),   //UnitY because that is forward on the ROV
+                                                direction
+                                            );
         }
     }
 
@@ -116,6 +124,9 @@ private:
             Eigen::Quaterniond direction_target = target_orientation_.slerp(std::min(1.0f, distance_from_target), direction_to_target);
             current_direction_target = current_direction_target.slerp(0.01, direction_target);
             PID_orientation.set_target_quaternion(direction_to_target);
+        } else 
+        {
+            PID_orientation.set_target_quaternion(target_object_direction_);
         }
 
         //Runs the PID function, and rotates the force for positional correction to the correct frame (not done with rotation due to rotation being in body, and not world frame)
@@ -126,7 +137,7 @@ private:
         force_world = current_orientation_.conjugate() * force_world;
         Eigen::VectorXd forces(6);
 
-        double orientation_multiplier = std::max(1.0f, distance_from_target);
+        double orientation_multiplier = std::min(std::max(1.0f, distance_from_target), 3.0f);
         //Puts the forces in an array, and multiplies it with the thruster setup
         forces << force_world(0),
                   force_world(1),
@@ -195,6 +206,7 @@ private:
                                                             Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitY()) *   // roll
                                                             Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitZ())     // yaw
                                                         );
+    Eigen::Quaterniond target_object_direction_ = Eigen::Quaterniond::Identity();
     bool found_object = false;
 
     Eigen::Quaterniond current_direction_target = target_orientation_;
