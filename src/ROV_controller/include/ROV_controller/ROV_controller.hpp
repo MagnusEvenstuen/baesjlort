@@ -12,21 +12,26 @@
 class ROV_controller : public rclcpp::Node
 {
 public:
-    ROV_controller() : Node("rov_controller"), PID_x(1.4, 0.0, 0.4), PID_y(1.4, 0.0, 0.4), PID_z(1.4, 0.03, 0.4),
-                        PID_orientation(1.9, 0.0, 0.04)
+    ROV_controller() : Node("rov_controller"), PID_x(1.2, 0.0, 0.4), PID_y(1.2, 0.0, 0.4), PID_z(1.2, 0.01, 0.1),
+                        PID_orientation(0.8, 0.01, 0.2)
     {
         //Sets up ROS2 publishers and subscribers
         orientation_subscriber_ = this->create_subscription<std_msgs::msg::Float32MultiArray>(
-            "/average_orientation", 100,
+            "/average_orientation", 1,
             std::bind(&ROV_controller::orientation_callback, this, std::placeholders::_1));
 
         position_subscriber_ = this->create_subscription<std_msgs::msg::Float32MultiArray>(
-            "/position", 100,
+            "/position", 1,
             std::bind(&ROV_controller::position_callback, this, std::placeholders::_1));
 
         thrust_publisher_ = this->create_publisher<std_msgs::msg::Float64MultiArray>(
             "/gbr/thrusters", 10);
         
+        object_position_subscriber_ = this->create_subscription<std_msgs::msg::Float64MultiArray>(
+            "/distance_to_object", 1,
+            std::bind(&ROV_controller::object_position_callback, this, std::placeholders::_1));
+
+
         //Runs the PID process
         processing_thread_ = std::thread([this]() {
             while (true)
@@ -42,6 +47,14 @@ public:
         PID_orientation.set_target_quaternion(target_orientation_);
     }
 
+    ~ROV_controller()
+    {
+        if (processing_thread_.joinable())
+        {
+            processing_thread_.join();
+        }
+    }
+
 private:
     void orientation_callback(const std_msgs::msg::Float32MultiArray::ConstSharedPtr& msg)
     {
@@ -53,8 +66,33 @@ private:
         current_position_ = Eigen::Vector3d(msg->data[0], msg->data[1], msg->data[2]);
     }
 
+    void object_position_callback(const std_msgs::msg::Float64MultiArray::ConstSharedPtr& msg)
+    {
+        object_position_ = Eigen::Vector3d(msg->data[0], msg->data[2], -msg->data[1]);
+
+        if (object_position_.y() < 5)
+        {
+            found_object = true;
+            PID_x.set_target_position((current_position_.x() + object_position_.x()));
+            PID_y.set_target_position((current_position_.y() + object_position_.y() - 1));
+            PID_z.set_target_position((current_position_.z() + object_position_.z()));
+
+            target_position_ = Eigen::Vector3d(PID_x.get_target_position(), PID_y.get_target_position(), PID_z.get_target_position());
+
+            RCLCPP_INFO(this->get_logger(), 
+                "Ny Target - X: %.2f, Y: %.2f, Z: %.2f", 
+                PID_x.get_target_position(), PID_y.get_target_position(), PID_z.get_target_position());
+
+            RCLCPP_INFO(this->get_logger(), 
+                "Forskjell fra nå pos - X: %.2f, Y: %.2f, Z: %.2f", 
+                current_position_.x() - PID_x.get_target_position(), 
+                current_position_.y() - PID_y.get_target_position(), 
+                current_position_.x() - PID_z.get_target_position());
+        }
+    }
+
     void update_PID()
-    { 
+    {
         //Updates delta time
         static double last_time = this->now().seconds();
         double current_time = this->now().seconds();
@@ -64,17 +102,21 @@ private:
         float distance_from_target = Eigen::Vector3f(PID_x.get_error_float(), PID_y.get_error_float(), PID_z.get_error_float()).norm();
 
         //Looks towards target position if far away to improve SLAM
-        RCLCPP_INFO(this->get_logger(), 
-        "Distance: %.2f", distance_from_target);
+        //RCLCPP_INFO(this->get_logger(), 
+        //"Distance: %.2f", distance_from_target);
         Eigen::Vector3d direction = (target_position_ - current_position_);
         direction.normalize();
         Eigen::Quaterniond direction_to_target = Eigen::Quaterniond::FromTwoVectors(
                                                 Eigen::Vector3d::UnitY(),   //UnitY because that is forward on the ROV
                                                 direction
                                             );
-        Eigen::Quaterniond direction_target = target_orientation_.slerp(std::min(1.0f, distance_from_target), direction_to_target);
-        current_direction_target = current_direction_target.slerp(0.05, direction_target);
-        PID_orientation.set_target_quaternion(current_direction_target);
+        
+        if (!found_object)
+        {
+            Eigen::Quaterniond direction_target = target_orientation_.slerp(std::min(1.0f, distance_from_target), direction_to_target);
+            current_direction_target = current_direction_target.slerp(0.01, direction_target);
+            PID_orientation.set_target_quaternion(direction_to_target);
+        }
 
         //Runs the PID function, and rotates the force for positional correction to the correct frame (not done with rotation due to rotation being in body, and not world frame)
         Eigen::Vector3d orientation_output = PID_orientation.update(current_orientation_, dt);
@@ -84,22 +126,23 @@ private:
         force_world = current_orientation_.conjugate() * force_world;
         Eigen::VectorXd forces(6);
 
+        double orientation_multiplier = std::max(1.0f, distance_from_target);
         //Puts the forces in an array, and multiplies it with the thruster setup
         forces << force_world(0),
                   force_world(1),
                   force_world(2),
-                  orientation_output(1),
-                  orientation_output(0),
-                  orientation_output(2);
+                  orientation_output(1) * orientation_multiplier,
+                  orientation_output(0) * orientation_multiplier,
+                  orientation_output(2) * orientation_multiplier;
 
         Eigen::VectorXd gain = thrust_map_matrix*forces;
         gain = gain.cwiseMax(-10.0).cwiseMin(10.0);             //Forces the output between pluss, minus 10 to prevent to high power consumption, and making SLAM easier
         auto msg = std_msgs::msg::Float64MultiArray();
         msg.data = std::vector<double>({gain(0), gain(1), gain(2), gain(3), gain(4), gain(5), gain(6), gain(7)});       //Publishes to thrusters
         thrust_publisher_->publish(msg);
-        RCLCPP_INFO(this->get_logger(), 
-            "Posisjon - T1: %.2f, T2: %.2f, T3: %.2f, T4: %.2f, T5: %.2f, T6: %.2f, T7: %.2f, T8: %.2f", 
-            gain(0), gain(1), gain(2), gain(3), gain(4), gain(5), gain(6), gain(7));
+        //RCLCPP_INFO(this->get_logger(), 
+        //    "Thruster - T1: %.2f, T2: %.2f, T3: %.2f, T4: %.2f, T5: %.2f, T6: %.2f, T7: %.2f, T8: %.2f", 
+        //    gain(0), gain(1), gain(2), gain(3), gain(4), gain(5), gain(6), gain(7));
 
         //Get errors for logging
         Eigen::Vector3d position_error(
@@ -142,15 +185,18 @@ private:
     //Defines stuff
     rclcpp::Subscription<std_msgs::msg::Float32MultiArray>::SharedPtr orientation_subscriber_;
     rclcpp::Subscription<std_msgs::msg::Float32MultiArray>::SharedPtr position_subscriber_;
+    rclcpp::Subscription<std_msgs::msg::Float64MultiArray>::SharedPtr object_position_subscriber_;
     rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr thrust_publisher_;
     Eigen::Vector3d current_position_ = Eigen::Vector3d::Zero();
-    Eigen::Vector3d target_position_ = Eigen::Vector3d(-1, 4, -1);
+    Eigen::Vector3d target_position_ = Eigen::Vector3d(0.0, 5, -1.7);
+    Eigen::Vector3d object_position_ = Eigen::Vector3d::Zero();
     Eigen::Quaterniond current_orientation_ = Eigen::Quaterniond::Identity();
-    Eigen::Quaterniond target_orientation_ = Eigen::Quaterniond(Eigen::AngleAxisd(-3.1415/4, Eigen::Vector3d::UnitX()) *   // pitch
+    Eigen::Quaterniond target_orientation_ = Eigen::Quaterniond(Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitX()) *   // pitch
                                                             Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitY()) *   // roll
-                                                            Eigen::AngleAxisd(-3.1415/8, Eigen::Vector3d::UnitZ())     // yaw
+                                                            Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitZ())     // yaw
                                                         );
-    
+    bool found_object = false;
+
     Eigen::Quaterniond current_direction_target = target_orientation_;
     std::thread processing_thread_;
     //Creates PID controllers

@@ -111,12 +111,11 @@ class yolo_node(Node):
                             (0, 0, 255), 
                             2)
             
-            #Here it is needed to take the average of the left, and right camera instead of just using the left to improve accuracy.
             if left_class == class_to_look_for:
                 publish_msg = Float64MultiArray()
-                left_x = (left_x - 160) * depth / self.focal_length     #Equation from https://www.reddit.com/r/opencv/comments/1enuoo0/question_project_convert_pixel_to_meter_real/
-                left_y = (left_y - 160) * depth / self.focal_length
-                position_class = [left_x, left_y, depth, class_to_look_for]
+                meter_x = (((left_x) * depth / self.focal_length) + ((right_x) * depth / self.focal_length))*0.5     #Equation from https://www.reddit.com/r/opencv/comments/1enuoo0/question_project_convert_pixel_to_meter_real/ without cx part.
+                meter_y = (((left_y) * depth / self.focal_length) + ((right_y) * depth / self.focal_length))*0.5 
+                position_class = [meter_x, meter_y, depth, class_to_look_for]
                 publish_msg.data = position_class
                 self.distance_publisher.publish(publish_msg)
 

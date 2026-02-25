@@ -43,6 +43,11 @@ public:
         return prev_error_;
     }
 
+    double get_target_position()
+    {
+        return target_position_;
+    }
+
     //Overloads the update function to work with quaternions as well.
     //Code partially based on information from comments at https://www.reddit.com/r/ControlTheory/comments/1di74gu/quaternion_help/, and partially based on discussions with generative AI
     Eigen::Vector3d update(const Eigen::Quaterniond& current, const float dt)
