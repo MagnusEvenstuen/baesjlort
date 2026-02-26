@@ -137,14 +137,17 @@ private:
         force_world = current_orientation_.conjugate() * force_world;
         Eigen::VectorXd forces(6);
 
-        double orientation_multiplier = std::min(std::max(1.0f, distance_from_target), 3.0f);
+        //Reduce translation force if orientation error is big to make sure the ROV always points in the right direction
+        double orientation_error_norm = PID_orientation.get_error_quat().norm();
+        force_world *= 1.0 / (1.0 + 5.0 * orientation_error_norm);
+
         //Puts the forces in an array, and multiplies it with the thruster setup
         forces << force_world(0),
                   force_world(1),
                   force_world(2),
-                  orientation_output(1) * orientation_multiplier,
-                  orientation_output(0) * orientation_multiplier,
-                  orientation_output(2) * orientation_multiplier;
+                  orientation_output(1),
+                  orientation_output(0),
+                  orientation_output(2);
 
         Eigen::VectorXd gain = thrust_map_matrix*forces;
         gain = gain.cwiseMax(-10.0).cwiseMin(10.0);             //Forces the output between pluss, minus 10 to prevent to high power consumption, and making SLAM easier
@@ -199,7 +202,7 @@ private:
     rclcpp::Subscription<std_msgs::msg::Float64MultiArray>::SharedPtr object_position_subscriber_;
     rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr thrust_publisher_;
     Eigen::Vector3d current_position_ = Eigen::Vector3d::Zero();
-    Eigen::Vector3d target_position_ = Eigen::Vector3d(0.0, 5, -1.7);
+    Eigen::Vector3d target_position_ = Eigen::Vector3d(-2.5, 8, -2.0);
     Eigen::Vector3d object_position_ = Eigen::Vector3d::Zero();
     Eigen::Quaterniond current_orientation_ = Eigen::Quaterniond::Identity();
     Eigen::Quaterniond target_orientation_ = Eigen::Quaterniond(Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitX()) *   // pitch
