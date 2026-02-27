@@ -7,6 +7,7 @@ from cv_bridge import CvBridge
 import cv2
 from ultralytics import YOLO
 import torch
+import numpy as np
 
 torch.cuda.is_available = lambda: False         #Set true if gpu is available, works fine without.
 
@@ -16,18 +17,25 @@ class yolo_node(Node):
         #todo fix absolute file path
         self.model = YOLO('/home/gud/Skole/baesjlort/src/yolo_tac_objects_detection/yolo_tac_objects_detection/weights_yolo/weights.pt')
         self.bridge = CvBridge()
-        self.right_pos_x = []
-        self.right_pos_y = []
+        self.right_pos_x = [[], []]
+        self.right_pos_y = [[], []]
         self.right_classes = []
-        self.left_pos_x = []
-        self.left_pos_y = []
+        self.left_pos_x = [[], []]
+        self.left_pos_y = [[], []]
         self.left_classes = []
         self.baseline = 0.042
         self.focal_length = None
+        self.cx = None
+        self.cy = None
+        self.right_boxes = []
+        self.left_boxes = []
         self.sub_left = Subscriber(self, Image, '/gbr/cam_left/image_color')
         self.sub_right = Subscriber(self, Image, '/gbr/cam_right/image_color')
-        
-        self.approx_time_sync = ApproximateTimeSynchronizer([self.sub_left, self.sub_right], queue_size=5, slop=0.05)
+
+        self.orb = cv2.ORB_create()
+        self.matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
+
+        self.approx_time_sync = ApproximateTimeSynchronizer([self.sub_left, self.sub_right], queue_size=1, slop=0.05)
         self.approx_time_sync.registerCallback(self.image_sync_callback)
 
         self.sub_info = self.create_subscription(       #Only one info subscription needed, since both cameras are the same. Only needed for simulator as manual calibration IRL
@@ -44,12 +52,23 @@ class yolo_node(Node):
         )
     
     def image_sync_callback(self, msg_left, msg_right):
-        self.process_image_2(msg_left, msg_right)
+        self.process_image(msg_left, msg_right)
 
     def camera_info_callback(self, msg):
         self.focal_length = msg.k[0]
+        self.cx = msg.k[2]
+        self.cy = msg.k[5]
 
-    def process_image_2(self, left_msg, right_msg):
+    def process_image(self, left_msg, right_msg):
+        self.right_pos_x = [[], []]
+        self.right_pos_y = [[], []]
+        self.right_classes = []
+        self.left_pos_x = [[], []]
+        self.left_pos_y = [[], []]
+        self.left_classes = []
+        self.left_boxes = []
+        self.right_boxes = []
+
         cv_image_left = self.bridge.imgmsg_to_cv2(left_msg, 'bgr8')
         cv_image_right = self.bridge.imgmsg_to_cv2(right_msg, 'bgr8')
         results_left = self.model(cv_image_left, conf=0.5)        #Runs the YOLO algorithm. conf is how confident the model has to be to mark the point
@@ -63,8 +82,11 @@ class yolo_node(Node):
             cv2.circle(cv_image_left, center, 5, (0, 0, 255), -1)        #Draws circle on the image at the detected center point.
 
             self.left_classes.append(box.cls[0])
-            self.left_pos_x.append(center[0])
-            self.left_pos_y.append(center[1])
+            self.left_pos_x[0].append(int(x1))          #Uses int to make sure valid numbers
+            self.left_pos_x[1].append(int(x2))
+            self.left_pos_y[0].append(int(y1))
+            self.left_pos_y[1].append(int(y2))
+            self.left_boxes.append(cv_image_left[int(y1):int(y2), int(x1):int(x2)])
 
         for i in range(len(results_right[0].boxes)):
             box = results_right[0].boxes[i]
@@ -74,8 +96,11 @@ class yolo_node(Node):
             cv2.circle(cv_image_left, center, 5, (0, 0, 255), -1)        #Draws circle on the image at the detected center point.
 
             self.right_classes.append(box.cls[0])
-            self.right_pos_x.append(center[0])
-            self.right_pos_y.append(center[1])
+            self.right_pos_x[0].append(int(x1))
+            self.right_pos_x[1].append(int(x2))
+            self.right_pos_y[0].append(int(y1))
+            self.right_pos_y[1].append(int(y2))
+            self.right_boxes.append(cv_image_right[int(y1):int(y2), int(x1):int(x2)])
 
         self.calculate_depth(cv_image_left)
 
@@ -85,26 +110,51 @@ class yolo_node(Node):
             cv2.waitKey(1)
             return
 
-        class_to_look_for = 3       #Look for valve
-        #Zips information to create one iterable list
-        left_objects = list(zip(self.left_classes, self.left_pos_x, self.left_pos_y))
-        right_objects = list(zip(self.right_classes, self.right_pos_x, self.right_pos_y))
+        class_to_look_for = 3       #Look for valve (object number 3)
+        #Zips information to create one iterable list (those 2 liens are generated using ChatGPT)
+        left_objects = [(class_number, (self.left_pos_x[0][j], self.left_pos_x[1][j]), (self.left_pos_y[0][j], self.left_pos_y[1][j])) 
+                        for j, class_number in enumerate(self.left_classes)]
+        right_objects = [(class_number, (self.right_pos_x[0][j], self.right_pos_x[1][j]), (self.right_pos_y[0][j], self.right_pos_y[1][j])) 
+                         for j, class_number in enumerate(self.right_classes)]
 
         left_objects.sort(key=lambda obj: (obj[0], obj[2]))     #Sorts classes, first based on class, and same class is sorted on y position (Sorting method found using ChatGPT)
         right_objects.sort(key=lambda obj: (obj[0], obj[2]))
         depth = 0
 
         for i in range(min(len(left_objects), len(right_objects))):
-            left_class, left_x, left_y = left_objects[i]
-            right_class, right_x, right_y = right_objects[i]
+            left_class, left_x_center, left_y_center = left_objects[i]
+            right_class, right_x_center, right_y_center = right_objects[i]
             
             if left_class == right_class:
-                    depth = (self.baseline * self.focal_length) / (left_x - right_x )       #Equation from https://www.youtube.com/watch?v=hUVyDabn1Mg&list=PL2zRqk16wsdoCCLpou-dGo7QQNks1Ppzo&index=6 at 10:20
+                    #Information about how to use orb gathered from https://www.geeksforgeeks.org/python/feature-matching-using-orb-algorithm-in-python-opencv/
+                    keypoints_left, descriptors_left = self.orb.detectAndCompute(cv2.cvtColor(self.left_boxes[i], cv2.COLOR_BGR2GRAY), None)       #Sets the colour to grey, and does orb detection on the images
+                    keypoints_right, descriptors_right = self.orb.detectAndCompute(cv2.cvtColor(self.right_boxes[i], cv2.COLOR_BGR2GRAY), None)
+
+                    if descriptors_left is None or descriptors_right is None:
+                        continue
+
+                    matches = self.matcher.match(descriptors_left, descriptors_right)
+                    point_disparity = []
+                    #Calculates the distance between the matches
+                    for match in matches:
+                        left_x, left_y = keypoints_left[match.queryIdx].pt
+                        right_x, right_y = keypoints_right[match.trainIdx].pt
+
+                        disparity = (left_x + left_x_center[0]) - (right_x + right_x_center[0])
+                        if disparity > 0:   #Only positive disparity is valid, since left camera is to the left of the right camera
+                            point_disparity.append(disparity)
+
+                    if not point_disparity:
+                        continue
+                    median_disparity = np.median(point_disparity)
+                    depth = (self.baseline * self.focal_length)/median_disparity       #Equation from https://www.youtube.com/watch?v=hUVyDabn1Mg&list=PL2zRqk16wsdoCCLpou-dGo7QQNks1Ppzo&index=6 at 10:20
                     
                     #Draw depth info on image (By ChatGPT) (for visualization)
+                    center_x = (left_x_center[0] + left_x_center[1]) // 2
+                    center_y = (left_y_center[0] + left_y_center[1]) // 2
                     cv2.putText(image, 
                             f"{depth:.2f}m", 
-                            (left_x, left_y - 10), 
+                            (center_x, center_y), 
                             cv2.FONT_HERSHEY_SIMPLEX, 
                             0.5, 
                             (0, 0, 255), 
@@ -112,21 +162,14 @@ class yolo_node(Node):
             
             if left_class == class_to_look_for:
                 publish_msg = Float64MultiArray()
-                meter_x = (((left_x) * depth / self.focal_length) + ((right_x) * depth / self.focal_length))*0.5     #Equation from https://www.reddit.com/r/opencv/comments/1enuoo0/question_project_convert_pixel_to_meter_real/ without cx part.
-                meter_y = (((left_y) * depth / self.focal_length) + ((right_y) * depth / self.focal_length))*0.5 
+                meter_x = ((((left_x_center[0] + left_x_center[1]) // 2 - self.cx) * depth / self.focal_length) + (((right_x_center[0] + right_x_center[1]) // 2 - self.cx) * depth / self.focal_length))*0.5     #Equation from https://www.reddit.com/r/opencv/comments/1enuoo0/question_project_convert_pixel_to_meter_real/.
+                meter_y = ((((left_y_center[0] + left_y_center[1]) // 2 - self.cy) * depth / self.focal_length) + ((right_y_center[0] + right_y_center[1]) // 2 - self.cy) * depth / self.focal_length)*0.5 
                 position_class = [meter_x, meter_y, depth, class_to_look_for]
                 publish_msg.data = position_class
                 self.distance_publisher.publish(publish_msg)
 
         cv2.imshow('YOLO deteksjon med dybde', image)
         cv2.waitKey(1)
-
-        self.right_pos_x = []
-        self.right_pos_y = []
-        self.right_classes = []
-        self.left_pos_x = []
-        self.left_pos_y = []
-        self.left_classes = []
 
     #Class that shows what the YOLO model detects. Used when checking wether the YOLO model detects what it should.
     def process_image_yolo_detection_debugging(self, msg):

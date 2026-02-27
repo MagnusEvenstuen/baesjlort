@@ -13,7 +13,7 @@ class ROV_controller : public rclcpp::Node
 {
 public:
     ROV_controller() : Node("rov_controller"), PID_x(1.2, 0.0, 0.4), PID_y(1.2, 0.0, 0.4), PID_z(1.2, 0.01, 0.1),
-                        PID_orientation(1.3, 0.01, 0.05)
+                        PID_orientation(0.5, 0.01, 0.05)
     {
         //Sets up ROS2 publishers and subscribers
         orientation_subscriber_ = this->create_subscription<std_msgs::msg::Float32MultiArray>(
@@ -70,7 +70,7 @@ private:
     {
         object_position_ = Eigen::Vector3d(msg->data[0], msg->data[2], -msg->data[1]);
 
-        if (object_position_.y() < 5)
+        if (object_position_.y() < 3)
         {
             found_object = true;
             PID_x.set_target_position((current_position_.x() + object_position_.x()));
@@ -83,13 +83,14 @@ private:
                 "Ny Target - X: %.2f, Y: %.2f, Z: %.2f", 
                 PID_x.get_target_position(), PID_y.get_target_position(), PID_z.get_target_position());
 
+            Eigen::Vector3d direction = target_position_ - current_position_;
+
             RCLCPP_INFO(this->get_logger(), 
                 "Forskjell fra nå pos - X: %.2f, Y: %.2f, Z: %.2f", 
-                current_position_.x() - PID_x.get_target_position(), 
-                current_position_.y() - PID_y.get_target_position(), 
-                current_position_.x() - PID_z.get_target_position());
+                direction.x(), 
+                direction.y(), 
+                direction.x());
 
-            Eigen::Vector3d direction = target_position_ - current_position_;
             direction.normalize();
 
             target_object_direction_ = Eigen::Quaterniond::FromTwoVectors(
@@ -202,7 +203,7 @@ private:
     rclcpp::Subscription<std_msgs::msg::Float64MultiArray>::SharedPtr object_position_subscriber_;
     rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr thrust_publisher_;
     Eigen::Vector3d current_position_ = Eigen::Vector3d::Zero();
-    Eigen::Vector3d target_position_ = Eigen::Vector3d(-2.5, 8, -2.0);
+    Eigen::Vector3d target_position_ = Eigen::Vector3d(-1.0, 6, -1.5);
     Eigen::Vector3d object_position_ = Eigen::Vector3d::Zero();
     Eigen::Quaterniond current_orientation_ = Eigen::Quaterniond::Identity();
     Eigen::Quaterniond target_orientation_ = Eigen::Quaterniond(Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitX()) *   // pitch
