@@ -15,7 +15,7 @@ class yolo_node(Node):
     def __init__(self):
         super().__init__('yolo_detector_node')
         #todo fix absolute file path
-        self.model = YOLO('/home/gud/Skole/baesjlort/src/yolo_tac_objects_detection/yolo_tac_objects_detection/weights_yolo/weights.pt')
+        self.model = YOLO('src/yolo_tac_objects_detection/yolo_tac_objects_detection/weights_yolo/weights.pt')
         self.bridge = CvBridge()
         self.left_classes = []
         self.baseline = 0.042

@@ -10,8 +10,6 @@
 #include <vector>
 #include <array>
 #include <chrono>
-//Fix absolute path later
-#include "/home/gud/Skole/baesjlort/src/sensor_read_and_interpret/include/structs.hpp"
 
 // ROS2 includes
 #include "rclcpp/rclcpp.hpp"
@@ -40,13 +38,12 @@ public:
     stereo_vision_node() : Node("stereo_vision_node")
     {
         RCLCPP_INFO(this->get_logger(), "Slamming my balls with ORB_SLAM3 Stereo...");
-        //TODO fix absolute paths
         //Information needed for ORB_SLAM3 initialization
         slam_system_ = std::make_unique<ORB_SLAM3::System>(
-            "/home/gud/Skole/baesjlort/src/ros2_orb_slam3/orb_slam3/Vocabulary/ORBvoc.txt.bin",     //Path to vocabulary file 
-            "/home/gud/Skole/baesjlort/src/ros2_orb_slam3/config/stereo_gbr_sim.yaml",               //Path to camera settings file 
+            "src/ros2_orb_slam3/orb_slam3/Vocabulary/ORBvoc.txt.bin",     //Path to vocabulary file 
+            "src/ros2_orb_slam3/config/stereo_gbr_sim.yaml",               //Path to camera settings file 
             ORB_SLAM3::System::STEREO, 
-            true                                                                                   //Disable viewer
+            true                                                                                   //Enable viewer
         );
 
         //ROS2 publishers and subscribers
@@ -117,7 +114,7 @@ public:
                     process_stereo_pair(last_header_);
                 }
 
-                std::this_thread::sleep_for(std::chrono::nanoseconds(10));
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
         });
 
@@ -130,6 +127,10 @@ public:
             slam_system_->Shutdown();
         }
         running_ = false;
+
+        if (processing_thread_.joinable()) {
+            processing_thread_.join();
+        }
     }
 
 private:
@@ -174,6 +175,7 @@ private:
         auto right_img_ = cv_bridge::toCvShare(right_msg, "bgr8");
         
         //Apply CLAHE (this might not be nessacerry)
+        std::lock_guard<std::mutex> lock(image_mutex_);
         left_image_ = apply_clahe(left_img_->image);
         right_image_ = apply_clahe(right_img_->image);
 
@@ -204,10 +206,10 @@ private:
         //Check if both images have been received
 
         //Process stereo images with ORB_SLAM3
+        std::lock_guard<std::mutex> lock(image_mutex_);
         Sophus::SE3f pose = slam_system_->TrackStereo(left_image_, 
                                                     right_image_, 
                                                     header.stamp.sec + header.stamp.nanosec * 1e-9);
-
         //Publish if valid pose
         if (!pose.matrix().isIdentity()) 
         {

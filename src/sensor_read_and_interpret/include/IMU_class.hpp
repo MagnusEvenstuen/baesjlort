@@ -162,21 +162,19 @@ private:
         constexpr float Ki = 0.003f;
         constexpr float Kd = 0.0f;
         constexpr float weight = 0.2f;
-        //Static variables to hold integral and previous error
-        static Eigen::Vector3d integral_error = Eigen::Vector3d::Zero();
-        static Eigen::Vector3d prev_error = Eigen::Vector3d::Zero();
+
         //Update integral error
-        integral_error.x() += error.x() * dt * weight;
-        integral_error.y() += error.y() * dt * weight;
-        integral_error.z() += error.z() * dt * weight;
+        integral_error_.x() += error.x() * dt * weight;
+        integral_error_.y() += error.y() * dt * weight;
+        integral_error_.z() += error.z() * dt * weight;
         
         //Can't correct z axis (yaw) with accelerometer
         Eigen::Vector3d gain(
-            Kp * error.x() + Ki * integral_error.x() + Kd * (error.x() - prev_error.x()) / dt,
-            Kp * error.y() + Ki * integral_error.y() + Kd * (error.y() - prev_error.y()) / dt,
+            Kp * error.x() + Ki * integral_error_.x() + Kd * (error.x() - prev_error_.x()) / dt,
+            Kp * error.y() + Ki * integral_error_.y() + Kd * (error.y() - prev_error_.y()) / dt,
             0.0f
         );
-        prev_error = error;
+        prev_error_ = error;
         return gain;
     }
 
@@ -212,6 +210,8 @@ private:
     Eigen::Vector3d gyro_bias_ = Eigen::Vector3d::Zero();
     Eigen::Vector3d prev_gyro_ = Eigen::Vector3d::Zero();
     Eigen::Vector3d rotated_gyro_ = Eigen::Vector3d::Zero();
+    Eigen::Vector3d integral_error_ = Eigen::Vector3d::Zero();
+    Eigen::Vector3d prev_error_ = Eigen::Vector3d::Zero();
     unsigned int calibration_count_ = 0;
     unsigned int calibration_needed_ = 500;
     std::chrono::steady_clock::time_point last_update_time_;

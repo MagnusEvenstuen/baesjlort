@@ -41,6 +41,7 @@ public:
         IMUs[id].skewed_position_matrix = skew(position);
     }
 
+    //Assumes smart user, that knows acc, gyro, and imu_ids should be the same size.
     void update(const std::vector<Eigen::Vector3d>& acc, const std::vector<Eigen::Vector3d>& gyro, const std::vector<int>& imu_ids)
     {
         //Needs more than 2 IMUs to compute as explained in the paper https://www.mdpi.com/1424-8220/11/7/6771#Processing_Speed_of_Architectures_and_Number_of_IMUs section 2.1
@@ -113,7 +114,7 @@ private:
     {
         Eigen::Vector3d acc = x_.segment<3>(0);
         Eigen::Vector3d omega = x_.segment<3>(3);
-        //Based on section 2.2 of the paper
+        //Based on section 2.2 of the paper (std::rotate might not be the most efficient here)
         std::rotate(omega_buffer_.begin(), omega_buffer_.begin() + 1, omega_buffer_.end());
         std::rotate(acc_buffer_.begin(), acc_buffer_.begin() + 1, acc_buffer_.end());
 

@@ -225,7 +225,7 @@ private:
 
     void setup_csv_file()
     {
-        std::filesystem::path dir_path = "/home/gud/Skole/baesjlort/src/sys_id/data_files";
+        std::filesystem::path dir_path = "src/sys_id/data_files";
         auto now = std::chrono::system_clock::now();
         auto now_time_t = std::chrono::system_clock::to_time_t(now);
         std::stringstream filename;

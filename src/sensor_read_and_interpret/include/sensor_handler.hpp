@@ -56,7 +56,7 @@ public:
         //Opens CSV file for logging
         last_update_time_ = std::chrono::steady_clock::now();
         start_time_ = last_update_time_;
-        csv_file_.open("/home/gud/Skole/baesjlort/scripts/plotting_program/data_files/sensor_data.csv", std::ios::app);
+        csv_file_.open("scripts/plotting_program/data_files/sensor_data.csv", std::ios::app);
         if (csv_file_.is_open())
         {
             csv_file_ << "timestamp,acc_x,acc_y,acc_z,vel_x,vel_y,vel_z,pos_x,pos_y,pos_z,"
@@ -111,11 +111,13 @@ public:
             (quat_y - prev_SLAM_orientation_.y()) / dt
         };
 
+        //Complementary filter for orientation between SLAM and IMU.
         Eigen::Quaterniond estimated_SLAM_orientation = orientation_ * estimated_SLAM_delta_orientation;
         estimated_SLAM_orientation.normalize();
-        //orientation_ = orientation_.slerp(0.1, estimated_SLAM_orientation);
+        orientation_ = orientation_.slerp(0.1, estimated_SLAM_orientation);
         orientation_.normalize();
 
+        //Calculates the weight for the complementery filter, higher weight on SLAM, if updating often.
         float alpha = 0.5f;
 
         if (dt > 0.5f)
@@ -141,7 +143,7 @@ public:
                            float vel_x, float vel_y, float vel_z,
                            float quat_x, float quat_y, float quat_z, float quat_w)
     {
-        //Update perfect position, speed, acceleration and orientation from truth odometry sensor
+        //Update perfect position, speed, acceleration and orientation from truth odometry sensor in simulator
         Eigen::Vector3d prev_speed = perfect_speed_;
         auto current_time = std::chrono::steady_clock::now();
         float dt = std::chrono::duration<float>(current_time - last_truth_update_time_).count();
@@ -227,7 +229,7 @@ public:
         float dt = std::chrono::duration<float>(current_time - last_update_time_).count();
         last_update_time_ = current_time;
         
-        //Transfers vectors to Eigen for Kalman filter
+        //Transfers vectors to correct vectors for Kalman filter
         Eigen::VectorXd measurement(6);
         measurement << acc.x(), acc.y(), acc.z(), gyro.x(), gyro.y(), gyro.z();
         Eigen::VectorXd gain(8); 
@@ -256,14 +258,16 @@ public:
         orientation_ = orientation_ * delta_orientation;
         orientation_.normalize();
 
-        //acc_filtered = orientation_ * acc_filtered;
-        //acc_filtered = acc;
-        //gyro_filtered = gyro;
+        Eigen::Vector3d imu_speed(current_speed_.x() + acc_filtered.x() * dt, current_speed_.y() + acc_filtered.y() * dt, current_speed_.z() + acc_filtered.z() * dt);
+        update_current_variables(dt, imu_speed);
+        log_to_csv(acc_filtered.x(), acc_filtered.y(), acc_filtered.z(), gyro_filtered.x(), gyro_filtered.y(), gyro_filtered.z());
+    }
 
+    void update_current_variables(const float dt, const Eigen::Vector3d& imu_speed)
+    {
         //If long between IMU measurements, trust prediction more.
         float prediction_weight = std::min(1.0f, dt);
 
-        Eigen::Vector3d imu_speed(current_speed_.x() + acc_filtered.x() * dt, current_speed_.y() + acc_filtered.y() * dt, current_speed_.z() + acc_filtered.z() * dt);
         //Update position and speed based on filtered accelerometer data
         current_speed_.x() = ((1-prediction_weight)*(imu_speed.x()) + prediction_weight * predicted_speed_.x());
         current_speed_.y() = ((1-prediction_weight)*(imu_speed.y()) + prediction_weight * predicted_speed_.y());
@@ -274,7 +278,6 @@ public:
         current_position_.z() = 0.1*current_position_.z() + 0.9*depth_;
 
         predicted_speed_ = current_speed_;
-        log_to_csv(acc_filtered.x(), acc_filtered.y(), acc_filtered.z(), gyro_filtered.x(), gyro_filtered.y(), gyro_filtered.z());
     }
 
     Eigen::Vector3d get_position() const
