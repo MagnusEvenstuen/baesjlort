@@ -9,6 +9,15 @@
 #include <fstream>
 #include <thread>
 
+enum ROV_classes_to_detect
+{
+    //Theese might not be correct (Structure and valve are correct)
+    aruco_marker = 0,
+    structure = 1,
+    tube = 2,
+    valve = 3
+};
+
 class ROV_controller : public rclcpp::Node
 {
 public:
@@ -71,12 +80,13 @@ private:
     {
         object_position_ = Eigen::Vector3d(msg->data[0], msg->data[2], -msg->data[1]);
 
-        if (object_position_.y() < 3)
+        //Uses enum, now Jon Aksel is happy :-)
+        if (object_position_.y() < 3 && msg->data[3] == ROV_classes_to_detect::valve)
         {
             found_object = true;
             PID_x.set_target_position((current_position_.x() + object_position_.x()));
             PID_y.set_target_position((current_position_.y() + object_position_.y()));
-            PID_z.set_target_position((current_position_.z() + object_position_.z()));
+            PID_z.set_target_position((current_position_.z() + object_position_.z()) - 1.0);
 
 
             target_position_ = Eigen::Vector3d(PID_x.get_target_position(), PID_y.get_target_position(), PID_z.get_target_position());
@@ -99,6 +109,21 @@ private:
                                                 Eigen::Vector3d::UnitY(),   //UnitY because that is forward on the ROV
                                                 direction
                                             );
+        } else if (msg->data[3] == ROV_classes_to_detect::structure)
+        {
+            RCLCPP_INFO(this->get_logger(), 
+                "Structure detected - X: %.2f, Y: %.2f, Z: %.2f", 
+                object_position_.x(), object_position_.y(), object_position_.z());
+        } else if (msg->data[3] == ROV_classes_to_detect::tube)
+        {
+            RCLCPP_INFO(this->get_logger(), 
+                "Tube detected - X: %.2f, Y: %.2f, Z: %.2f", 
+                object_position_.x(), object_position_.y(), object_position_.z());
+        } else if (msg->data[3] == ROV_classes_to_detect::aruco_marker)
+        {
+            RCLCPP_INFO(this->get_logger(), 
+                "Aruco marker detected - X: %.2f, Y: %.2f, Z: %.2f", 
+                object_position_.x(), object_position_.y(), object_position_.z());
         }
     }
 
@@ -207,7 +232,7 @@ private:
     rclcpp::Subscription<std_msgs::msg::Float64MultiArray>::SharedPtr object_position_subscriber_;
     rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr thrust_publisher_;
     Eigen::Vector3d current_position_ = Eigen::Vector3d::Zero();
-    Eigen::Vector3d target_position_ = Eigen::Vector3d(-1.0, 6, -2.0);
+    Eigen::Vector3d target_position_ = Eigen::Vector3d(-1.0, 6, -1.7);
     Eigen::Vector3d object_position_ = Eigen::Vector3d::Zero();
     Eigen::Quaterniond current_orientation_ = Eigen::Quaterniond::Identity();
     Eigen::Quaterniond target_orientation_ = Eigen::Quaterniond(Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitX()) *   // pitch

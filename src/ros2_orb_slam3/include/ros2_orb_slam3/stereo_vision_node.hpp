@@ -43,7 +43,7 @@ public:
             "src/ros2_orb_slam3/orb_slam3/Vocabulary/ORBvoc.txt.bin",     //Path to vocabulary file 
             "src/ros2_orb_slam3/config/stereo_gbr_sim.yaml",               //Path to camera settings file 
             ORB_SLAM3::System::STEREO, 
-            true                                                                                   //Enable viewer
+            false                                                                                   //Enable viewer
         );
 
         //ROS2 publishers and subscribers

@@ -25,8 +25,8 @@ class yolo_node(Node):
         self.sub_left = Subscriber(self, Image, '/gbr/cam_left/image_color')
         self.sub_right = Subscriber(self, Image, '/gbr/cam_right/image_color')
 
-        self.orb = cv2.ORB_create()
-        self.matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
+        self.sift = cv2.SIFT_create(nfeatures=20)
+        self.matcher = cv2.BFMatcher(cv2.NORM_L2, crossCheck=True)
 
         self.approx_time_sync = ApproximateTimeSynchronizer([self.sub_left, self.sub_right], queue_size=1, slop=0.05)       #Only use last image
         self.approx_time_sync.registerCallback(self.image_sync_callback)
@@ -108,7 +108,7 @@ class yolo_node(Node):
             right_class, right_x, right_y = right_objects[i]
             
             if left_class == right_class:
-                    #Information about how to use orb gathered from https://www.geeksforgeeks.org/python/feature-matching-using-orb-algorithm-in-python-opencv/
+                    #Information about how to use orb gathered from https://www.geeksforgeeks.org/python/feature-matching-using-orb-algorithm-in-python-opencv/, later changed to SIFT, but is the same
                     depth = self.orb_calculate_depth(left_boxes[i], right_boxes[i], left_x[0], right_x[0])
                     if depth is not None:
                         #Draw depth info on image (By ChatGPT) (for visualization)
@@ -122,15 +122,25 @@ class yolo_node(Node):
                                 (0, 0, 255), 
                                 2)
             
-                        if left_class == class_to_look_for:
-                            self.publish_object_position((left_x[0] + left_x[1]) // 2, (right_x[0] + right_x[1]) // 2, (left_y[0] + left_y[1]) // 2, (right_y[0] + right_y[1]) // 2, depth)
+                        self.publish_object_position((left_x[0] + left_x[1]) // 2, (right_x[0] + right_x[1]) // 2, (left_y[0] + left_y[1]) // 2, (right_y[0] + right_y[1]) // 2, depth, left_class)
 
         cv2.imshow('YOLO deteksjon med dybde', image)
         cv2.waitKey(1)
 
     def orb_calculate_depth(self, left_box, right_box, left_box_left, right_box_left):
-        keypoints_left, descriptors_left = self.orb.detectAndCompute(cv2.cvtColor(left_box, cv2.COLOR_BGR2GRAY), None)       #Sets the colour to grey, and does orb detection on the images
-        keypoints_right, descriptors_right = self.orb.detectAndCompute(cv2.cvtColor(right_box, cv2.COLOR_BGR2GRAY), None)
+        #Does CLAHE and turns image back to BGR
+        left_box = cv2.cvtColor(left_box, cv2.COLOR_BGR2Lab)
+        right_box = cv2.cvtColor(right_box, cv2.COLOR_BGR2Lab)
+        ll, al, bl = cv2.split(left_box)
+        lr, ar, br = cv2.split(right_box)
+        clahe = cv2.createCLAHE(clipLimit=1.0)
+        left_box = cv2.merge((clahe.apply(ll), al, bl))
+        right_box = cv2.merge((clahe.apply(lr), ar, br))
+        left_box = cv2.cvtColor(left_box, cv2.COLOR_Lab2BGR)
+        right_box = cv2.cvtColor(right_box, cv2.COLOR_Lab2BGR)
+
+        keypoints_left, descriptors_left = self.sift.detectAndCompute(cv2.cvtColor(left_box, cv2.COLOR_BGR2GRAY), None)       #Sets the colour to grey, and does orb detection on the images
+        keypoints_right, descriptors_right = self.sift.detectAndCompute(cv2.cvtColor(right_box, cv2.COLOR_BGR2GRAY), None)
 
         if descriptors_left is None or descriptors_right is None:
             return None
@@ -152,13 +162,14 @@ class yolo_node(Node):
         depth = (self.baseline * self.focal_length)/median_disparity       #Equation from https://www.youtube.com/watch?v=hUVyDabn1Mg&list=PL2zRqk16wsdoCCLpou-dGo7QQNks1Ppzo&index=6 at 10:20
         return depth
 
-    def publish_object_position(self, center_pos_left_x, center_pos_right_x, center_pos_left_y, center_pos_right_y, depth):
-        publish_msg = Float64MultiArray()
-        meter_x = ((center_pos_left_x - self.cx) * depth / self.focal_length + (center_pos_right_x - self.cx) * depth / self.focal_length)*0.5      #Equation from https://www.reddit.com/r/opencv/comments/1enuoo0/question_project_convert_pixel_to_meter_real/.
-        meter_y = ((center_pos_left_y - self.cy) * depth / self.focal_length + (center_pos_right_y - self.cy) * depth / self.focal_length)*0.5
-        position_class = [meter_x, meter_y, depth]
-        publish_msg.data = position_class
-        self.distance_publisher.publish(publish_msg)
+    def publish_object_position(self, center_pos_left_x, center_pos_right_x, center_pos_left_y, center_pos_right_y, depth, class_number):
+        if class_number == 3:
+            publish_msg = Float64MultiArray()
+            meter_x = ((center_pos_left_x - self.cx) * depth / self.focal_length + (center_pos_right_x - self.cx) * depth / self.focal_length)*0.5      #Equation from https://www.reddit.com/r/opencv/comments/1enuoo0/question_project_convert_pixel_to_meter_real/.
+            meter_y = ((center_pos_left_y - self.cy) * depth / self.focal_length + (center_pos_right_y - self.cy) * depth / self.focal_length)*0.5
+            position_class = [meter_x, meter_y, depth, class_number]
+            publish_msg.data = position_class
+            self.distance_publisher.publish(publish_msg)
 
     #Class that shows what the YOLO model detects. Used when checking wether the YOLO model detects what it should.
     def process_image_yolo_detection_debugging(self, msg):
