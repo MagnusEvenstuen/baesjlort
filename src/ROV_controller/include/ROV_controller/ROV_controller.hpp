@@ -9,11 +9,20 @@
 #include <fstream>
 #include <thread>
 
+enum ROV_classes_to_detect
+{
+    //Theese might not be correct (Structure and valve are correct)
+    aruco_marker = 0,
+    structure = 1,
+    tube = 2,
+    valve = 3
+};
+
 class ROV_controller : public rclcpp::Node
 {
 public:
     ROV_controller() : Node("rov_controller"), PID_x(1.2, 0.0, 0.4), PID_y(1.2, 0.0, 0.4), PID_z(1.2, 0.01, 0.1),
-                        PID_orientation(0.5, 0.01, 0.05)
+                        PID_orientation(0.5, 0.0, 0.01)
     {
         //Sets up ROS2 publishers and subscribers
         orientation_subscriber_ = this->create_subscription<std_msgs::msg::Float32MultiArray>(
@@ -34,7 +43,7 @@ public:
 
         //Runs the PID process
         processing_thread_ = std::thread([this]() {
-            while (true)
+            while (running_)
             {
                 update_PID();
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -49,6 +58,7 @@ public:
 
     ~ROV_controller()
     {
+        running_ = false;
         if (processing_thread_.joinable())
         {
             processing_thread_.join();
@@ -70,12 +80,14 @@ private:
     {
         object_position_ = Eigen::Vector3d(msg->data[0], msg->data[2], -msg->data[1]);
 
-        if (object_position_.y() < 3)
+        //Uses enum, now Jon Aksel is happy :-)
+        if (object_position_.y() < 3 && msg->data[3] == ROV_classes_to_detect::valve)
         {
             found_object = true;
             PID_x.set_target_position((current_position_.x() + object_position_.x()));
-            PID_y.set_target_position((current_position_.y() + object_position_.y() - 1));
-            PID_z.set_target_position((current_position_.z() + object_position_.z()));
+            PID_y.set_target_position((current_position_.y() + object_position_.y()));
+            PID_z.set_target_position((current_position_.z() + object_position_.z()) - 1.0);
+
 
             target_position_ = Eigen::Vector3d(PID_x.get_target_position(), PID_y.get_target_position(), PID_z.get_target_position());
 
@@ -89,7 +101,7 @@ private:
                 "Forskjell fra nå pos - X: %.2f, Y: %.2f, Z: %.2f", 
                 direction.x(), 
                 direction.y(), 
-                direction.x());
+                direction.z());
 
             direction.normalize();
 
@@ -97,6 +109,21 @@ private:
                                                 Eigen::Vector3d::UnitY(),   //UnitY because that is forward on the ROV
                                                 direction
                                             );
+        } else if (msg->data[3] == ROV_classes_to_detect::structure)
+        {
+            RCLCPP_INFO(this->get_logger(), 
+                "Structure detected - X: %.2f, Y: %.2f, Z: %.2f", 
+                object_position_.x(), object_position_.y(), object_position_.z());
+        } else if (msg->data[3] == ROV_classes_to_detect::tube)
+        {
+            RCLCPP_INFO(this->get_logger(), 
+                "Tube detected - X: %.2f, Y: %.2f, Z: %.2f", 
+                object_position_.x(), object_position_.y(), object_position_.z());
+        } else if (msg->data[3] == ROV_classes_to_detect::aruco_marker)
+        {
+            RCLCPP_INFO(this->get_logger(), 
+                "Aruco marker detected - X: %.2f, Y: %.2f, Z: %.2f", 
+                object_position_.x(), object_position_.y(), object_position_.z());
         }
     }
 
@@ -115,6 +142,8 @@ private:
         //"Distance: %.2f", distance_from_target);
         Eigen::Vector3d direction = (target_position_ - current_position_);
         direction.normalize();
+
+        Eigen::Vector3d error_orien = PID_orientation.get_error_quat();
         Eigen::Quaterniond direction_to_target = Eigen::Quaterniond::FromTwoVectors(
                                                 Eigen::Vector3d::UnitY(),   //UnitY because that is forward on the ROV
                                                 direction
@@ -203,7 +232,7 @@ private:
     rclcpp::Subscription<std_msgs::msg::Float64MultiArray>::SharedPtr object_position_subscriber_;
     rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr thrust_publisher_;
     Eigen::Vector3d current_position_ = Eigen::Vector3d::Zero();
-    Eigen::Vector3d target_position_ = Eigen::Vector3d(-1.0, 6, -1.5);
+    Eigen::Vector3d target_position_ = Eigen::Vector3d(-1.0, 6, -1.7);
     Eigen::Vector3d object_position_ = Eigen::Vector3d::Zero();
     Eigen::Quaterniond current_orientation_ = Eigen::Quaterniond::Identity();
     Eigen::Quaterniond target_orientation_ = Eigen::Quaterniond(Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitX()) *   // pitch
@@ -212,6 +241,7 @@ private:
                                                         );
     Eigen::Quaterniond target_object_direction_ = Eigen::Quaterniond::Identity();
     bool found_object = false;
+    bool running_ = true;
 
     Eigen::Quaterniond current_direction_target = target_orientation_;
     std::thread processing_thread_;

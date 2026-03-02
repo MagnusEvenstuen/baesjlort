@@ -1,6 +1,6 @@
 import cv2
 
-file_path = 'test_images/test_light_towards.png'
+file_path = 'test_images/low_light_low_feature.png'
 image = cv2.imread(file_path)
 gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 

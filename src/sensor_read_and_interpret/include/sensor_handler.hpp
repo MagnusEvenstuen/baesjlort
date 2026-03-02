@@ -114,8 +114,9 @@ public:
         //Complementary filter for orientation between SLAM and IMU.
         Eigen::Quaterniond estimated_SLAM_orientation = orientation_ * estimated_SLAM_delta_orientation;
         estimated_SLAM_orientation.normalize();
-        orientation_ = orientation_.slerp(0.1, estimated_SLAM_orientation);
-        orientation_.normalize();
+        //Adding this breaks orientation, might fix later.
+        //orientation_ = orientation_.slerp(0.1, estimated_SLAM_orientation);
+        //orientation_.normalize();
 
         //Calculates the weight for the complementery filter, higher weight on SLAM, if updating often.
         float alpha = 0.5f;
