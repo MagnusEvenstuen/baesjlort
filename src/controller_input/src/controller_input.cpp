@@ -1,6 +1,5 @@
 #include "controller_input/controller_input.hpp"
 #include "SFML/Window/Joystick.hpp"
-#include <chrono>
 
 ControllerInput::ControllerInput()
     : rclcpp::Node("controller_input")
@@ -8,7 +7,7 @@ ControllerInput::ControllerInput()
     timer_ = create_wall_timer(std::chrono::milliseconds(50),
         std::bind(&ControllerInput::timerCallback, this));
 
-    controller_state_publisher_ = create_publisher<ControllerState>("controller_state", 10);
+    controller_state_publisher_ = create_publisher<ControllerState>("/controller_state", 10);
 }
 
 void ControllerInput::timerCallback() const
@@ -18,6 +17,8 @@ void ControllerInput::timerCallback() const
     if (sf::Joystick::isConnected(0))
     {
         ControllerState msg;
+        msg.header.frame_id = "controller";
+        msg.header.stamp = get_clock()->now();
         msg.lx = sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::X);
         msg.ly = sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::Y);
         msg.rx = sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::U);
