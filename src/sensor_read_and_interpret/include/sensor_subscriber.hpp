@@ -59,7 +59,6 @@ public:
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
         });
-        //The VIMU filter is the opposit rotation and translation of the IMU_class (think it is correct, but might be wrong)
         vimu_filter.set_imu_geometry(Eigen::Vector3d(0.0f, 0.003f, 0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, 0.383f), 0);
         vimu_filter.set_imu_geometry(Eigen::Vector3d(-0.04f, 0.003f, 0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f), 1);
         vimu_filter.set_imu_geometry(Eigen::Vector3d(0.04f, 0.003f, 0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f), 2);
@@ -141,38 +140,43 @@ private:
     void imu_callback(const sensor_msgs::msg::Imu::ConstSharedPtr& msg, int imu_index)
     {
         //Updates stuff from each IMU
-        bool fuse_sensors = true;
-        auto& imu_obj = imu_objects_[imu_index];
-
-        //Only fuse sensors when thrusters are not generating force. Also check in function to make sure no fusion happens when
-        //to high non lineary acceleration.
-        for (int i = 0; i < thrust_.size(); i++)
+        if (!recieved[imu_index])
         {
-            if (thrust_[i] != 0.0)
+            bool fuse_sensors = true;
+            auto& imu_obj = imu_objects_[imu_index];
+
+            //Only fuse sensors when thrusters are not generating force. Also check in function to make sure no fusion happens when
+            //to high non lineary acceleration.
+            for (int i = 0; i < thrust_.size(); i++)
             {
-                fuse_sensors = false;
-                break;
+                if (thrust_[i] != 0.0)
+                {
+                    fuse_sensors = false;
+                    break;
+                }
             }
-        }
 
-        imu_obj.update2_electric_boogalo(
-            msg->linear_acceleration.x,
-            msg->linear_acceleration.y,
-            msg->linear_acceleration.z,
-            msg->angular_velocity.x,
-            msg->angular_velocity.y,
-            msg->angular_velocity.z,
-            fuse_sensors);
-        
-        Eigen::Vector3d acc = imu_obj.get_acceleration();
-        Eigen::Quaterniond orientation = imu_obj.get_orientation();
-        Eigen::Vector3d gyro = imu_obj.get_gyro();
-        
-        {
-            const std::lock_guard<std::mutex> lock(vector_mutex);
-            acc_vector.emplace_back(acc);
-            gyro_vector.emplace_back(gyro);
-            id_vector.emplace_back(imu_index);
+            imu_obj.update2_electric_boogalo(
+                msg->linear_acceleration.x,
+                msg->linear_acceleration.y,
+                msg->linear_acceleration.z,
+                msg->angular_velocity.x,
+                msg->angular_velocity.y,
+                msg->angular_velocity.z,
+                fuse_sensors);
+            
+            Eigen::Vector3d acc = imu_obj.get_acceleration();
+            Eigen::Quaterniond orientation = imu_obj.get_orientation();
+            Eigen::Vector3d gyro = imu_obj.get_gyro();
+            
+            {
+                const std::lock_guard<std::mutex> lock(vector_mutex);
+                acc_vector.emplace_back(acc);
+                gyro_vector.emplace_back(gyro);
+                id_vector.emplace_back(imu_index);
+            }
+            
+            recieved[imu_index] = true;
         }
     }
 
@@ -222,8 +226,15 @@ private:
 
     void imu_data_sender()
     {
-        //If less than  2 IMUs recieved, VIMU filter can't compute.
-        if (acc_vector.size() <= 2)
+        //Check how many IMU messages have been recieved
+        unsigned int recieved_counter = 0;
+        for (bool r : recieved)
+        {
+            if (r)
+                recieved_counter++;
+        }
+
+        if (recieved_counter <= 2)
         {
             sensor_handler_.non_measurement_prediction(thrust_);
             return;
@@ -266,6 +277,15 @@ private:
         position_msg.data = {-position.x(), -position.y(), position.z()};
         position_publisher_->publish(position_msg);
 
+        //Reset recieved flags
+        recieved[0] = false;
+        recieved[1] = false;
+        recieved[2] = false;
+        recieved[3] = false;
+        recieved[4] = false;
+        recieved[5] = false;
+        recieved[6] = false;
+        recieved[7] = false;
         //Updates sensor handler with averaged IMU data
         sensor_handler_.update(avg_acc, avg_gyro, thrust_);
 
@@ -325,6 +345,7 @@ private:
     Eigen::Vector3d acc_ = Eigen::Vector3d::Zero();
     Eigen::Quaterniond orientation_ = Eigen::Quaterniond(0.0, 0.0, 0.0, 0.0);
     Eigen::Quaterniond last_orientation_ = Eigen::Quaterniond(0.0, 0.0, 0.0, 0.0);
+    std::array<bool, 8> recieved = {false, false, false, false, false, false, false, false};
     IMU IMU_center_;
     IMU IMU_center1_;
     IMU IMU_center2_;
