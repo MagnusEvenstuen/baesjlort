@@ -29,18 +29,14 @@ ImageLogger::ImageLogger(std::filesystem::path path)
 void ImageLogger::imageSubscriptionCallback(Image::UniquePtr msg)
 {
     std::string frame_id = msg->header.frame_id;
-    for (auto &c : frame_id)
-    {
-        if (c == '/')
-        {
-            c = '_';
-        }
-    }
-    cv_bridge::CvImagePtr img = cv_bridge::toCvCopy(*msg, msg->encoding);
+    std::replace(frame_id.begin(), frame_id.end(), '/', '_');
+
     std::ostringstream oss;
     oss << frame_id << "_" << msg->header.stamp.sec <<
         msg->header.stamp.nanosec << ".jpg";
     std::filesystem::path imgPath = image_directory_/oss.str();
-    RCLCPP_INFO(get_logger(), "Writing image to path: %s", std::filesystem::absolute(imgPath).c_str());
+
+    // RCLCPP_INFO(get_logger(), "Writing image to path: %s", std::filesystem::absolute(imgPath).c_str());
+    cv_bridge::CvImagePtr img = cv_bridge::toCvCopy(*msg, msg->encoding);
     cv::imwrite(imgPath.string(), img->image);
 }
