@@ -1,14 +1,15 @@
 #include "log_to_file/imu/imu_logger.hpp"
 #include <ctime>
-#include <chrono>
 #include <filesystem>
 
-ImuLogger::ImuLogger(std::filesystem::path path)
+ImuLogger::ImuLogger(const std::string &topic, std::filesystem::path path)
 	: rclcpp::Node("imu_logger")
 {
     if (path.empty())
     {
-        path = "imu.csv";
+        std::string name = topic.substr(1);
+        std::replace(name.begin(), name.end(), '/', '_');
+        path = name + ".csv";
     }
 
     RCLCPP_INFO(get_logger(), "Logging to %s", std::filesystem::absolute(path).c_str());
@@ -41,7 +42,7 @@ ImuLogger::ImuLogger(std::filesystem::path path)
 	}
 
 	// TODO: Create subscribers
-    imu_subscriber_ = create_subscription<Imu>("/gbr/imu_center", 10,
+    imu_subscriber_ = create_subscription<Imu>(topic, 10,
             std::bind(&ImuLogger::imuSubscriptionCallback, this, std::placeholders::_1));
 }
 

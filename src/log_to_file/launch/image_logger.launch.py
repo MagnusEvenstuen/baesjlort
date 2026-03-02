@@ -4,18 +4,18 @@ from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
 def generate_launch_description():
-    log_topic = LaunchConfiguration("imu_topic")
+    log_topic = LaunchConfiguration("image_topic")
     log_path = LaunchConfiguration("log_path")
     logging_node = Node(
         package="log_to_file",
-        executable="imu_logger",
-        name="imu_logger",
+        executable="image_logger",
+        name="image_logger",
         arguments=[log_topic, log_path]
     )
 
     # List containing nodes + launch variables to start on launch
     nodes_to_start = [
-        DeclareLaunchArgument("imu_topic"),
+        DeclareLaunchArgument("image_topic"),
         DeclareLaunchArgument("log_path", default_value=""),
         logging_node
     ]

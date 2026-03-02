@@ -5,14 +5,14 @@ int main(int argc, char **argv)
 {
 	rclcpp::init(argc, argv);
     auto args = rclcpp::remove_ros_arguments(argc, argv);
-    if (args.size() <= 2)
+    if (args.size() <= 3)
     {
         std::filesystem::path path;
-        if (args.size() == 2)
+        if (args.size() == 3)
         {
-            path = args[1];
+            path = args[2];
         }
-        auto logger = std::make_shared<ImuLogger>(path);
+        auto logger = std::make_shared<ImuLogger>(args[1], path);
         rclcpp::spin(logger);
     }
     else

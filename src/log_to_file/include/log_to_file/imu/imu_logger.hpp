@@ -8,7 +8,7 @@ using sensor_msgs::msg::Imu;
 class ImuLogger : public rclcpp::Node
 {
 public:
-	ImuLogger(std::filesystem::path path);
+	ImuLogger(const std::string &topic, std::filesystem::path path);
 
     void imuSubscriptionCallback(Imu::UniquePtr msg);
 

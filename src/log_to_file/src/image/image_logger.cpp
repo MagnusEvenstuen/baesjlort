@@ -5,12 +5,14 @@
 #include <opencv2/imgcodecs.hpp>
 #include <sstream>
 
-ImageLogger::ImageLogger(std::filesystem::path path)
+ImageLogger::ImageLogger(const std::string &topic, std::filesystem::path path)
 	: rclcpp::Node("image_logger")
 {
     if (path.empty())
     {
-        path = "image_log";
+        std::string name = topic.substr(1);
+        std::replace(name.begin(), name.end(), '/', '_');
+        path = name + "_image_log";
     }
     image_directory_ = path;
 
@@ -22,7 +24,7 @@ ImageLogger::ImageLogger(std::filesystem::path path)
 	}
 
 	// TODO: Create subscribers
-    image_subscriber_ = create_subscription<Image>("/gbr/cam_left/image_color", 10,
+    image_subscriber_ = create_subscription<Image>(topic, 10,
             std::bind(&ImageLogger::imageSubscriptionCallback, this, std::placeholders::_1));
 }
 

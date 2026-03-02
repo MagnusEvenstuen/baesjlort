@@ -8,7 +8,7 @@ using sensor_msgs::msg::Image;
 class ImageLogger : public rclcpp::Node
 {
 public:
-	ImageLogger(std::filesystem::path path);
+	ImageLogger(const std::string &topic, std::filesystem::path path);
 
     void imageSubscriptionCallback(Image::UniquePtr msg);
 
