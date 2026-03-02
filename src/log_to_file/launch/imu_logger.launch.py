@@ -9,8 +9,8 @@ def generate_launch_description():
     log_path = LaunchConfiguration("log_path")
     logging_node = Node(
         package="log_to_file",
-        executable="log_to_file",
-        name="log_to_file",
+        executable="imu_logger",
+        name="imu_logger",
         arguments=[log_path]
     )
 
