@@ -79,13 +79,6 @@ public:
 
     void init()
     {
-        // Subscriber for Image messages
-        it_ = std::make_shared<image_transport::ImageTransport>(shared_from_this());
-        left_cam_ = it_->subscribe("/gbr/cam_left/image_color", 10, 
-            std::bind(&sensor_subscriber::image_left_callback, this, std::placeholders::_1));
-        right_cam_ = it_->subscribe("/gbr/cam_right/image_color", 10, 
-            std::bind(&sensor_subscriber::image_right_callback, this, std::placeholders::_1));
-
         // Subscribers for IMU messages
         for (const auto& [topic_name, imu_index] : imu_topic_map_) {
             auto subscriber = this->create_subscription<sensor_msgs::msg::Imu>(
@@ -127,16 +120,6 @@ public:
     }
 
 private:
-    void image_right_callback(const sensor_msgs::msg::Image::ConstSharedPtr& msg)
-    {
-        display_and_handle.display_image(msg, "Right Camera", this->get_logger());
-    }
-
-    void image_left_callback(const sensor_msgs::msg::Image::ConstSharedPtr& msg)
-    {
-        display_and_handle.display_image(msg, "Left Camera", this->get_logger());
-    }
-
     void imu_callback(const sensor_msgs::msg::Imu::ConstSharedPtr& msg, int imu_index)
     {
         //Updates stuff from each IMU
