@@ -43,6 +43,12 @@ class yolo_node(Node):
             'distance_to_object',
             10
         )
+
+        self.aruco_id_publisher = self.create_publisher(
+            int,
+            'aruco_ids',
+            10
+        )
     
     def image_sync_callback(self, msg_left, msg_right):
         self.process_image(msg_left, msg_right)
