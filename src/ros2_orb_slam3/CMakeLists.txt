@@ -4,6 +4,8 @@ project(ros2_orb_slam3)
 # Make sure to set this path before building the  
 # set(ENV{PYTHONPATH} "/opt/ros/humble/lib/python3.10/site-packages/") # Must be set to match your installation
 
+message(WARNING "Project source dir: ${PROJECT_SOURCE_DIR}")
+
 # Enforce use of C++17
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -58,6 +60,11 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
   Eigen3
   Pangolin
 )
+
+# Fixes the error
+add_subdirectory(orb_slam3/Thirdparty/DBoW2)
+add_subdirectory(orb_slam3/Thirdparty/g2o)
+# End of fix
 
 #* ORB SLAM3 as a shared library
 # Whenever you add a new .h, .hpp or .cc, .cpp file in the ros2_orb_slam3/orb_slam3/include and os2_orb_slam3/orb_slam3/src directories, make sure to add them here as shown below
