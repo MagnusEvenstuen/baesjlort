@@ -28,6 +28,15 @@ target_link_libraries(image_logger PRIVATE
     ${OpenCV_LIBS}
 )
 
+add_executable(video_logger src/video/main.cpp src/video/video_logger.cpp)
+target_include_directories(video_logger PRIVATE include)
+target_link_libraries(video_logger PRIVATE
+	rclcpp::rclcpp
+	${sensor_msgs_TARGETS}
+    cv_bridge::cv_bridge
+    ${OpenCV_LIBS}
+)
+
 add_executable(controller_logger src/controller/main.cpp src/controller/controller_logger.cpp)
 target_include_directories(controller_logger PRIVATE include)
 target_link_libraries(controller_logger PRIVATE
@@ -45,6 +54,7 @@ target_link_libraries(pressure_logger PRIVATE
 install(TARGETS
   imu_logger
   image_logger
+  video_logger
   controller_logger
   pressure_logger
   DESTINATION lib/${PROJECT_NAME})

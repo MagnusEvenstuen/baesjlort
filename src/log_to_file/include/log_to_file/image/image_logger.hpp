@@ -1,4 +1,3 @@
-#include <fstream>
 #include "rclcpp/rclcpp.hpp"
 #include <filesystem>
 #include "sensor_msgs/msg/image.hpp"
