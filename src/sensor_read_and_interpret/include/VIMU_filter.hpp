@@ -121,7 +121,7 @@ private:
         omega_buffer_.back() = omega;
         acc_buffer_.back() = acc;
 
-        //Calculates the average
+        //Calculates the average. Needs to check if correct to divide by 10, or if this is done just for testing
         Eigen::Vector3d average_omega = Eigen::Vector3d::Zero();
         Eigen::Vector3d average_acc = Eigen::Vector3d::Zero();
         for (int i = 0; i < 10; i++) {
