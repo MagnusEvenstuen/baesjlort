@@ -2,7 +2,7 @@ import rclpy
 from rclpy.node import Node
 from message_filters import Subscriber, TimeSynchronizer, ApproximateTimeSynchronizer
 from sensor_msgs.msg import CameraInfo, Image
-from std_msgs.msg import Float64MultiArray
+from std_msgs.msg import Float64MultiArray, Int32
 from cv_bridge import CvBridge
 import cv2
 from ultralytics import YOLO
@@ -15,7 +15,7 @@ class yolo_node(Node):
     def __init__(self):
         super().__init__('yolo_detector_node')
         #todo fix absolute file path
-        self.model = YOLO('src/yolo_tac_objects_detection/yolo_tac_objects_detection/weights_yolo/yolo11n.pt')
+        self.model = YOLO('src/yolo_tac_objects_detection/yolo_tac_objects_detection/weights_yolo/bestYOLO11.pt')
         self.bridge = CvBridge()
         self.left_classes = []
         self.baseline = 0.042
@@ -24,6 +24,10 @@ class yolo_node(Node):
         self.cy = None
         self.sub_left = Subscriber(self, Image, '/gbr/cam_left/image_color')
         self.sub_right = Subscriber(self, Image, '/gbr/cam_right/image_color')
+        self.aruco_dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_ARUCO_ORIGINAL)
+        self.parameters = cv2.aruco.DetectorParameters()
+        self.detector = cv2.aruco.ArucoDetector(self.aruco_dictionary, self.parameters)
+        self.clahe = cv2.createCLAHE(clipLimit=1.0)
 
         self.sift = cv2.SIFT_create(nfeatures=20)
         self.matcher = cv2.BFMatcher(cv2.NORM_L2, crossCheck=True)
@@ -45,7 +49,7 @@ class yolo_node(Node):
         )
 
         self.aruco_id_publisher = self.create_publisher(
-            int,
+            Int32,
             'aruco_ids',
             10
         )
@@ -129,6 +133,9 @@ class yolo_node(Node):
                                 2)
             
                         self.publish_object_position((left_x[0] + left_x[1]) // 2, (right_x[0] + right_x[1]) // 2, (left_y[0] + left_y[1]) // 2, (right_y[0] + right_y[1]) // 2, depth, left_class)
+                        
+                        if left_class == 0:     #This isn't tested, but should work. If not working, first test should be sending in the entire image, and not just the bounding box.
+                            self.publish_aruco_ids(left_boxes[i], right_boxes[i])
 
         cv2.imshow('YOLO deteksjon med dybde', image)
         cv2.waitKey(1)
@@ -139,9 +146,8 @@ class yolo_node(Node):
         right_box = cv2.cvtColor(right_box, cv2.COLOR_BGR2Lab)
         ll, al, bl = cv2.split(left_box)
         lr, ar, br = cv2.split(right_box)
-        clahe = cv2.createCLAHE(clipLimit=1.0)
-        left_box = cv2.merge((clahe.apply(ll), al, bl))
-        right_box = cv2.merge((clahe.apply(lr), ar, br))
+        left_box = cv2.merge((self.clahe.apply(ll), al, bl))
+        right_box = cv2.merge((self.clahe.apply(lr), ar, br))
         left_box = cv2.cvtColor(left_box, cv2.COLOR_Lab2BGR)
         right_box = cv2.cvtColor(right_box, cv2.COLOR_Lab2BGR)
 
@@ -167,6 +173,16 @@ class yolo_node(Node):
         median_disparity = np.median(point_disparity)
         depth = (self.baseline * self.focal_length)/median_disparity       #Equation from https://www.youtube.com/watch?v=hUVyDabn1Mg&list=PL2zRqk16wsdoCCLpou-dGo7QQNks1Ppzo&index=6 at 10:20
         return depth
+
+    #This function isn't tested here, but works in a seperate python script without ROS2
+    def publish_aruco_ids(self, image_left, image_right):
+        _, ids_left, _ = self.detector.detectMarkers(image_left)
+        _, ids_right, _ = self.detector.detectMarkers(image_right)
+        if ids_left == ids_right and ids_left is not None:
+            for id in ids_left:
+                msg = Int32()
+                msg.data = int(id[0])
+                self.aruco_id_publisher.publish(msg)
 
     def publish_object_position(self, center_pos_left_x, center_pos_right_x, center_pos_left_y, center_pos_right_y, depth, class_number):
         if class_number == 3:

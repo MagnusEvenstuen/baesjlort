@@ -6,7 +6,7 @@ import numpy as np
 
 torch.cuda.is_available = lambda: False
 
-model = YOLO('YOLO_models/yolo11s.pt')
+model = YOLO('YOLO_models/yolo8s.pt')
 image1 = cv2.imread("test_images/image_only_noise.png")
 image2 = cv2.imread("test_images/low_light_low_feature.png")
 image3 = cv2.imread("test_images/test_light_towards.png")
