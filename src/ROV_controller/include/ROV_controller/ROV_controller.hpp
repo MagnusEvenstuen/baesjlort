@@ -8,6 +8,7 @@
 #include <Eigen/Dense>
 #include <fstream>
 #include <thread>
+#include "controller_msgs/msg/controller_state.hpp"
 
 enum ROV_classes_to_detect
 {
@@ -40,20 +41,27 @@ public:
             "/distance_to_object", 1,
             std::bind(&ROV_controller::object_position_callback, this, std::placeholders::_1));
 
+        controller_subscriber_ = this->create_subscription<controller_msgs::msg::ControllerState>(
+                "/controller_state", 1,
+                std::bind(&ROV_controller::controller_callback, this, std::placeholders::_1));
+
 
         //Runs the PID process
-        processing_thread_ = std::thread([this]() {
-            while (running_)
-            {
-                update_PID();
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            }
-        });
-        //Sets targets
-        PID_x.set_target_position(target_position_.x());
-        PID_y.set_target_position(target_position_.y());
-        PID_z.set_target_position(target_position_.z());
-        PID_orientation.set_target_quaternion(target_orientation_);
+        if (auto_)
+        {
+            processing_thread_ = std::thread([this]() {
+                while (running_)
+                {
+                    update_PID();
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                }
+            });
+            //Sets targets
+            PID_x.set_target_position(target_position_.x());
+            PID_y.set_target_position(target_position_.y());
+            PID_z.set_target_position(target_position_.z());
+            PID_orientation.set_target_quaternion(target_orientation_);
+        }
     }
 
     ~ROV_controller()
@@ -127,6 +135,76 @@ private:
         }
     }
 
+    void controller_callback(controller_msgs::msg::ControllerState::UniquePtr msg)
+    {
+        if ((msg->l1 && !prev_l1_) ||
+                (msg->r1 && !prev_r1_))
+        {
+            manual_alt_mode_ = !manual_alt_mode_;
+        }
+
+        if (msg->up && !prev_dpad_up_)
+        {
+            speed_percentage_ += 0.05;
+            speed_percentage_ = std::min(speed_percentage_, 1.0);
+        } else if (msg->down && !prev_dpad_down_)
+        {
+            speed_percentage_ -= 0.05;
+            speed_percentage_ = std::max(speed_percentage_, 0.5);
+        }
+
+        if (msg->left && !prev_dpad_left_)
+        {
+            light_percentage_ += 0.05;
+            light_percentage_ = std::min(light_percentage_, 1.0);
+        } else if (msg->right && !prev_dpad_right_)
+        {
+            light_percentage_ -= 0.05;
+            light_percentage_ = std::max(light_percentage_, 0.5);
+        }
+
+        Eigen::Vector3d xyz;
+        Eigen::Vector3d rpy;
+
+        if (manual_alt_mode_)
+        {
+            // Control Roll/Pitch
+            rpy.x() = msg->lx / 100;
+            // Controller gives negative values up
+            rpy.y() = -msg->ly / 100;
+
+        } else
+        {
+            // Yaw and z control 
+            // Controller gives negative values up
+            xyz.z() = -msg->ly / 100;
+            // Right hand rule is :( Give me NED-FRD
+            rpy.z() = -msg->lx / 100;
+        }
+
+        // Control x/y in both modes
+        xyz.x() = msg->rx / 100;
+        // Controller gives negative values up
+        xyz.y() = -msg->ry / 100;
+
+        Eigen::VectorXd setpoints(6);
+        setpoints << xyz.x(), xyz.y(), xyz.z(),
+            rpy.x(), rpy.y(), rpy.z();
+
+        setpoints *= speed_percentage_;
+
+        set_thrust(setpoints);
+
+        
+        prev_ps_ = msg->ps;
+        prev_l1_ = msg->l1;
+        prev_r1_ = msg->r1;
+        prev_dpad_up_ = msg->up;
+        prev_dpad_down_ = msg->down;
+        prev_dpad_left_ = msg->left;
+        prev_dpad_right_ = msg->right;
+    }
+
     void update_PID()
     {
         //Updates delta time
@@ -171,6 +249,7 @@ private:
         double orientation_error_norm = PID_orientation.get_error_quat().norm();
         force_world *= 1.0 / (1.0 + 5.0 * orientation_error_norm);
 
+        // NOT actual forces
         //Puts the forces in an array, and multiplies it with the thruster setup
         forces << force_world(0),
                   force_world(1),
@@ -179,14 +258,7 @@ private:
                   orientation_output(0),
                   orientation_output(2);
 
-        Eigen::VectorXd gain = thrust_map_matrix*forces;
-        gain = gain.cwiseMax(-10.0).cwiseMin(10.0);             //Forces the output between pluss, minus 10 to prevent to high power consumption, and making SLAM easier
-        auto msg = std_msgs::msg::Float64MultiArray();
-        msg.data = std::vector<double>({gain(0), gain(1), gain(2), gain(3), gain(4), gain(5), gain(6), gain(7)});       //Publishes to thrusters
-        thrust_publisher_->publish(msg);
-        //RCLCPP_INFO(this->get_logger(), 
-        //    "Thruster - T1: %.2f, T2: %.2f, T3: %.2f, T4: %.2f, T5: %.2f, T6: %.2f, T7: %.2f, T8: %.2f", 
-        //    gain(0), gain(1), gain(2), gain(3), gain(4), gain(5), gain(6), gain(7));
+        set_thrust(forces);
 
         //Get errors for logging
         Eigen::Vector3d position_error(
@@ -196,6 +268,18 @@ private:
         );
         Eigen::Vector3d orientation_error = PID_orientation.get_error_quat();
         log_errors_to_csv(position_error, orientation_error, current_time);
+    }
+
+    void set_thrust(const Eigen::VectorXd &forces)
+    {
+        Eigen::VectorXd gain = thrust_map_matrix*forces;
+        gain = gain.cwiseMax(-10.0).cwiseMin(10.0);             //Forces the output between pluss, minus 10 to prevent to high power consumption, and making SLAM easier
+        auto msg = std_msgs::msg::Float64MultiArray();
+        msg.data = std::vector<double>({gain(0), gain(1), gain(2), gain(3), gain(4), gain(5), gain(6), gain(7)});       //Publishes to thrusters
+        thrust_publisher_->publish(msg);
+        //RCLCPP_INFO(this->get_logger(), 
+        //    "Thruster - T1: %.2f, T2: %.2f, T3: %.2f, T4: %.2f, T5: %.2f, T6: %.2f, T7: %.2f, T8: %.2f", 
+        //    gain(0), gain(1), gain(2), gain(3), gain(4), gain(5), gain(6), gain(7));
     }
 
     void log_errors_to_csv(const Eigen::Vector3d& position_error, const Eigen::Vector3d& orientation_error, double timestamp)
@@ -230,6 +314,7 @@ private:
     rclcpp::Subscription<std_msgs::msg::Float32MultiArray>::SharedPtr orientation_subscriber_;
     rclcpp::Subscription<std_msgs::msg::Float32MultiArray>::SharedPtr position_subscriber_;
     rclcpp::Subscription<std_msgs::msg::Float64MultiArray>::SharedPtr object_position_subscriber_;
+    rclcpp::Subscription<controller_msgs::msg::ControllerState>::SharedPtr controller_subscriber_;
     rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr thrust_publisher_;
     Eigen::Vector3d current_position_ = Eigen::Vector3d::Zero();
     Eigen::Vector3d target_position_ = Eigen::Vector3d(-1.0, 6, -1.7);
@@ -242,6 +327,17 @@ private:
     Eigen::Quaterniond target_object_direction_ = Eigen::Quaterniond::Identity();
     bool found_object = false;
     bool running_ = true;
+    bool auto_ = false;
+    bool manual_alt_mode_ = false;
+    bool prev_ps_ = false;
+    bool prev_l1_ = false;
+    bool prev_r1_ = false;
+    bool prev_dpad_up_ = false;
+    bool prev_dpad_down_ = false;
+    bool prev_dpad_left_ = false;
+    bool prev_dpad_right_ = false;
+    double speed_percentage_ = 0.25;
+    double light_percentage_ = 0.5;
 
     Eigen::Quaterniond current_direction_target = target_orientation_;
     std::thread processing_thread_;

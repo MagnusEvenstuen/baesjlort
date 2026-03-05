@@ -9,6 +9,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(controller_msgs REQUIRED)
 
 add_executable(ROV_controller src/main.cpp)
 
@@ -20,6 +21,7 @@ ament_target_dependencies(ROV_controller
   rclcpp
   std_msgs
   Eigen3
+  controller_msgs
 )
 
 target_include_directories(ROV_controller PUBLIC
