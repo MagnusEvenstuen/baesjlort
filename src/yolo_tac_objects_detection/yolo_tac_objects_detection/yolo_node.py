@@ -74,8 +74,8 @@ class yolo_node(Node):
 
         cv_image_left = self.bridge.imgmsg_to_cv2(left_msg, 'bgr8')
         cv_image_right = self.bridge.imgmsg_to_cv2(right_msg, 'bgr8')
-        results_left = self.model(cv_image_left, conf=0.5)        #Runs the YOLO algorithm. conf is how confident the model has to be to mark the point
-        results_right = self.model(cv_image_right, conf=0.5)
+        results_left = self.model(cv_image_left, conf=0.3)        #Runs the YOLO algorithm. conf is how confident the model has to be to mark the point
+        results_right = self.model(cv_image_right, conf=0.3)
         
         self.save_bounding_box(results_left, left_classes, left_pos_x, left_pos_y, left_boxes, cv_image_left, cv_image_left)
         self.save_bounding_box(results_right, right_classes, right_pos_x, right_pos_y, right_boxes, cv_image_right, cv_image_left)
