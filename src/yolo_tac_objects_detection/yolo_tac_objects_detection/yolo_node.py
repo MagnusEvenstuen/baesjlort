@@ -15,15 +15,15 @@ class yolo_node(Node):
     def __init__(self):
         super().__init__('yolo_detector_node')
         #todo fix absolute file path
-        self.model = YOLO('src/yolo_tac_objects_detection/yolo_tac_objects_detection/weights_yolo/bestYOLO11.pt')
+        self.model = YOLO('src/yolo_tac_objects_detection/yolo_tac_objects_detection/weights_yolo/yolo_common_objects.pt')
         self.bridge = CvBridge()
         self.left_classes = []
-        self.baseline = 0.042
+        self.baseline = 0.0436
         self.focal_length = None
         self.cx = None
         self.cy = None
-        self.sub_left = Subscriber(self, Image, '/gbr/cam_left/image_color')
-        self.sub_right = Subscriber(self, Image, '/gbr/cam_right/image_color')
+        self.sub_left = Subscriber(self, Image, '/left/image_rect_color')
+        self.sub_right = Subscriber(self, Image, '/right/image_rect_color')
         self.aruco_dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_ARUCO_ORIGINAL)
         self.parameters = cv2.aruco.DetectorParameters()
         self.detector = cv2.aruco.ArucoDetector(self.aruco_dictionary, self.parameters)
@@ -37,7 +37,7 @@ class yolo_node(Node):
 
         self.sub_info = self.create_subscription(       #Only one info subscription needed, since both cameras are the same. Only needed for simulator as manual calibration IRL
             CameraInfo,
-            '/gbr/cam_left/camera_info',
+            '/right/camera_info',
             self.camera_info_callback,
             1
         )

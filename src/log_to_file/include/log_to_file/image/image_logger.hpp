@@ -14,4 +14,6 @@ public:
 private:
     std::filesystem::path image_directory_;
     rclcpp::Subscription<Image>::SharedPtr image_subscriber_;
+    std::string topic_;
+    std::string safe_topic_;
 };
