@@ -16,8 +16,8 @@ sift = cv2.SIFT_create()
 orb = cv2.ORB_create()
 matcher_orb = cv2.BFMatcher(cv2.NORM_HAMMING)
 matcher_sift = cv2.BFMatcher(cv2.NORM_L2)
-clahe = cv2.createCLAHE(clipLimit=1.0)
-class_number = 56       #Class number of chair, which is used in this test
+clahe = cv2.createCLAHE(clipLimit=0.0)
+class_number = 76       #Class number of chair, which is used in this test (banana 46, scissors 76)
 
 #Fuctions from ROS2 node
 def save_bounding_box(results, classes, pos_x, pos_y, boxes, image):
@@ -75,7 +75,7 @@ def orb_calculate_depth(left_box, right_box, left_box_left, right_box_left,
 def extract_number(filename):
     return int(re.findall(r'\d+', filename)[-1])
 
-folder = Path("test_images/distance_accuracy_test_images/5meter")
+folder = Path("test_images/distance_accuracy_test_images/scissors_0.5meter")
 files = [f.name for f in folder.iterdir() if f.is_file()]
 left_images = [f for f in files if f.startswith("_left_image_rect_color_")]
 right_images = [f for f in files if f.startswith("_right_image_rect_color_")]
@@ -125,6 +125,8 @@ for i in range(len(matched_pairs)):
     #56 should be chair used in this test
     if class_number not in left_classes or class_number not in right_classes:
         print("Detection went to shit, can't find place to sit :-(")
+        for i in range(len(left_classes)):
+            print(left_classes)
         continue
 
     left_objects = [(class_number,
@@ -166,18 +168,19 @@ for i in range(len(matched_pairs)):
 
 
 #Takes the average between all the measurements
+print(distances_orb_average)
 print("Average dist orb average:", np.average(distances_orb_average))
 print("Average dist orb median:", np.average(distances_orb_median))
+print("Average dist sift average:", np.average(distances_sift_average))
+print("Average dist sift median:", np.average(distances_sift_median))
 print("Standard deviation orb average:", np.std(distances_orb_average))
 print("Standard deviation orb median:", np.std(distances_orb_median))
+print("Standard deviation sift average:", np.std(distances_sift_average))
+print("Standard deviation sift median:", np.std(distances_sift_median))
 print("Minimum orb average:", np.min(distances_orb_average))
 print("Minimum orb median:", np.min(distances_orb_median))
 print("Maximum orb average:", np.max(distances_orb_average))
 print("Maximum orb median:", np.max(distances_orb_median))
-print("Average dist sift average:", np.average(distances_sift_average))
-print("Average dist sift median:", np.average(distances_sift_median))
-print("Standard deviation sift average:", np.std(distances_sift_average))
-print("Standard deviation sift median:", np.std(distances_sift_median))
 print("Minimum sift average:", np.min(distances_sift_average))
 print("Minimum sift median:", np.min(distances_sift_median))
 print("Maximum sift average:", np.max(distances_sift_average))
