@@ -85,8 +85,8 @@ def orb_calculate_depth(left_box, right_box, left_box_left, right_box_left,
         return None
     median_disparity = np.median(point_disparity)
     average_disparity = np.average(point_disparity)
-    depth_median = (baseline * focal_length) / median_disparity
-    depth_average = (baseline * focal_length) / average_disparity
+    depth_median = (baseline * focal_length) / (median_disparity)
+    depth_average = (baseline * focal_length) / (average_disparity)
     return depth_median, depth_average
 
 def SGBM_depth(left_image, right_image, x, y, baseline, focal):
@@ -425,7 +425,7 @@ plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=10)
 plt.tight_layout()
 plt.show()
 
-fig, axes = plt.subplots(2, 3, figsize=(15, 10))
+fig, axes = plt.subplots(3, 2, figsize=(15, 10))
 axes = axes.flatten()
 
 methods = [
@@ -578,7 +578,6 @@ plt.grid(True, alpha=0.3, axis='y')
 plt.tight_layout()
 plt.show()
 
-# Plott for tidsbruk
 plt.figure(figsize=(10, 6))
 
 times = [
@@ -589,6 +588,7 @@ times = [
     ('BB Center', distance_time_all, colors['bb_center']),
     ('SGBM', SGBM_time_all, colors['sgbm'])
 ]
+print('Time averages ORB', np.average(orb_time_all), 'SIFT', np.average(sift_time_all), 'AKAZE', np.average(akaze_time_all), 'BRISK', np.average(brisk_time_all), 'BB Center', np.average(distance_time_all), 'SGBM', np.average(SGBM_time_all))
 
 for name, time_data, color in times:
     plt.plot(true_distances, time_data, 'o-', color=color, label=name, linewidth=2, markersize=8)
@@ -601,13 +601,10 @@ plt.legend()
 plt.tight_layout()
 plt.show()
 
-# Plott for relativ feil (prosent)
 plt.figure(figsize=(12, 8))
 
-# Beregn relativ feil for alle metoder
 rel_errors = {}
 
-# ORB
 if distances_orb_average_all:
     rel_errors['ORB Avg'] = [abs(distances_orb_average_all[i] - true_distances[i]) / true_distances[i] * 100
                              for i in range(len(true_distances))]
@@ -615,7 +612,6 @@ if distances_orb_median_all:
     rel_errors['ORB Med'] = [abs(distances_orb_median_all[i] - true_distances[i]) / true_distances[i] * 100
                              for i in range(len(true_distances))]
 
-# SIFT
 if distances_sift_average_all:
     rel_errors['SIFT Avg'] = [abs(distances_sift_average_all[i] - true_distances[i]) / true_distances[i] * 100
                               for i in range(len(true_distances))]
@@ -623,7 +619,6 @@ if distances_sift_median_all:
     rel_errors['SIFT Med'] = [abs(distances_sift_median_all[i] - true_distances[i]) / true_distances[i] * 100
                               for i in range(len(true_distances))]
 
-# AKAZE
 if distances_akaze_average_all:
     rel_errors['AKAZE Avg'] = [abs(distances_akaze_average_all[i] - true_distances[i]) / true_distances[i] * 100
                                for i in range(len(true_distances))]
@@ -631,7 +626,6 @@ if distances_akaze_median_all:
     rel_errors['AKAZE Med'] = [abs(distances_akaze_median_all[i] - true_distances[i]) / true_distances[i] * 100
                                for i in range(len(true_distances))]
 
-# BRISK
 if distances_brisk_average_all:
     rel_errors['BRISK Avg'] = [abs(distances_brisk_average_all[i] - true_distances[i]) / true_distances[i] * 100
                                for i in range(len(true_distances))]
@@ -639,17 +633,14 @@ if distances_brisk_median_all:
     rel_errors['BRISK Med'] = [abs(distances_brisk_median_all[i] - true_distances[i]) / true_distances[i] * 100
                                for i in range(len(true_distances))]
 
-# BB Center
 if distances_center_difference_all:
     rel_errors['BB Center'] = [abs(distances_center_difference_all[i] - true_distances[i]) / true_distances[i] * 100
                                for i in range(len(true_distances))]
 
-# SGBM
 if distances_SGBM_all:
     rel_errors['SGBM'] = [abs(distances_SGBM_all[i] - true_distances[i]) / true_distances[i] * 100
                           for i in range(len(true_distances))]
 
-# Plott relativ feil
 markers = ['o', 's', '^', 'd', 'v', '*', 'p', 'h', 'x', '+']
 colors_list = ['red', 'darkred', 'blue', 'darkblue', 'green', 'darkgreen',
                'purple', 'darkviolet', 'orange', 'brown']
@@ -667,10 +658,8 @@ plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=9)
 plt.tight_layout()
 plt.show()
 
-# Ekstra: Stabelplot av relativ feil for å sammenligne metoder
 plt.figure(figsize=(14, 6))
 
-# Gruppert bar plot for relativ feil
 x = np.arange(len(true_distances))
 width = 0.1
 offsets = np.linspace(-0.4, 0.4, len(rel_errors))
@@ -688,7 +677,6 @@ plt.grid(True, alpha=0.3, axis='y')
 plt.tight_layout()
 plt.show()
 
-# Ekstra: Gjennomsnittlig relativ feil for hver metode
 plt.figure(figsize=(10, 6))
 
 avg_rel_errors = [np.mean(errors) for errors in rel_errors.values()]
@@ -701,7 +689,6 @@ plt.title('Average relative error by method', fontsize=14)
 plt.xticks(range(len(names)), names, rotation=45, ha='right')
 plt.grid(True, alpha=0.3, axis='y')
 
-# Legg til verdier på stolpene
 for i, (bar, val) in enumerate(zip(bars, avg_rel_errors)):
     plt.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.5,
              f'{val:.1f}%', ha='center', va='bottom', fontsize=9)
