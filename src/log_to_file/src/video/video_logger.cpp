@@ -30,10 +30,10 @@ void VideoLogger::imageSubscriptionCallback(Image::UniquePtr msg)
     if (!video_writer_.isOpened())
     {
         cv::Size size = { (int)msg->width, (int)msg->height };
-        video_writer_.open(video_path_.string(), cv::VideoWriter::fourcc('H', '2', '6', '4'), 8, size);
+        video_writer_.open(video_path_.string(), cv::VideoWriter::fourcc('H', '2', '6', '4'), 30, size);
     }
 
-    cv_bridge::CvImagePtr img = cv_bridge::toCvCopy(*msg, msg->encoding);
-    // cv::imwrite(imgPath.string(), img->image);
+    cv_bridge::CvImagePtr img = cv_bridge::toCvCopy(*msg, "bgr8");
+    //cv::imwrite(imgPath.string(), img->image);
     video_writer_.write(img->image);
 }
