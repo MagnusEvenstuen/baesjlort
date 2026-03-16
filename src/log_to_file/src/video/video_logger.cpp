@@ -8,7 +8,7 @@ VideoLogger::VideoLogger(const std::string &topic, std::filesystem::path path)
 {
     if (path.empty())
     {
-        std::string name = topic.substr(1);
+        std::string name = topic.substr(1) + "_" + std::to_string(get_clock()->now().nanoseconds());
         std::replace(name.begin(), name.end(), '/', '_');
         path = name + ".mp4";
     }
