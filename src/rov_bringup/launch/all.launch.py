@@ -9,32 +9,30 @@ def generate_launch_description():
     left_video_topic = LaunchConfiguration("left_video_topic")
     right_video_topic = LaunchConfiguration("right_video_topic")
 
-    left_video_logger = IncludeLaunchDescription(
+    loggers = IncludeLaunchDescription(
             PathJoinSubstitution([
-                FindPackageShare('log_to_file'),
+                FindPackageShare('rov_bringup'),
                 'launch',
-                "video_logger.launch.py"
+                "loggers.launch.py"
                 ]),
                 launch_arguments={
-                    "video_topic": left_video_topic
+                    "left_video_topic": left_video_topic,
+                    "right_video_topic": right_video_topic
                 }.items()
             )
 
-    right_video_logger = IncludeLaunchDescription(
+    rov = IncludeLaunchDescription(
             PathJoinSubstitution([
-                FindPackageShare('log_to_file'),
+                FindPackageShare('rov_bringup'),
                 'launch',
-                "video_logger.launch.py"
-                ]),
-                launch_arguments={
-                    "video_topic": right_video_topic
-                }.items()
+                "rov.launch.py"
+                ])
             )
 
     # Return a launch description generated from node list
     return LaunchDescription([
             DeclareLaunchArgument("left_video_topic", default_value="/gbr/cam_left/image_raw/compressed"),
             DeclareLaunchArgument("right_video_topic", default_value="/gbr/cam_right/image_raw/compressed"),
-            left_video_logger,
-            right_video_logger
+            loggers,
+            rov
         ])
