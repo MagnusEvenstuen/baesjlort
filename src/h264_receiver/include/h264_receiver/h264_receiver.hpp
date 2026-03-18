@@ -26,8 +26,7 @@ using UniquePipeline = std::unique_ptr<GstElement, PipelineDeleter>;
 class H264Receiver : public rclcpp::Node
 {
 public:
-    H264Receiver();
-    ~H264Receiver();
+    H264Receiver(const std::string &image_topic);
 
     void image_received_callback(CompressedImage::UniquePtr msg);
     static void image_decoded_callback(GstElement *sink, H264Receiver *data);

@@ -1,6 +1,6 @@
 #include "h264_receiver/h264_receiver.hpp"
 
-H264Receiver::H264Receiver()
+H264Receiver::H264Receiver(const std::string &image_topic)
     : rclcpp::Node("h264_receiver_node")
 {
     src_ = gst_element_factory_make("appsrc", "src");
@@ -54,13 +54,11 @@ H264Receiver::H264Receiver()
 
     gst_element_set_state(pipeline_.get(), GST_STATE_PLAYING);
 
-    image_subscriber_ = create_subscription<CompressedImage>("/image_compressed", 1,
-            std::bind(&H264Receiver::image_received_callback, this, std::placeholders::_1));
-    image_publisher_ = create_publisher<Image>("/image_raw", 1);
-}
+    RCLCPP_INFO(get_logger(), "Subscribing to topic '%s'", image_topic.c_str()); 
 
-H264Receiver::~H264Receiver()
-{
+    image_subscriber_ = create_subscription<CompressedImage>(image_topic, 1,
+            std::bind(&H264Receiver::image_received_callback, this, std::placeholders::_1));
+    image_publisher_ = create_publisher<Image>("image_raw", 1);
 }
 
 void H264Receiver::image_received_callback(CompressedImage::UniquePtr msg)
@@ -109,7 +107,8 @@ void H264Receiver::image_decoded_callback(GstElement *sink, H264Receiver *data)
     gst_structure_get_int(s, "width", &width);
     gst_structure_get_int(s, "height", &height);
     const char *format = gst_structure_get_string(s, "format");
-    std::cout << "Format: " << format << std::endl;
+    std::cout << "Format: " << format << ", Size: ("
+        << width << ", " << height << ')' << std::endl;
 
     std_msgs::msg::Header header;
     header.stamp = rclcpp::Time(buffer->dts);
