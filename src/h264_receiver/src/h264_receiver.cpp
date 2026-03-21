@@ -64,7 +64,7 @@ H264Receiver::H264Receiver(const std::string &image_topic)
 
     RCLCPP_INFO(get_logger(), "Subscribing to topic '%s'", image_topic.c_str()); 
 
-    image_subscriber_ = create_subscription<CompressedImage>(image_topic, 1,
+    image_subscriber_ = create_subscription<CompressedImage>(image_topic, rclcpp::SensorDataQoS(),
             std::bind(&H264Receiver::image_received_callback, this, std::placeholders::_1));
     image_publisher_ = create_publisher<Image>("image_raw", 1);
 }
