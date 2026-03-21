@@ -18,9 +18,12 @@ H264Receiver::H264Receiver(const std::string &image_topic)
             nullptr);
 
     g_object_set(src_,
-            "caps", caps,
-            "format", GST_FORMAT_TIME,
-            nullptr);
+        "caps", caps,
+        "format", GST_FORMAT_TIME,
+        "is-live", TRUE,
+        "do-timestamp", TRUE,
+        "block", TRUE,
+        nullptr);
 
     gst_caps_unref(caps);
     
@@ -48,7 +51,12 @@ H264Receiver::H264Receiver(const std::string &image_topic)
         std::exit(-1);
     }
 
-    g_object_set(sink_, "emit-signals", TRUE, nullptr);
+    g_object_set(sink_,
+        "emit-signals", TRUE,
+        "sync", FALSE,
+        "max-buffers", 1,
+        "drop", TRUE,
+        nullptr);
     g_signal_connect(sink_, "new-sample",
             G_CALLBACK(&H264Receiver::image_decoded_callback), this);
 

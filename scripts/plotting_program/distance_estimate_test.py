@@ -133,10 +133,11 @@ distance_time_all = []
 stdev_center_diff_all = []
 images_used = []
 
-#folder = Path("test_images/distance_accuracy_test_images/scissors_0.6meter")
-files_to_use = ["test_images/distance_accuracy_test_images/scissors_0.2meter", "test_images/distance_accuracy_test_images/scissors_0.3meter", "test_images/distance_accuracy_test_images/scissors_0.4meter", "test_images/distance_accuracy_test_images/scissors_0.5meter", "test_images/distance_accuracy_test_images/scissors_0.6meter"]
+files_to_use = ["test_images/distance_accuracy_test_images/scissors_0.5meter"]
+#files_to_use = ["test_images/distance_accuracy_test_images/scissors_0.2meter", "test_images/distance_accuracy_test_images/scissors_0.3meter", "test_images/distance_accuracy_test_images/scissors_0.4meter", "test_images/distance_accuracy_test_images/scissors_0.5meter", "test_images/distance_accuracy_test_images/scissors_0.6meter"]
 #files_to_use = ["test_images/distance_accuracy_test_images/0.57meter_chair", "test_images/distance_accuracy_test_images/1meter_chair", "test_images/distance_accuracy_test_images/2meter_chair", "test_images/distance_accuracy_test_images/3meter_chair", "test_images/distance_accuracy_test_images/5meter_chair"]
-true_distances = [0.2, 0.3, 0.4, 0.5, 0.6]
+true_distances = [0.5]
+#true_distances = [0.2, 0.3, 0.4, 0.5, 0.6]
 #true_distances = [0.57, 1, 2, 3, 5]
 for i in range(len(files_to_use)):
     folder = Path(files_to_use[i])
