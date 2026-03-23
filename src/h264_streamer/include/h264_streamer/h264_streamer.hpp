@@ -37,6 +37,7 @@ private:
     GstElement *camera_;
     GstElement *capsfilter_;
     // Just for testing
+    GstElement *convert_;
     GstElement *encoder_;
     GstElement *sink_;
     UniquePipeline pipeline_;
