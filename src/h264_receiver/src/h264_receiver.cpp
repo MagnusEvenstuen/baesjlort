@@ -3,6 +3,10 @@
 H264Receiver::H264Receiver(const std::string &image_topic)
     : rclcpp::Node("h264_receiver_node")
 {
+
+    this->declare_parameter<std::string>("topic_out", "/image_compressed");
+    std::string topic_out = this->get_parameter("topic_out").as_string();
+
     src_ = gst_element_factory_make("appsrc", "src");
     decoder_ = gst_element_factory_make("avdec_h264", "decoder");
     converter_ = gst_element_factory_make("videoconvert", "converter");
@@ -66,7 +70,7 @@ H264Receiver::H264Receiver(const std::string &image_topic)
 
     image_subscriber_ = create_subscription<CompressedImage>(image_topic, rclcpp::SensorDataQoS(),
             std::bind(&H264Receiver::image_received_callback, this, std::placeholders::_1));
-    image_publisher_ = create_publisher<Image>("image_raw", 1);
+    image_publisher_ = create_publisher<Image>(topic_out, 1);
 }
 
 void H264Receiver::image_received_callback(CompressedImage::UniquePtr msg)

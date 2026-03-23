@@ -1,10 +1,17 @@
 #include "h264_streamer/h264_streamer.hpp"
+#include <string>
 
 H264Streamer::H264Streamer()
     : rclcpp::Node("h264_streamer_node")
 {
+    this->declare_parameter<std::string>("device", "/dev/video0");
+    std::string device = this->get_parameter("device").as_string();
+
+    this->declare_parameter<std::string>("topic_name", "/image_compressed");
+    std::string topic_name = this->get_parameter("topic_name").as_string();
+
     camera_ = gst_element_factory_make("v4l2src", "camera");
-    g_object_set(camera_, "device", "/dev/video2", nullptr);
+    g_object_set(camera_, "device", device.c_str(), nullptr);
 
     capsfilter_ = gst_element_factory_make("capsfilter", "capsfilter");
     convert_    = gst_element_factory_make("videoconvert", "convert");
@@ -47,7 +54,7 @@ H264Streamer::H264Streamer()
 
     gst_element_set_state(pipeline_.get(), GST_STATE_PLAYING);
 
-    image_publisher_ = create_publisher<CompressedImage>("/image_compressed", 1);
+    image_publisher_ = create_publisher<CompressedImage>(topic_name, 1);
     thread_ = std::make_unique<std::jthread>(
             std::bind(&H264Streamer::image_capture, this, std::placeholders::_1));
 }
