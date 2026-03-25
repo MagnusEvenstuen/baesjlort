@@ -123,10 +123,10 @@ private:
             Eigen::Vector3d target_position_correction = current_orientation_ * rotate_structure_bias;
             PID_x.set_target_position((current_position_.x() + object_position_.x() + target_position_correction.x()));
             PID_y.set_target_position((current_position_.y() + object_position_.y() + target_position_correction.y()));
-            PID_z.set_target_position((current_position_.z() + object_position_.z() + target_position_correction.z()));
+            PID_z.set_target_position((current_position_.z() + object_position_.z() + target_position_correction.z() - 1.5));
 
             //This equation makes target_position_ not really the target position, but it works with the code without changing anything else
-            target_position_ = Eigen::Vector3d(PID_x.get_target_position() - target_position_correction.x(), PID_y.get_target_position() - target_position_correction.y(), PID_z.get_target_position() - target_position_correction.z());
+            target_position_ = Eigen::Vector3d(PID_x.get_target_position() - 1.5 * target_position_correction.x(), PID_y.get_target_position() - 1.5 * target_position_correction.y(), PID_z.get_target_position() - 1.5 * target_position_correction.z());
 
             RCLCPP_INFO(this->get_logger(), 
                 "Ny Target - X: %.2f, Y: %.2f, Z: %.2f", 
@@ -147,6 +147,7 @@ private:
                                                 direction
                                             );
             PID_orientation.set_target_quaternion(target_object_direction_);
+            last_detection_time_ = this->now().seconds();
         } else if (msg->data[3] == ROV_classes_to_detect::tube)
         { 
             RCLCPP_INFO(this->get_logger(), 
@@ -259,6 +260,10 @@ private:
             PID_orientation.set_target_quaternion(direction_to_target);
         } else 
         {
+            if (last_detection_time_ + 3.0 < current_time)
+            {
+                target_orientation_ = target_orientation_ * Eigen::Quaterniond(Eigen::AngleAxisd(0.1, Eigen::Vector3d::UnitZ()));
+            }
             PID_orientation.set_target_quaternion(target_object_direction_);
         }
 
@@ -283,7 +288,7 @@ private:
                   orientation_output(0),
                   orientation_output(2);
 
-        forces *= 0.5;
+        forces *= 0.2;
             
         set_thrust(forces);
 
@@ -344,7 +349,7 @@ private:
     rclcpp::Subscription<controller_msgs::msg::ControllerState>::SharedPtr controller_subscriber_;
     rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr thrust_publisher_;
     Eigen::Vector3d current_position_ = Eigen::Vector3d::Zero();
-    Eigen::Vector3d target_position_ = Eigen::Vector3d(-1.0, 6, -2.5);
+    Eigen::Vector3d target_position_ = Eigen::Vector3d(-1.5, 6, -2.5);
     Eigen::Vector3d object_position_ = Eigen::Vector3d::Zero();
     Eigen::Quaterniond current_orientation_ = Eigen::Quaterniond::Identity();
     Eigen::Quaterniond target_orientation_ = Eigen::Quaterniond(Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitX()) *   // pitch
@@ -366,7 +371,7 @@ private:
     double speed_percentage_ = 0.25;
     double light_percentage_ = 0.5;
 
-    Eigen::Vector3d rotate_structure_bias = Eigen::Vector3d(0.5, -1.0, 0.0);
+    Eigen::Vector3d rotate_structure_bias = Eigen::Vector3d(0.3, -1.5, 0.0);
     Eigen::Quaterniond current_direction_target = target_orientation_;
     std::thread processing_thread_;
     //Creates PID controllers
@@ -374,6 +379,7 @@ private:
     PID_controller PID_y;
     PID_controller PID_z;
     PID_controller PID_orientation;
+    double last_detection_time_ = 0.0;
 
     //Thruster allocation (x, y, z, roll, pitch, yaw)
     Eigen::Matrix<double, 8, 6> thrust_map_matrix = 
