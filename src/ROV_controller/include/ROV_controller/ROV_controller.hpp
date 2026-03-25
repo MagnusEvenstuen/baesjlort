@@ -49,6 +49,11 @@ public:
         //Runs the PID process
         if (auto_)
         {
+            //Sets targets
+            PID_x.set_target_position(target_position_.x());
+            PID_y.set_target_position(target_position_.y());
+            PID_z.set_target_position(target_position_.z());
+            PID_orientation.set_target_quaternion(target_orientation_);
             processing_thread_ = std::thread([this]() {
                 while (running_)
                 {
@@ -56,11 +61,6 @@ public:
                     std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 }
             });
-            //Sets targets
-            PID_x.set_target_position(target_position_.x());
-            PID_y.set_target_position(target_position_.y());
-            PID_z.set_target_position(target_position_.z());
-            PID_orientation.set_target_quaternion(target_orientation_);
         }
     }
 
@@ -91,12 +91,12 @@ private:
         //Uses enum, now Jon Aksel is happy :-)
         if (object_position_.y() < 3 && msg->data[3] == ROV_classes_to_detect::valve)
         {
-            found_object = true;
+            /*found_object = true;
             PID_x.set_target_position((current_position_.x() + object_position_.x()));
             PID_y.set_target_position((current_position_.y() + object_position_.y()));
             PID_z.set_target_position((current_position_.z() + object_position_.z()) - 1.0);
 
-
+        
             target_position_ = Eigen::Vector3d(PID_x.get_target_position(), PID_y.get_target_position(), PID_z.get_target_position());
 
             RCLCPP_INFO(this->get_logger(), 
@@ -116,14 +116,39 @@ private:
             target_object_direction_ = Eigen::Quaterniond::FromTwoVectors(
                                                 Eigen::Vector3d::UnitY(),   //UnitY because that is forward on the ROV
                                                 direction
-                                            );
+                                            );*/
         } else if (msg->data[3] == ROV_classes_to_detect::structure)
-        {
+        {            
+            found_object = true;
+            Eigen::Vector3d target_position_correction = current_orientation_ * rotate_structure_bias;
+            PID_x.set_target_position((current_position_.x() + object_position_.x() + target_position_correction.x()));
+            PID_y.set_target_position((current_position_.y() + object_position_.y() + target_position_correction.y()));
+            PID_z.set_target_position((current_position_.z() + object_position_.z() + target_position_correction.z()));
+
+            //This equation makes target_position_ not really the target position, but it works with the code without changing anything else
+            target_position_ = Eigen::Vector3d(PID_x.get_target_position() - target_position_correction.x(), PID_y.get_target_position() - target_position_correction.y(), PID_z.get_target_position() - target_position_correction.z());
+
             RCLCPP_INFO(this->get_logger(), 
-                "Structure detected - X: %.2f, Y: %.2f, Z: %.2f", 
-                object_position_.x(), object_position_.y(), object_position_.z());
+                "Ny Target - X: %.2f, Y: %.2f, Z: %.2f", 
+                PID_x.get_target_position(), PID_y.get_target_position(), PID_z.get_target_position());
+
+            Eigen::Vector3d direction = target_position_ - current_position_;
+
+            RCLCPP_INFO(this->get_logger(), 
+                "Forskjell fra nå pos - X: %.2f, Y: %.2f, Z: %.2f", 
+                direction.x(), 
+                direction.y(), 
+                direction.z());
+
+            direction.normalize();
+
+            target_object_direction_ = Eigen::Quaterniond::FromTwoVectors(
+                                                Eigen::Vector3d::UnitY(),   //UnitY because that is forward on the ROV
+                                                direction
+                                            );
+            PID_orientation.set_target_quaternion(target_object_direction_);
         } else if (msg->data[3] == ROV_classes_to_detect::tube)
-        {
+        { 
             RCLCPP_INFO(this->get_logger(), 
                 "Tube detected - X: %.2f, Y: %.2f, Z: %.2f", 
                 object_position_.x(), object_position_.y(), object_position_.z());
@@ -258,6 +283,8 @@ private:
                   orientation_output(0),
                   orientation_output(2);
 
+        forces *= 0.5;
+            
         set_thrust(forces);
 
         //Get errors for logging
@@ -317,7 +344,7 @@ private:
     rclcpp::Subscription<controller_msgs::msg::ControllerState>::SharedPtr controller_subscriber_;
     rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr thrust_publisher_;
     Eigen::Vector3d current_position_ = Eigen::Vector3d::Zero();
-    Eigen::Vector3d target_position_ = Eigen::Vector3d(-1.0, 6, -1.7);
+    Eigen::Vector3d target_position_ = Eigen::Vector3d(-1.0, 6, -2.5);
     Eigen::Vector3d object_position_ = Eigen::Vector3d::Zero();
     Eigen::Quaterniond current_orientation_ = Eigen::Quaterniond::Identity();
     Eigen::Quaterniond target_orientation_ = Eigen::Quaterniond(Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitX()) *   // pitch
@@ -327,7 +354,7 @@ private:
     Eigen::Quaterniond target_object_direction_ = Eigen::Quaterniond::Identity();
     bool found_object = false;
     bool running_ = true;
-    bool auto_ = false;
+    bool auto_ = true;
     bool manual_alt_mode_ = false;
     bool prev_ps_ = false;
     bool prev_l1_ = false;
@@ -339,6 +366,7 @@ private:
     double speed_percentage_ = 0.25;
     double light_percentage_ = 0.5;
 
+    Eigen::Vector3d rotate_structure_bias = Eigen::Vector3d(0.5, -1.0, 0.0);
     Eigen::Quaterniond current_direction_target = target_orientation_;
     std::thread processing_thread_;
     //Creates PID controllers

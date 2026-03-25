@@ -7,7 +7,7 @@
             <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
         </physical>
         <material name="Neutral"/>
-        <look name="rocks"/>
+        <look name="CarbonFiber"/>
         <world_transform xyz="0.0 0.0 0.2" rpy="1.57 0.0 0.0"/>
     </static>
 </scenario>

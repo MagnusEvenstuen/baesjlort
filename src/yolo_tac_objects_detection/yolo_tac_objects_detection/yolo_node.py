@@ -15,15 +15,15 @@ class yolo_node(Node):
     def __init__(self):
         super().__init__('yolo_detector_node')
         #todo fix absolute file path
-        self.model = YOLO('src/yolo_tac_objects_detection/yolo_tac_objects_detection/weights_yolo/yolo_common_objects.pt')
+        self.model = YOLO('src/yolo_tac_objects_detection/yolo_tac_objects_detection/weights_yolo/bestYOLO11.pt')
         self.bridge = CvBridge()
         self.left_classes = []
         self.baseline = 0.0436
         self.focal_length = None
         self.cx = None
         self.cy = None
-        self.sub_left = Subscriber(self, Image, '/left/image_rect_color')
-        self.sub_right = Subscriber(self, Image, '/right/image_rect_color')
+        self.sub_left = Subscriber(self, Image, '/gbr/cam_left/image_color')
+        self.sub_right = Subscriber(self, Image, '/gbr/cam_right/image_color')
         self.aruco_dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_ARUCO_ORIGINAL)
         self.parameters = cv2.aruco.DetectorParameters()
         self.detector = cv2.aruco.ArucoDetector(self.aruco_dictionary, self.parameters)
@@ -37,7 +37,7 @@ class yolo_node(Node):
 
         self.sub_info = self.create_subscription(       #Only one info subscription needed, since both cameras are the same. Only needed for simulator as manual calibration IRL
             CameraInfo,
-            '/right/camera_info',
+            '/gbr/cam_left/camera_info',
             self.camera_info_callback,
             1
         )
@@ -77,6 +77,7 @@ class yolo_node(Node):
         results_left = self.model(cv_image_left, conf=0.3)        #Runs the YOLO algorithm. conf is how confident the model has to be to mark the point
         results_right = self.model(cv_image_right, conf=0.3)
         
+
         self.save_bounding_box(results_left, left_classes, left_pos_x, left_pos_y, left_boxes, cv_image_left, cv_image_left)
         self.save_bounding_box(results_right, right_classes, right_pos_x, right_pos_y, right_boxes, cv_image_right, cv_image_left)
 
@@ -102,7 +103,6 @@ class yolo_node(Node):
             cv2.waitKey(1)
             return
 
-        class_to_look_for = 3       #Look for valve (object number 3)
         #Zips information to create one iterable list (those 2 liens are generated using ChatGPT)
         left_objects = [(class_number, (left_pos_x[0][j], left_pos_x[1][j]), (left_pos_y[0][j], left_pos_y[1][j])) 
                         for j, class_number in enumerate(left_classes)]
@@ -112,7 +112,6 @@ class yolo_node(Node):
         left_objects.sort(key=lambda obj: (obj[0], obj[2]))     #Sorts classes, first based on class, and same class is sorted on y position (Sorting method found using ChatGPT)
         right_objects.sort(key=lambda obj: (obj[0], obj[2]))
         depth = 0
-
         for i in range(min(len(left_objects), len(right_objects))):
             left_class, left_x, left_y = left_objects[i]
             right_class, right_x, right_y = right_objects[i]
@@ -185,7 +184,7 @@ class yolo_node(Node):
                 self.aruco_id_publisher.publish(msg)
 
     def publish_object_position(self, center_pos_left_x, center_pos_right_x, center_pos_left_y, center_pos_right_y, depth, class_number):
-        if class_number == 3:
+        if class_number == 1:
             publish_msg = Float64MultiArray()
             meter_x = ((center_pos_left_x - self.cx) * depth / self.focal_length + (center_pos_right_x - self.cx) * depth / self.focal_length)*0.5      #Equation from https://www.reddit.com/r/opencv/comments/1enuoo0/question_project_convert_pixel_to_meter_real/.
             meter_y = ((center_pos_left_y - self.cy) * depth / self.focal_length + (center_pos_right_y - self.cy) * depth / self.focal_length)*0.5
