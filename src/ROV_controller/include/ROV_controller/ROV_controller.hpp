@@ -91,7 +91,7 @@ private:
         //Uses enum, now Jon Aksel is happy :-)
         if (object_position_.y() < 3 && msg->data[3] == ROV_classes_to_detect::valve)
         {
-            /*found_object = true;
+            found_object = true;
             PID_x.set_target_position((current_position_.x() + object_position_.x()));
             PID_y.set_target_position((current_position_.y() + object_position_.y()));
             PID_z.set_target_position((current_position_.z() + object_position_.z()) - 1.0);
@@ -116,10 +116,12 @@ private:
             target_object_direction_ = Eigen::Quaterniond::FromTwoVectors(
                                                 Eigen::Vector3d::UnitY(),   //UnitY because that is forward on the ROV
                                                 direction
-                                            );*/
+                                            );
+            last_detection_time_ = this->now().seconds();
         } else if (msg->data[3] == ROV_classes_to_detect::structure)
         {            
-            found_object = true;
+            last_structure_position_ = object_position_;
+            /*found_object = true;
             Eigen::Vector3d target_position_correction = current_orientation_ * rotate_structure_bias;
             PID_x.set_target_position((current_position_.x() + object_position_.x() + target_position_correction.x()));
             PID_y.set_target_position((current_position_.y() + object_position_.y() + target_position_correction.y()));
@@ -147,7 +149,7 @@ private:
                                                 direction
                                             );
             PID_orientation.set_target_quaternion(target_object_direction_);
-            last_detection_time_ = this->now().seconds();
+            last_detection_time_ = this->now().seconds();*/
         } else if (msg->data[3] == ROV_classes_to_detect::tube)
         { 
             RCLCPP_INFO(this->get_logger(), 
@@ -260,9 +262,22 @@ private:
             PID_orientation.set_target_quaternion(direction_to_target);
         } else 
         {
-            if (last_detection_time_ + 3.0 < current_time)
+            if (last_detection_time_ + 3.0 < current_time && current_time - reversing_time_ < 5.0)
             {
-                PID_orientation.reset_integral();
+                if (first_reverse_)
+                {
+                    RCLCPP_INFO(this->get_logger(), "Detection lost. Reversing. Beep, Beep, Beep...");
+                    first_reverse_ = false;
+                    reversing_time_ = current_time;
+                }
+                Eigen::Vector3d backward_body = -1.0 * Eigen::Vector3d::UnitY();
+                Eigen::Vector3d backward_world = current_orientation_ * backward_body;
+                target_position_ = current_position_ + backward_world;
+                
+                PID_x.set_target_position(target_position_.x());
+                PID_y.set_target_position(target_position_.y());
+                PID_z.set_target_position(target_position_.z());
+                /*PID_orientation.reset_integral();
                 PID_x.set_target_position(current_position_.x());
                 PID_y.set_target_position(current_position_.y());
                 double yaw = std::atan2(2.0 * (current_orientation_.w() * current_orientation_.z() +
@@ -276,10 +291,28 @@ private:
 
                 RCLCPP_INFO(this->get_logger(),
                             "Lost sight of object, last seen %.2f seconds ago. Holding position and slowly rotating - yaw: %.2f",
-                            current_time - last_detection_time_, yaw);
-                        } else
+                            current_time - last_detection_time_, yaw);*/
+            } else if (last_detection_time_ + 5.0 < current_time)
+            {
+                RCLCPP_INFO(this->get_logger(), "Going to last structure position");
+                PID_x.set_target_position(last_structure_position_.x());
+                PID_y.set_target_position(last_structure_position_.y());
+                PID_z.set_target_position(last_structure_position_.z());
+                target_object_direction_ = Eigen::Quaterniond::FromTwoVectors(
+                                    Eigen::Vector3d::UnitY(),   //UnitY because that is forward on the ROV
+                                    (last_structure_position_ - current_position_).normalized()
+                                );
+                PID_orientation.set_target_quaternion(target_object_direction_);
+                reversing_time_ = current_time;
+                first_reverse_ = true;
+                found_object = false;
+            }
+            
+            else
             {
                 PID_orientation.set_target_quaternion(target_object_direction_);
+                first_reverse_ = true;
+                reversing_time_ = current_time;
             }
         }
 
@@ -304,7 +337,7 @@ private:
                   orientation_output(0),
                   orientation_output(2);
 
-        forces *= 0.2;
+        forces *= 0.1;
             
         set_thrust(forces);
 
@@ -365,7 +398,7 @@ private:
     rclcpp::Subscription<controller_msgs::msg::ControllerState>::SharedPtr controller_subscriber_;
     rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr thrust_publisher_;
     Eigen::Vector3d current_position_ = Eigen::Vector3d::Zero();
-    Eigen::Vector3d target_position_ = Eigen::Vector3d(-1.5, 6, -2.5);
+    Eigen::Vector3d target_position_ = Eigen::Vector3d(0.0, 4, -2.5);
     Eigen::Vector3d object_position_ = Eigen::Vector3d::Zero();
     Eigen::Quaterniond current_orientation_ = Eigen::Quaterniond::Identity();
     Eigen::Quaterniond target_orientation_ = Eigen::Quaterniond(Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitX()) *   // pitch
@@ -387,7 +420,8 @@ private:
     double speed_percentage_ = 0.25;
     double light_percentage_ = 0.5;
 
-    Eigen::Vector3d rotate_structure_bias = Eigen::Vector3d(0.3, -1.5, 0.0);
+    Eigen::Vector3d rotate_structure_bias = Eigen::Vector3d(0.3, -2.5, 0.0);
+    Eigen::Vector3d last_structure_position_ = Eigen::Vector3d::Zero();
     Eigen::Quaterniond current_direction_target = target_orientation_;
     std::thread processing_thread_;
     //Creates PID controllers
@@ -396,6 +430,8 @@ private:
     PID_controller PID_z;
     PID_controller PID_orientation;
     double last_detection_time_ = 0.0;
+    double reversing_time_ = 0.0;
+    bool first_reverse_ = true;
 
     //Thruster allocation (x, y, z, roll, pitch, yaw)
     Eigen::Matrix<double, 8, 6> thrust_map_matrix = 

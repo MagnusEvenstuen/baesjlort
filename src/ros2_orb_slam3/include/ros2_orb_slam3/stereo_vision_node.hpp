@@ -43,7 +43,7 @@ public:
             "src/ros2_orb_slam3/orb_slam3/Vocabulary/ORBvoc.txt.bin",     //Path to vocabulary file 
             "src/ros2_orb_slam3/config/stereo_gbr_sim.yaml",               //Path to camera settings file 
             ORB_SLAM3::System::STEREO, 
-            true                                                                                   //Enable viewer
+            false                                                                                   //Enable viewer
         );
 
         //ROS2 publishers and subscribers
@@ -230,7 +230,7 @@ private:
         
         //Apply CLAHE
         cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE();
-        clahe->setClipLimit(1.0);
+        clahe->setClipLimit(2.0);
         clahe->apply(lab_planes[0], lab_planes[0]);
         
         //Merge back and convert to BGR

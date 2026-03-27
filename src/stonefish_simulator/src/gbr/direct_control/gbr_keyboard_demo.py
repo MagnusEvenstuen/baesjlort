@@ -12,7 +12,7 @@ active_keys = set()
 lock = threading.Lock()
 emergency_stop = False
 latest_thrust_values = [0.0] * 8
-
+"""
 thrust_map = {
     'w': [20.0, 20.0, -20.0, -20.0, 0.0, 0.0, 0.0, 0.0],    # Forward (psoitive Y)
     's': [-20.0, -20.0, 20.0, 20.0, 0.0, 0.0, 0.0, 0.0],    # Backward (negative Y)
@@ -29,20 +29,20 @@ thrust_map = {
 }
 """
 thrust_map = {
-    'w': [3.0, 3.0, -3.0, -3.0, 0.0, 0.0, 0.0, 0.0],          # Forward (positive Y)
-    's': [-3.0, -3.0, 3.0, 3.0, 0.0, 0.0, 0.0, 0.0],          # Backward (negative Y)
-    'a': [3.0, -3.0, 3.0, -3.0, 0.0, 0.0, 0.0, 0.0],          # Left turn (negative X)
-    'd': [-3.0, 3.0, -3.0, 3.0, 0.0, 0.0, 0.0, 0.0],          # Right turn (positive X)
-    'q': [0.0, 0.0, 0.0, 0.0, -3.0, -3.0, -3.0, -3.0],        # Down (positive Z)
-    'e': [0.0, 0.0, 0.0, 0.0, 3.0, 3.0, 3.0, 3.0],            # Up (negative Z)
-    'Key.up': [0.0, 0.0, 0.0, 0.0, -3.0, -3.0, 3.0, 3.0],     # Negative pitch (points down)
-    'Key.down': [0.0, 0.0, 0.0, 0.0, 3.0, 3.0, -3.0, -3.0],   # Positive pitch (points up)
-    'Key.left': [0.0, 0.0, 0.0, 0.0, 3.0, -3.0, 3.0, -3.0],   # Positive Roll (rolls left)
-    'Key.right': [0.0, 0.0, 0.0, 0.0, -3.0, 3.0, -3.0, 3.0],  # Negative Roll (rolls right)
-    'Key.page_up': [3.0, -3.0, -3.0, 3.0, 0.0, 0.0, 0.0, 0.0],    # Negative yaw (turns left)
-    'Key.page_down': [-3.0, 3.0, 3.0, -3.0, 0.0, 0.0, 0.0, 0.0],  # Positive yaw (turns right)
+    'w': [0.2, 0.2, -0.2, -0.2, 0.0, 0.0, 0.0, 0.0],          # Forward (positive Y)
+    's': [-0.2, -0.2, 0.2, 0.2, 0.0, 0.0, 0.0, 0.0],          # Backward (negative Y)
+    'a': [0.2, -0.2, 0.2, -0.2, 0.0, 0.0, 0.0, 0.0],          # Left turn (negative X)
+    'd': [-0.2, 0.2, -0.2, 0.2, 0.0, 0.0, 0.0, 0.0],          # Right turn (positive X)
+    'q': [0.0, 0.0, 0.0, 0.0, -0.2, -0.2, -0.2, -0.2],        # Down (positive Z)
+    'e': [0.0, 0.0, 0.0, 0.0, 0.2, 0.2, 0.2, 0.2],            # Up (negative Z)
+    'Key.up': [0.0, 0.0, 0.0, 0.0, -0.2, -0.2, 0.2, 0.2],     # Negative pitch (points down)
+    'Key.down': [0.0, 0.0, 0.0, 0.0, 0.2, 0.2, -0.2, -0.2],   # Positive pitch (points up)
+    'Key.left': [0.0, 0.0, 0.0, 0.0, 0.2, -0.2, 0.2, -0.2],   # Positive Roll (rolls left)
+    'Key.right': [0.0, 0.0, 0.0, 0.0, -0.2, 0.2, -0.2, 0.2],  # Negative Roll (rolls right)
+    'Key.page_up': [0.2, -0.2, -0.2, 0.2, 0.0, 0.0, 0.0, 0.0],    # Negative yaw (turns left)
+    'Key.page_down': [-0.2, 0.2, 0.2, -0.2, 0.0, 0.0, 0.0, 0.0],  # Positive yaw (turns right)
 }
-"""
+
 def on_press(key):
     global active_keys, emergency_stop
     try:

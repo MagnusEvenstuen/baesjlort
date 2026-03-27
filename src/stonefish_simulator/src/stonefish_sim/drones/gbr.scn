@@ -70,6 +70,42 @@
                 <hydrodynamics viscous_drag="0.0 0.0 0.0" quadratic_drag="0.0 0.0 0."/> 
             </external_part>
 
+            <external_part name="pin_right" type="model" physics="submerged">
+                <physical>
+                    <mesh filename="gbr/1x1x1mm_cube.obj" scale="10.02 10.25 10.02"/>
+                    <origin rpy="0.0 0.0 0.0" xyz="0.05 0.28 0.05"/>
+                </physical>
+                <visual>
+                    <mesh filename="gbr/1x1x1mm_cube.obj" scale="10.02 10.25 10.02"/>
+                    <origin rpy="0.0 0.0 0.0" xyz="0.05 0.28 0.05"/>
+                </visual>
+                <material name="Neutral"/>
+                <look name="Grey"/>
+                <mass value="0.00001"/>
+                <cg xyz="0.0 0.0 0.0"/>
+                <compound_transform xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+                <inertia xyz="0.0 0.0 0.0"/>
+                <hydrodynamics viscous_drag="0.0 0.0 0.0" quadratic_drag="0.0 0.0 0.0"/>
+            </external_part>
+
+            <external_part name="pin_left" type="model" physics="submerged">
+                <physical>
+                    <mesh filename="gbr/1x1x1mm_cube.obj" scale="10.02 10.25 10.02"/>
+                    <origin rpy="0.0 0.0 0.0" xyz="-0.05 0.28 0.05"/>
+                </physical>
+                <visual>
+                    <mesh filename="gbr/1x1x1mm_cube.obj" scale="10.02 10.25 10.02"/>
+                    <origin rpy="0.0 0.0 0.0" xyz="-0.05 0.28 0.05"/>
+                </visual>
+                <material name="Neutral"/>
+                <look name="Grey"/>
+                <mass value="0.00001"/>
+                <cg xyz="0.0 0.0 0.0"/>
+                <compound_transform xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+                <inertia xyz="0.0 0.0 0.0"/>
+                <hydrodynamics viscous_drag="0.0 0.0 0.0" quadratic_drag="0.0 0.0 0.0"/>
+            </external_part>
+
         </base_link>
 
         <actuator name="Thruster1" type="thruster">

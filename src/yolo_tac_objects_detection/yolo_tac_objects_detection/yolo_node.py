@@ -1,5 +1,6 @@
 import rclpy
 from rclpy.node import Node
+from rclpy.qos import qos_profile_sensor_data
 from message_filters import Subscriber, TimeSynchronizer, ApproximateTimeSynchronizer
 from sensor_msgs.msg import CameraInfo, Image
 from std_msgs.msg import Float64MultiArray, Int32
@@ -22,8 +23,8 @@ class yolo_node(Node):
         self.focal_length = None
         self.cx = None
         self.cy = None
-        self.sub_left = Subscriber(self, Image, '/gbr/cam_left/image_color')
-        self.sub_right = Subscriber(self, Image, '/gbr/cam_right/image_color')
+        self.sub_left = Subscriber(self, Image, '/gbr/cam_left/image_color', qos_profile=qos_profile_sensor_data)
+        self.sub_right = Subscriber(self, Image, '/gbr/cam_right/image_color', qos_profile=qos_profile_sensor_data)
         self.aruco_dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_ARUCO_ORIGINAL)
         self.parameters = cv2.aruco.DetectorParameters()
         self.detector = cv2.aruco.ArucoDetector(self.aruco_dictionary, self.parameters)
@@ -184,13 +185,12 @@ class yolo_node(Node):
                 self.aruco_id_publisher.publish(msg)
 
     def publish_object_position(self, center_pos_left_x, center_pos_right_x, center_pos_left_y, center_pos_right_y, depth, class_number):
-        if class_number == 1:
-            publish_msg = Float64MultiArray()
-            meter_x = ((center_pos_left_x - self.cx) * depth / self.focal_length + (center_pos_right_x - self.cx) * depth / self.focal_length)*0.5      #Equation from https://www.reddit.com/r/opencv/comments/1enuoo0/question_project_convert_pixel_to_meter_real/.
-            meter_y = ((center_pos_left_y - self.cy) * depth / self.focal_length + (center_pos_right_y - self.cy) * depth / self.focal_length)*0.5
-            position_class = [meter_x, meter_y, depth, class_number]
-            publish_msg.data = position_class
-            self.distance_publisher.publish(publish_msg)
+        publish_msg = Float64MultiArray()
+        meter_x = ((center_pos_left_x - self.cx) * depth / self.focal_length + (center_pos_right_x - self.cx) * depth / self.focal_length)*0.5      #Equation from https://www.reddit.com/r/opencv/comments/1enuoo0/question_project_convert_pixel_to_meter_real/.
+        meter_y = ((center_pos_left_y - self.cy) * depth / self.focal_length + (center_pos_right_y - self.cy) * depth / self.focal_length)*0.5
+        position_class = [meter_x, meter_y, depth, class_number]
+        publish_msg.data = position_class
+        self.distance_publisher.publish(publish_msg)
 
     #Class that shows what the YOLO model detects. Used when checking wether the YOLO model detects what it should.
     def process_image_yolo_detection_debugging(self, msg):

@@ -67,7 +67,7 @@ ORBextractor.nFeatures: 3000
 ORBextractor.scaleFactor: 1.2
 
 # Number of levels in the scale pyramid
-ORBextractor.nLevels: 10
+ORBextractor.nLevels: 8
 
 # Fast threshold – low values help in low‑contrast environments
 ORBextractor.iniThFAST: 3

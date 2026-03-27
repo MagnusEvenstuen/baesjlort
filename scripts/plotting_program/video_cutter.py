@@ -2,6 +2,8 @@ import subprocess
 import re
 import os
 
+#This entire file is written by AI
+
 # ------------------------------------------------------------
 # Funksjon for å trekke ut nanosekund-tidsstempel fra filnavn
 # ------------------------------------------------------------
