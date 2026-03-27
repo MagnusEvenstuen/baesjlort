@@ -26,6 +26,12 @@ public:
         target_quaternion_.normalize();
     }
 
+    void reset_integral()
+    {
+        integral_ = 0.0f;
+        integral_vector_ = Eigen::Vector3d::Zero();
+    }
+
     //Updates the PID for the target position (x, y, z axis). Standard PID regulator
     double update(const double position, const double dt)
     {

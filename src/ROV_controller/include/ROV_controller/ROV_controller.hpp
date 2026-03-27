@@ -123,10 +123,10 @@ private:
             Eigen::Vector3d target_position_correction = current_orientation_ * rotate_structure_bias;
             PID_x.set_target_position((current_position_.x() + object_position_.x() + target_position_correction.x()));
             PID_y.set_target_position((current_position_.y() + object_position_.y() + target_position_correction.y()));
-            PID_z.set_target_position((current_position_.z() + object_position_.z() + target_position_correction.z() - 1.5));
+            PID_z.set_target_position((current_position_.z() + object_position_.z() + target_position_correction.z()));
 
             //This equation makes target_position_ not really the target position, but it works with the code without changing anything else
-            target_position_ = Eigen::Vector3d(PID_x.get_target_position() - 1.5 * target_position_correction.x(), PID_y.get_target_position() - 1.5 * target_position_correction.y(), PID_z.get_target_position() - 1.5 * target_position_correction.z());
+            target_position_ = Eigen::Vector3d(PID_x.get_target_position() - target_position_correction.x(), PID_y.get_target_position() - target_position_correction.y(), PID_z.get_target_position() - target_position_correction.z());
 
             RCLCPP_INFO(this->get_logger(), 
                 "Ny Target - X: %.2f, Y: %.2f, Z: %.2f", 
@@ -262,9 +262,25 @@ private:
         {
             if (last_detection_time_ + 3.0 < current_time)
             {
-                target_orientation_ = target_orientation_ * Eigen::Quaterniond(Eigen::AngleAxisd(0.1, Eigen::Vector3d::UnitZ()));
+                PID_orientation.reset_integral();
+                PID_x.set_target_position(current_position_.x());
+                PID_y.set_target_position(current_position_.y());
+                double yaw = std::atan2(2.0 * (current_orientation_.w() * current_orientation_.z() +
+                                   current_orientation_.x() * current_orientation_.y()),
+                            1.0 - 2.0 * (current_orientation_.y() * current_orientation_.y() +
+                                         current_orientation_.z() * current_orientation_.z()));
+                yaw += 5 * dt;
+                yaw = std::atan2(std::sin(yaw), std::cos(yaw));
+                Eigen::Quaterniond new_target = Eigen::Quaterniond(Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ()));
+                PID_orientation.set_target_quaternion(new_target);
+
+                RCLCPP_INFO(this->get_logger(),
+                            "Lost sight of object, last seen %.2f seconds ago. Holding position and slowly rotating - yaw: %.2f",
+                            current_time - last_detection_time_, yaw);
+                        } else
+            {
+                PID_orientation.set_target_quaternion(target_object_direction_);
             }
-            PID_orientation.set_target_quaternion(target_object_direction_);
         }
 
         //Runs the PID function, and rotates the force for positional correction to the correct frame (not done with rotation due to rotation being in body, and not world frame)
