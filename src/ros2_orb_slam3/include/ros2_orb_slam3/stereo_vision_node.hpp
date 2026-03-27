@@ -85,26 +85,6 @@ public:
         
         sync_->registerCallback(&stereo_vision_node::stereo_callback, this);
 
-
-        init_start_time_ = this->now().seconds();
-        
-        //init_timer_ = this->create_wall_timer(
-        //    std::chrono::milliseconds(100),
-        //    std::bind(&stereo_vision_node::init, this)
-        //);
-        
-
-        //this->create_wall_timer(
-        //    std::chrono::seconds(250),
-        //    [this]() {
-        //        RCLCPP_INFO(this->get_logger(), "Initialization complete!");
-        //        init_timer_->cancel();  // Stopp initialiseringsløkken
-        //        auto msg = std_msgs::msg::Float64MultiArray();
-        //        msg.data = std::vector<double>({0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f});
-        //        thrust_publisher_->publish(msg);
-        //    }
-        //);
-
         processing_thread_ = std::thread([this]() {
             while (running_)
             {
@@ -134,39 +114,6 @@ public:
     }
 
 private:
-    void init()
-    {
-        //Initial movement for testing. Can be removed later
-        if (this->now().seconds() - init_start_time_ < 5.0)         //Back
-        {
-            auto msg = std_msgs::msg::Float64MultiArray();
-            msg.data = std::vector<double>({-10.0f, -10.0f, 10.0f, 10.0f, 0.0f, 0.0f, 0.0f, 0.0f});
-            thrust_publisher_->publish(msg);
-        } else if(this->now().seconds() - init_start_time_ < 10.0)      //Left
-        {
-            auto msg = std_msgs::msg::Float64MultiArray();
-            msg.data = std::vector<double>({3.0f, -6.0f, 3.0f, -6.0f, 0.0f, 0.0f, 0.0f, 0.0f});
-            thrust_publisher_->publish(msg);
-        } else if(this->now().seconds() - init_start_time_ < 15.0)      //Forward
-        {
-            auto msg = std_msgs::msg::Float64MultiArray();
-            msg.data = std::vector<double>({3.0f, 3.0f, -3.0f, -3.0f, -10.0f, -10.0f, -10.0f, 0.0f});
-            thrust_publisher_->publish(msg);
-        } else if(this->now().seconds() - init_start_time_ < 20.0)      //Right
-        {
-            auto msg = std_msgs::msg::Float64MultiArray();
-            msg.data = std::vector<double>({-3.0f, 3.0f, -3.0f, 3.0f, 0.0f, 0.0f, 0.0f, 0.0f});
-            thrust_publisher_->publish(msg);
-        }
-        else if(this->now().seconds() - init_start_time_ < 25.0)        //Still
-        {
-            auto msg = std_msgs::msg::Float64MultiArray();
-            msg.data = std::vector<double>({0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f});
-            thrust_publisher_->publish(msg);
-            init_start_time_ = this->now().seconds();
-        }
-    }
-
     void stereo_callback(const sensor_msgs::msg::Image::ConstSharedPtr& left_msg,
         const sensor_msgs::msg::Image::ConstSharedPtr& right_msg)
     {
