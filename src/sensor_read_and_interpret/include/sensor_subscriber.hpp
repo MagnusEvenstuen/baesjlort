@@ -39,16 +39,16 @@ public:
         imu_objects_{IMU_center_, IMU_center1_, IMU_center2_, IMU_front1_, IMU_front2_, IMU_rear1_, IMU_rear2_, IMU_rear3_},
         imu_topic_map_{
             //{"/gbr/imu_center_perfect", 0},
-            {"/gbr/imu_center", 0},
-            {"/gbr/imu_center1", 1},
-            {"/gbr/imu_center2", 2},
-            {"/gbr/imu_front1", 3},
+            {"/gbr/imu", 0},
+            {"/gbr/imu1", 1},
+            {"/gbr/imu2", 2},
+            {"/gbr/imu3", 3},
             {"/gbr/imu_front2", 4},
             {"/gbr/imu_rear1", 5},
             {"/gbr/imu_rear2", 6},
             {"/gbr/imu_rear3", 7}
         },
-        vimu_filter(8)
+        vimu_filter(4)
     {
         time_ = std::chrono::steady_clock::now();
         prev_time_ = time_;
@@ -63,10 +63,10 @@ public:
         vimu_filter.set_imu_geometry(Eigen::Vector3d(-0.04f, 0.003f, 0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f), 1);
         vimu_filter.set_imu_geometry(Eigen::Vector3d(0.04f, 0.003f, 0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f), 2);
         vimu_filter.set_imu_geometry(Eigen::Vector3d(0.03f, -0.05f, 0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f), 3);
-        vimu_filter.set_imu_geometry(Eigen::Vector3d(-0.03f, -0.05f, 0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f), 4);
-        vimu_filter.set_imu_geometry(Eigen::Vector3d(0.03f, 0.05f, 0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, 0.383f), 5);
-        vimu_filter.set_imu_geometry(Eigen::Vector3d(-0.03f, 0.05f, 0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, 0.383f), 6);
-        vimu_filter.set_imu_geometry(Eigen::Vector3d(-0.00f, 0.05f, 0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, 0.383f), 7);
+        //vimu_filter.set_imu_geometry(Eigen::Vector3d(-0.03f, -0.05f, 0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f), 4);
+        //vimu_filter.set_imu_geometry(Eigen::Vector3d(0.03f, 0.05f, 0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, 0.383f), 5);
+        //vimu_filter.set_imu_geometry(Eigen::Vector3d(-0.03f, 0.05f, 0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, 0.383f), 6);
+        //vimu_filter.set_imu_geometry(Eigen::Vector3d(-0.00f, 0.05f, 0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, 0.383f), 7);
     }
 
     ~sensor_subscriber()

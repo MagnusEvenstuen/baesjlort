@@ -12,7 +12,7 @@ correct_acc_x = data[:, 10]
 correct_acc_y = data[:, 11]
 correct_acc_z = data[:, 12]
 
-sample_rate = 100
+sample_rate = 75
 freqs = np.fft.fftfreq(len(acc_x), 1.0/sample_rate)
 
 acc_x_freq = np.fft.fft(acc_x)
