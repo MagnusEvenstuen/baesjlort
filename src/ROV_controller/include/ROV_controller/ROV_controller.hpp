@@ -15,8 +15,9 @@ enum ROV_classes_to_detect
     //Theese might not be correct (Structure and valve are correct)
     aruco_marker = 0,
     structure = 1,
-    tube = 2,
-    valve = 3
+    structure_wood = 2,
+    tube = 3,
+    valve = 4
 };
 
 class ROV_controller : public rclcpp::Node

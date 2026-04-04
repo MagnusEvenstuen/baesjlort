@@ -110,8 +110,8 @@ class yolo_node(Node):
         right_objects = [(class_number, (right_pos_x[0][j], right_pos_x[1][j]), (right_pos_y[0][j], right_pos_y[1][j])) 
                          for j, class_number in enumerate(right_classes)]
 
-        left_objects.sort(key=lambda obj: (obj[0], obj[2]))     #Sorts classes, first based on class, and same class is sorted on y position (Sorting method found using ChatGPT)
-        right_objects.sort(key=lambda obj: (obj[0], obj[2]))
+        left_objects.sort(key=lambda obj: (obj[2]))
+        right_objects.sort(key=lambda obj: (obj[2]))
         depth = 0
         for i in range(min(len(left_objects), len(right_objects))):
             left_class, left_x, left_y = left_objects[i]
