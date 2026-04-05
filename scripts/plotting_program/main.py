@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import os
 
 file_path = 'data_files/sensor_data.csv'
 data = np.genfromtxt(file_path, delimiter=',', skip_header=1)

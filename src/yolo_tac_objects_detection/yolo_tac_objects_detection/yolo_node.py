@@ -12,10 +12,94 @@ import numpy as np
 
 torch.cuda.is_available = lambda: False         #Set true if gpu is available, works fine without.
 
+import time
+import csv
+from collections import OrderedDict
+import numpy as np
+
+class SimpleTracker:
+    def __init__(self, max_missing=5):
+        self.next_id = 0
+        self.tracks = OrderedDict()      # id -> (centroid_x, centroid_y)
+        self.missing = OrderedDict()     # id -> antall frames savnet
+        self.max_missing = max_missing
+
+    def update(self, detections):
+        """detections: liste av (x1, y1, x2, y2) for inneværende frame"""
+        if not detections:
+            # Øk missing for alle eksisterende tracks
+            for tid in list(self.missing.keys()):
+                self.missing[tid] += 1
+                if self.missing[tid] > self.max_missing:
+                    del self.tracks[tid], self.missing[tid]
+            return {}
+
+        # Sentroider for nye deteksjoner
+        centroids = []
+        for (x1, y1, x2, y2) in detections:
+            cx = (x1 + x2) // 2
+            cy = (y1 + y2) // 2
+            centroids.append((cx, cy))
+
+        if not self.tracks:
+            # Første frame: registrer alle
+            for c in centroids:
+                self.tracks[self.next_id] = c
+                self.missing[self.next_id] = 0
+                self.next_id += 1
+            return {tid: c for tid, c in self.tracks.items()}
+
+        # Match eksisterende tracks med nye deteksjoner (nærmeste centroid)
+        track_ids = list(self.tracks.keys())
+        track_centers = list(self.tracks.values())
+        used_tracks = set()
+        used_dets = set()
+        assignments = {}
+
+        for det_idx, det_c in enumerate(centroids):
+            best_tid = None
+            best_dist = float('inf')
+            for t_idx, tid in enumerate(track_ids):
+                if t_idx in used_tracks:
+                    continue
+                dist = np.hypot(det_c[0] - track_centers[t_idx][0],
+                                det_c[1] - track_centers[t_idx][1])
+                if dist < best_dist and dist < 100:  # terskel (piksler)
+                    best_dist = dist
+                    best_tid = tid
+            if best_tid is not None:
+                assignments[det_idx] = best_tid
+                used_tracks.add(track_ids.index(best_tid))
+                used_dets.add(det_idx)
+                # Oppdater centroid
+                self.tracks[best_tid] = det_c
+                self.missing[best_tid] = 0
+
+        # Nye deteksjoner (ikke matchet) -> nye ID-er
+        for det_idx, det_c in enumerate(centroids):
+            if det_idx not in used_dets:
+                self.tracks[self.next_id] = det_c
+                self.missing[self.next_id] = 0
+                assignments[det_idx] = self.next_id
+                self.next_id += 1
+
+        # Øk missing for tracks som ikke ble matchet
+        for tid in track_ids:
+            if tid not in [assignments.get(di) for di in assignments]:
+                self.missing[tid] += 1
+                if self.missing[tid] > self.max_missing:
+                    del self.tracks[tid], self.missing[tid]
+
+        # Returner mapping fra deteksjonsindeks -> track ID
+        return assignments
+
 class yolo_node(Node):
     def __init__(self):
         super().__init__('yolo_detector_node')
-        #todo fix absolute file path
+        self.tracker = SimpleTracker(max_missing=5)
+        self.log_file = open('objekt_posisjoner.csv', 'w', newline='')
+        self.csv_logger = csv.writer(self.log_file)
+        self.csv_logger.writerow(['timestamp', 'object_id', 'x_meter', 'y_meter', 'depth_meter', 'class'])
         self.model = YOLO('src/yolo_tac_objects_detection/yolo_tac_objects_detection/weights_yolo/best_subsea_test.pt')
         self.bridge = CvBridge()
         self.left_classes = []
@@ -108,6 +192,17 @@ class yolo_node(Node):
             cv2.waitKey(1)
             return
 
+        all_left_boxes = []
+        for idx in range(len(left_classes)):
+            x1 = left_pos_x[0][idx]
+            y1 = left_pos_y[0][idx]
+            x2 = left_pos_x[1][idx]
+            y2 = left_pos_y[1][idx]
+            all_left_boxes.append((x1, y1, x2, y2))
+
+        # Oppdater tracker og få mapping fra deteksjonsindeks -> object_id
+        assignments = self.tracker.update(all_left_boxes)
+
         #Zips information to create one iterable list (those 2 liens are generated using ChatGPT)
         left_objects = [(class_number, (left_pos_x[0][j], left_pos_x[1][j]), (left_pos_y[0][j], left_pos_y[1][j]), j)
                         for j, class_number in enumerate(left_classes)]
@@ -146,9 +241,13 @@ class yolo_node(Node):
                             0.5, 
                             (0, 0, 255), 
                             2)
-            
+                    meter_x = ((left_x[0] - self.cx) * depth / self.focal_length + (right_x[0] - self.cx) * depth / self.focal_length)*0.5
+                    meter_y = ((left_y[0] - self.cy) * depth / self.focal_length + (right_y[0] - self.cy) * depth / self.focal_length)*0.5
                     self.publish_object_position((left_x[0] + left_x[1]) // 2, (right_x[0] + right_x[1]) // 2, (left_y[0] + left_y[1]) // 2, (right_y[0] + right_y[1]) // 2, depth, left_class)
-                        
+                    object_id = assignments.get(left_idx)
+                    if object_id is not None:
+                        timestamp = self.get_clock().now().nanoseconds / 1e9
+                        self.csv_logger.writerow([timestamp, object_id, meter_x, meter_y, depth, left_class])
                     if left_class == 0:     #This isn't tested, but should work. If not working, first test should be sending in the entire image, and not just the bounding box.
                         self.publish_aruco_ids(left_boxes[left_idx], right_boxes[right_idx])
 
