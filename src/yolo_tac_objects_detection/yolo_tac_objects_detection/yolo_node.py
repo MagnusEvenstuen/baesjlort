@@ -20,9 +20,9 @@ class yolo_node(Node):
         self.bridge = CvBridge()
         self.left_classes = []
         self.baseline = 0.0436
-        self.focal_length = None
-        self.cx = None
-        self.cy = None
+        self.focal_length = 538.78453       #Placeholder. Will be changed when info is rescieved.
+        self.cx = 161.95527
+        self.cy = 230.65832
         self.sub_left = Subscriber(self, Image, '/gbr/cam_left/image_color', qos_profile=qos_profile_sensor_data)
         self.sub_right = Subscriber(self, Image, '/gbr/cam_right/image_color', qos_profile=qos_profile_sensor_data)
         self.aruco_dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_ARUCO_ORIGINAL)
@@ -94,10 +94,8 @@ class yolo_node(Node):
         for i in range(len(results[0].boxes)):
             box = results[0].boxes[i]
             x1, y1, x2, y2 = box.xyxy[0].tolist()
-            center = (int((x1 + x2) / 2), int((y1 + y2) / 2))
-            cv2.circle(image_to_draw_on, center, 5, (0, 0, 255), -1)
 
-            classes.append(box.cls[0])
+            classes.append(int(box.cls[0]))
             pos_x[0].append(int(x1))
             pos_x[1].append(int(x2))
             pos_y[0].append(int(y1))
@@ -133,6 +131,7 @@ class yolo_node(Node):
                 right_class, right_x, right_y, right_idx = right_sorted[j][i]
 
                 if left_boxes[left_idx].shape[0] < 200 or right_boxes[right_idx].shape[0] < 200:
+                    #Uses abs to avoid negative depth. Not correct in theory, but is best solution in practice
                     depth = (self.baseline * self.focal_length) / abs(left_x[0] - right_x[0])
                 else:
                     depth = self.orb_calculate_depth(left_boxes[left_idx], right_boxes[right_idx], left_x[0], right_x[0])
