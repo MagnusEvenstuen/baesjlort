@@ -15,14 +15,14 @@ model = YOLO('YOLO_models/best_subsea_test.pt')
 focal_length = 538.78453
 baseline_x = 0.0438
 orb = cv2.ORB_create(
-    nfeatures=1000,      #Default 500, more features = more chances to match
+    nfeatures=500,      #Default 500, more features = more chances to match
     scaleFactor=1.1,     #Default 1.2, finer scale pyramid
-    nlevels=12,          #Default 8, more pyramid levels
+    nlevels=10,          #Default 8, more pyramid levels
     edgeThreshold=10,    #Default 31, detect closer to edges
     fastThreshold=10     #Default 20, lower = detects lower-contrast corners
 )
 matcher_orb = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
-clahe = cv2.createCLAHE(clipLimit=4.0, tileGridSize=(4, 4))
+clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(4, 4))
 
 #Fuctions from ROS2 node
 def save_bounding_box(results, classes, pos_x, pos_y, boxes, image):
@@ -57,7 +57,6 @@ def orb_calculate_depth(left_box, right_box, left_box_left, right_box_left):
         keypoints_right, descriptors_right = orb.detectAndCompute(cv2.cvtColor(right_box, cv2.COLOR_BGR2GRAY), None)
 
         if descriptors_left is None or descriptors_right is None:
-            print("YAR")
             return None
 
         matches = matcher_orb.match(descriptors_left, descriptors_right)
@@ -108,7 +107,6 @@ def calculate_depth(image, left_classes, left_pos_x, left_pos_y, left_boxes, rig
 
                 if left_boxes[left_idx].shape[0] < 200 or right_boxes[right_idx].shape[0] < 200:
                     depth = (baseline_x * focal_length) / abs(left_x[0] - right_x[0])
-                    print("HER", left_class)
                 else:
                     depth = orb_calculate_depth(left_boxes[left_idx], right_boxes[right_idx], left_x[0], right_x[0])
                 if depth is not None:
@@ -145,6 +143,6 @@ def process_image(left_image, right_image):
 
         calculate_depth(left_image, left_classes, left_pos_x, left_pos_y, left_boxes, right_classes, right_pos_x, right_pos_y, right_boxes)
 
-image_left = cv2.imread("/home/gud/Skole/baesjlort/scripts/plotting_program/test_images/distance_accuracy_test_images/subsea_images/left_subsea2.png")
-image_right = cv2.imread("/home/gud/Skole/baesjlort/scripts/plotting_program/test_images/distance_accuracy_test_images/subsea_images/right_subsea2.png")
+image_left = cv2.imread("/home/gud/Skole/baesjlort/scripts/plotting_program/test_images/distance_accuracy_test_images/subsea_images/left_subsea.png")
+image_right = cv2.imread("/home/gud/Skole/baesjlort/scripts/plotting_program/test_images/distance_accuracy_test_images/subsea_images/right_subsea.png")
 process_image(image_right, image_left)

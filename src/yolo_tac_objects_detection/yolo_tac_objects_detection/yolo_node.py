@@ -16,7 +16,7 @@ class yolo_node(Node):
     def __init__(self):
         super().__init__('yolo_detector_node')
         #todo fix absolute file path
-        self.model = YOLO('src/yolo_tac_objects_detection/yolo_tac_objects_detection/weights_yolo/bestYOLO11.pt')
+        self.model = YOLO('src/yolo_tac_objects_detection/yolo_tac_objects_detection/weights_yolo/best_subsea_test.pt')
         self.bridge = CvBridge()
         self.left_classes = []
         self.baseline = 0.0436
@@ -28,10 +28,16 @@ class yolo_node(Node):
         self.aruco_dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_ARUCO_ORIGINAL)
         self.parameters = cv2.aruco.DetectorParameters()
         self.detector = cv2.aruco.ArucoDetector(self.aruco_dictionary, self.parameters)
-        self.clahe = cv2.createCLAHE(clipLimit=1.0)
-
-        self.sift = cv2.SIFT_create(nfeatures=20)
-        self.matcher = cv2.BFMatcher(cv2.NORM_L2, crossCheck=True)
+        self.clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(4, 4))
+        #Parameters found through tuning, might need further tuning
+        self.orb = cv2.ORB_create(
+            nfeatures=500,      #Default 500, more features = more chances to match
+            scaleFactor=1.1,     #Default 1.2, finer scale pyramid
+            nlevels=10,          #Default 8, more pyramid levels
+            edgeThreshold=10,    #Default 31, detect closer to edges
+            fastThreshold=10     #Default 20, lower = detects lower-contrast corners
+        )
+        self.matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
 
         self.approx_time_sync = ApproximateTimeSynchronizer([self.sub_left, self.sub_right], queue_size=1, slop=0.05)       #Only use last image
         self.approx_time_sync.registerCallback(self.image_sync_callback)
@@ -105,37 +111,47 @@ class yolo_node(Node):
             return
 
         #Zips information to create one iterable list (those 2 liens are generated using ChatGPT)
-        left_objects = [(class_number, (left_pos_x[0][j], left_pos_x[1][j]), (left_pos_y[0][j], left_pos_y[1][j])) 
+        left_objects = [(class_number, (left_pos_x[0][j], left_pos_x[1][j]), (left_pos_y[0][j], left_pos_y[1][j]), j)
                         for j, class_number in enumerate(left_classes)]
-        right_objects = [(class_number, (right_pos_x[0][j], right_pos_x[1][j]), (right_pos_y[0][j], right_pos_y[1][j])) 
-                         for j, class_number in enumerate(right_classes)]
-
+        right_objects = [(class_number, (right_pos_x[0][j], right_pos_x[1][j]), (right_pos_y[0][j], right_pos_y[1][j]), j)
+                        for j, class_number in enumerate(right_classes)]
         left_objects.sort(key=lambda obj: (obj[2]))
         right_objects.sort(key=lambda obj: (obj[2]))
+        left_sorted = [[], [], [], [], []]
+        right_sorted = [[], [], [], [], []]
+
+        for obj in left_objects:
+            class_number = obj[0]
+            left_sorted[class_number].append(obj)
+        for obj in right_objects:
+             class_number = obj[0]
+             right_sorted[class_number].append(obj)
         depth = 0
-        for i in range(min(len(left_objects), len(right_objects))):
-            left_class, left_x, left_y = left_objects[i]
-            right_class, right_x, right_y = right_objects[i]
+        for j in range(len(left_sorted)):
+            for i in range(min(len(left_sorted[j]), len(right_sorted[j]))):
+                left_class, left_x, left_y, left_idx = left_sorted[j][i]
+                right_class, right_x, right_y, right_idx = right_sorted[j][i]
+
+                if left_boxes[left_idx].shape[0] < 200 or right_boxes[right_idx].shape[0] < 200:
+                    depth = (self.baseline * self.focal_length) / abs(left_x[0] - right_x[0])
+                else:
+                    depth = self.orb_calculate_depth(left_boxes[left_idx], right_boxes[right_idx], left_x[0], right_x[0])
+                if depth is not None:
+                    #Draw depth info on image (By ChatGPT) (for visualization)
+                    center_x = (left_x[0] + left_x[1]) // 2
+                    center_y = (left_y[0] + left_y[1]) // 2
+                    cv2.putText(image, 
+                            f"{depth:.2f}m", 
+                            (center_x, center_y), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 
+                            0.5, 
+                            (0, 0, 255), 
+                            2)
             
-            if left_class == right_class:
-                    #Information about how to use orb gathered from https://www.geeksforgeeks.org/python/feature-matching-using-orb-algorithm-in-python-opencv/, later changed to SIFT, but is the same
-                    depth = self.orb_calculate_depth(left_boxes[i], right_boxes[i], left_x[0], right_x[0])
-                    if depth is not None:
-                        #Draw depth info on image (By ChatGPT) (for visualization)
-                        center_x = (left_x[0] + left_x[1]) // 2
-                        center_y = (left_y[0] + left_y[1]) // 2
-                        cv2.putText(image, 
-                                f"{depth:.2f}m", 
-                                (center_x, center_y), 
-                                cv2.FONT_HERSHEY_SIMPLEX, 
-                                0.5, 
-                                (0, 0, 255), 
-                                2)
-            
-                        self.publish_object_position((left_x[0] + left_x[1]) // 2, (right_x[0] + right_x[1]) // 2, (left_y[0] + left_y[1]) // 2, (right_y[0] + right_y[1]) // 2, depth, left_class)
+                    self.publish_object_position((left_x[0] + left_x[1]) // 2, (right_x[0] + right_x[1]) // 2, (left_y[0] + left_y[1]) // 2, (right_y[0] + right_y[1]) // 2, depth, left_class)
                         
-                        if left_class == 0:     #This isn't tested, but should work. If not working, first test should be sending in the entire image, and not just the bounding box.
-                            self.publish_aruco_ids(left_boxes[i], right_boxes[i])
+                    if left_class == 0:     #This isn't tested, but should work. If not working, first test should be sending in the entire image, and not just the bounding box.
+                        self.publish_aruco_ids(left_boxes[left_idx], right_boxes[right_idx])
 
         cv2.imshow('YOLO deteksjon med dybde', image)
         cv2.waitKey(1)
@@ -151,8 +167,8 @@ class yolo_node(Node):
         left_box = cv2.cvtColor(left_box, cv2.COLOR_Lab2BGR)
         right_box = cv2.cvtColor(right_box, cv2.COLOR_Lab2BGR)
 
-        keypoints_left, descriptors_left = self.sift.detectAndCompute(cv2.cvtColor(left_box, cv2.COLOR_BGR2GRAY), None)       #Sets the colour to grey, and does orb detection on the images
-        keypoints_right, descriptors_right = self.sift.detectAndCompute(cv2.cvtColor(right_box, cv2.COLOR_BGR2GRAY), None)
+        keypoints_left, descriptors_left = self.orb.detectAndCompute(cv2.cvtColor(left_box, cv2.COLOR_BGR2GRAY), None)       #Sets the colour to grey, and does orb detection on the images
+        keypoints_right, descriptors_right = self.orb.detectAndCompute(cv2.cvtColor(right_box, cv2.COLOR_BGR2GRAY), None)
 
         if descriptors_left is None or descriptors_right is None:
             return None
