@@ -28,9 +28,9 @@ public:
     sensor_subscriber() : Node("sensor_subscriber"),
         //Setup IMU objects with their positions on the robot and initial orientations
         IMU_center_(Eigen::Vector3d(0.0f, -0.003f, -0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f)),
-        IMU_center1_(Eigen::Vector3d(0.04f, -0.003f, -0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, 0.383f)),
-        IMU_center2_(Eigen::Vector3d(-0.04f, -0.003f, -0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, 0.383f)),
-        IMU_front1_(Eigen::Vector3d(-0.03f, 0.05f, -0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, 0.383f)),
+        IMU_center1_(Eigen::Vector3d(0.04f, -0.003f, -0.0013), Eigen::Quaterniond(-0.3827, 0.0, 0.0, 0.9239)),
+        IMU_center2_(Eigen::Vector3d(-0.04f, -0.003f, -0.0013), Eigen::Quaterniond(1.0f, 0.0f, 0.0f, 0.0f)),
+        IMU_front1_(Eigen::Vector3d(-0.03f, 0.05f, -0.0013), Eigen::Quaterniond(0.7071, 0.0, 0.0, 0.7071)),
         IMU_front2_(Eigen::Vector3d(0.03f, 0.05f, -0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, 0.383f)),
         IMU_rear1_(Eigen::Vector3d(-0.03f, -0.05f, -0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f)),
         IMU_rear2_(Eigen::Vector3d(0.03f, -0.05f, -0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f)),
@@ -39,16 +39,16 @@ public:
         imu_objects_{IMU_center_, IMU_center1_, IMU_center2_, IMU_front1_, IMU_front2_, IMU_rear1_, IMU_rear2_, IMU_rear3_},
         imu_topic_map_{
             //{"/gbr/imu_center_perfect", 0},
-            {"/gbr/imu", 0},
-            {"/gbr/imu1", 1},
-            {"/gbr/imu2", 2},
-            {"/gbr/imu3", 3},
+            {"/gbr/imu7", 3},
+            {"/gbr/imu1", 0},       //Currently only 1, 2, and 3 are used.
+            {"/gbr/imu2", 1},
+            {"/gbr/imu3", 2},
             {"/gbr/imu_front2", 4},
             {"/gbr/imu_rear1", 5},
             {"/gbr/imu_rear2", 6},
             {"/gbr/imu_rear3", 7}
         },
-        vimu_filter(4)
+        vimu_filter(3)
     {
         time_ = std::chrono::steady_clock::now();
         prev_time_ = time_;
@@ -59,10 +59,10 @@ public:
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
         });
-        vimu_filter.set_imu_geometry(Eigen::Vector3d(0.0f, 0.003f, 0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, 0.383f), 0);
-        vimu_filter.set_imu_geometry(Eigen::Vector3d(-0.04f, 0.003f, 0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f), 1);
-        vimu_filter.set_imu_geometry(Eigen::Vector3d(0.04f, 0.003f, 0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f), 2);
-        vimu_filter.set_imu_geometry(Eigen::Vector3d(0.03f, -0.05f, 0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f), 3);
+        //vimu_filter.set_imu_geometry(Eigen::Vector3d(0.0f, 0.003f, 0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, 0.383f), 0);
+        vimu_filter.set_imu_geometry(Eigen::Vector3d(-0.04f, 0.003f, 0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f), 0);
+        vimu_filter.set_imu_geometry(Eigen::Vector3d(0.04f, 0.003f, 0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f), 1);
+        vimu_filter.set_imu_geometry(Eigen::Vector3d(0.03f, -0.05f, 0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f), 2);
         //vimu_filter.set_imu_geometry(Eigen::Vector3d(-0.03f, -0.05f, 0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f), 4);
         //vimu_filter.set_imu_geometry(Eigen::Vector3d(0.03f, 0.05f, 0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, 0.383f), 5);
         //vimu_filter.set_imu_geometry(Eigen::Vector3d(-0.03f, 0.05f, 0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, 0.383f), 6);
@@ -156,6 +156,7 @@ private:
                 const std::lock_guard<std::mutex> lock(vector_mutex);
                 acc_vector.emplace_back(acc);
                 gyro_vector.emplace_back(gyro);
+                orientation_vector.emplace_back(orientation);
                 id_vector.emplace_back(imu_index);
             }
             
@@ -225,20 +226,49 @@ private:
 
         //Calculate average values from the recieved IMU messages
         {
+            //const std::lock_guard<std::mutex> lock(vector_mutex);
+            //vimu_filter.update(acc_vector, gyro_vector, id_vector);
+            //acc_vector.clear();
+            //gyro_vector.clear();
+            //id_vector.clear();
+        }
+        //Eigen::Vector3d vimu_acc = vimu_filter.get_acceleration();
+        //Eigen::Vector3d vimu_gyro = vimu_filter.get_gyro();
+        //Eigen::Vector3d avg_acc = vimu_acc;
+        //Eigen::Vector3d avg_gyro = vimu_gyro;
+        Eigen::Vector3d avg_acc = Eigen::Vector3d::Zero();
+        Eigen::Vector3d avg_gyro = Eigen::Vector3d::Zero();
+        Eigen::Quaterniond avg_orientation_IMU = Eigen::Quaterniond::Identity();
+        {
             const std::lock_guard<std::mutex> lock(vector_mutex);
-            vimu_filter.update(acc_vector, gyro_vector, id_vector);
+            for (const auto& acc : acc_vector)
+            {
+                avg_acc += acc;
+            }
+            for (const auto& gyro : gyro_vector)
+            {
+                avg_gyro += gyro;
+            }
+            for (const auto& orientation : orientation_vector)
+            {
+                avg_orientation_IMU = avg_orientation_IMU * orientation;
+            }
+            if (!acc_vector.empty())
+            {
+                avg_acc /= acc_vector.size();
+            }
+            if (!gyro_vector.empty())
+            {
+                avg_gyro /= gyro_vector.size();
+            }
+            avg_orientation_IMU.normalize();
             acc_vector.clear();
             gyro_vector.clear();
+            orientation_vector.clear();
             id_vector.clear();
         }
-        Eigen::Vector3d vimu_acc = vimu_filter.get_acceleration();
-        Eigen::Vector3d vimu_gyro = vimu_filter.get_gyro();
-        Eigen::Vector3d avg_acc = vimu_acc;
-        Eigen::Vector3d avg_gyro = vimu_gyro;
 
         RCLCPP_INFO(this->get_logger(), "Acc - x: %.4f, y: %.4f, z: %.4f", avg_acc.y(), avg_acc.x(),  avg_acc.z());
-
-        //Updates orientation based on stuff from IMU data
         
         //Publish data for SYSID
         auto gyro_msg = std_msgs::msg::Float32MultiArray();
@@ -270,7 +300,7 @@ private:
         recieved[6] = false;
         recieved[7] = false;
         //Updates sensor handler with averaged IMU data
-        sensor_handler_.update(avg_acc, avg_gyro, thrust_);
+        sensor_handler_.update(avg_acc, avg_gyro, thrust_, avg_orientation_IMU);
 
         RCLCPP_INFO(this->get_logger(), 
             "Posisjon - x: %.2f, y: %.2f, z: %.2f", 
@@ -321,6 +351,7 @@ private:
     sensor_handler sensor_handler_;
     const Eigen::Vector3d center_of_gravity_ = Eigen::Vector3d(0.0, -0.003, -0.0013);
     std::array<float, 8> thrust_ = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    std::vector<Eigen::Quaterniond> orientation_vector;
     float current_speed_x = 0.0;
     float current_speed_y = 0.0;
     float current_speed_z = 0.0;

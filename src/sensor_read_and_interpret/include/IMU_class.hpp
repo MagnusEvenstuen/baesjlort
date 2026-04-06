@@ -77,7 +77,7 @@ public:
 
         acc_ = orientation_ * acc_;
 
-        // Fjern gravitasjon og bias i sensorramme
+        //Remove gravity in sensor frame
         Eigen::Vector3d acc_sensor = acc_ - gravitational_vector_;
                         
         acc_sensor = orientation_.conjugate() * acc_sensor;
@@ -95,7 +95,7 @@ public:
 
     Eigen::Quaterniond get_orientation() const
     {
-        return orientation_;
+        return orientation_ * imu_to_robot_frame_;
     }
 
     Eigen::Quaterniond get_delta_orientation()

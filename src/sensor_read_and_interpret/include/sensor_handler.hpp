@@ -223,7 +223,7 @@ public:
         depth_ = -(current_pressure - surface_pressure_) / (water_density_ * gravity_);
     }
 
-    void update(const Eigen::Vector3d& acc, const Eigen::Vector3d& gyro, const std::array<float, 8>& thruster_gain)
+    void update(const Eigen::Vector3d& acc, const Eigen::Vector3d& gyro, const std::array<float, 8>& thruster_gain, const Eigen::Quaterniond& orientation)
     {
         //Updates delta time
         auto current_time = std::chrono::steady_clock::now();
@@ -258,6 +258,7 @@ public:
         );
         orientation_ = orientation_ * delta_orientation;
         orientation_.normalize();
+        orientation_ = orientation;
 
         Eigen::Vector3d imu_speed(current_speed_.x() + acc_filtered.x() * dt, current_speed_.y() + acc_filtered.y() * dt, current_speed_.z() + acc_filtered.z() * dt);
         update_current_variables(dt, imu_speed);
