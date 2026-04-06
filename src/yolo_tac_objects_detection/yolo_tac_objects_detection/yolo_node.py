@@ -9,32 +9,28 @@ import cv2
 from ultralytics import YOLO
 import torch
 import numpy as np
+import math
+import csv
+import numpy as np
 
 torch.cuda.is_available = lambda: False         #Set true if gpu is available, works fine without.
-
-import time
-import csv
-from collections import OrderedDict
-import numpy as np
 
 class SimpleTracker:
     def __init__(self, max_missing=5):
         self.next_id = 0
-        self.tracks = OrderedDict()      # id -> (centroid_x, centroid_y)
-        self.missing = OrderedDict()     # id -> antall frames savnet
+        self.tracks = {}          #id = (centroid_x, centroid_y)
+        self.missing = {}
         self.max_missing = max_missing
 
     def update(self, detections):
-        """detections: liste av (x1, y1, x2, y2) for inneværende frame"""
         if not detections:
-            # Øk missing for alle eksisterende tracks
-            for tid in list(self.missing.keys()):
-                self.missing[tid] += 1
-                if self.missing[tid] > self.max_missing:
-                    del self.tracks[tid], self.missing[tid]
+            for time in list(self.missing.keys()):
+                self.missing[time] += 1
+                if self.missing[time] > self.max_missing:
+                    del self.tracks[time]
+                    del self.missing[time]
             return {}
 
-        # Sentroider for nye deteksjoner
         centroids = []
         for (x1, y1, x2, y2) in detections:
             cx = (x1 + x2) // 2
@@ -42,16 +38,13 @@ class SimpleTracker:
             centroids.append((cx, cy))
 
         if not self.tracks:
-            # Første frame: registrer alle
-            for c in centroids:
-                self.tracks[self.next_id] = c
-                self.missing[self.next_id] = 0
+            for det_idx, c in enumerate(centroids):
+                time = self.next_id
+                self.tracks[time] = c
+                self.missing[time] = 0
                 self.next_id += 1
-            return {tid: c for tid, c in self.tracks.items()}
-
-        # Match eksisterende tracks med nye deteksjoner (nærmeste centroid)
-        track_ids = list(self.tracks.keys())
-        track_centers = list(self.tracks.values())
+            return {det_idx: time for det_idx, time in enumerate(self.tracks.keys())}
+        
         used_tracks = set()
         used_dets = set()
         assignments = {}
@@ -59,38 +52,39 @@ class SimpleTracker:
         for det_idx, det_c in enumerate(centroids):
             best_tid = None
             best_dist = float('inf')
-            for t_idx, tid in enumerate(track_ids):
-                if t_idx in used_tracks:
+            for time, track_c in self.tracks.items():
+                if time in used_tracks:
                     continue
-                dist = np.hypot(det_c[0] - track_centers[t_idx][0],
-                                det_c[1] - track_centers[t_idx][1])
-                if dist < best_dist and dist < 100:  # terskel (piksler)
+                dx = det_c[0] - track_c[0]
+                dy = det_c[1] - track_c[1]
+                dist = math.hypot(dx, dy)
+                if dist < best_dist and dist < 100:
                     best_dist = dist
-                    best_tid = tid
+                    best_tid = time
             if best_tid is not None:
                 assignments[det_idx] = best_tid
-                used_tracks.add(track_ids.index(best_tid))
+                used_tracks.add(best_tid)
                 used_dets.add(det_idx)
-                # Oppdater centroid
+
                 self.tracks[best_tid] = det_c
                 self.missing[best_tid] = 0
 
-        # Nye deteksjoner (ikke matchet) -> nye ID-er
         for det_idx, det_c in enumerate(centroids):
             if det_idx not in used_dets:
-                self.tracks[self.next_id] = det_c
-                self.missing[self.next_id] = 0
-                assignments[det_idx] = self.next_id
+                time = self.next_id
+                self.tracks[time] = det_c
+                self.missing[time] = 0
+                assignments[det_idx] = time
                 self.next_id += 1
 
-        # Øk missing for tracks som ikke ble matchet
-        for tid in track_ids:
-            if tid not in [assignments.get(di) for di in assignments]:
-                self.missing[tid] += 1
-                if self.missing[tid] > self.max_missing:
-                    del self.tracks[tid], self.missing[tid]
+        matched_ids = set(assignments.values())
+        for time in list(self.tracks.keys()):
+            if time not in matched_ids:
+                self.missing[time] += 1
+                if self.missing[time] > self.max_missing:
+                    del self.tracks[time]
+                    del self.missing[time]
 
-        # Returner mapping fra deteksjonsindeks -> track ID
         return assignments
 
 class yolo_node(Node):
