@@ -14,7 +14,8 @@ def generate_launch_description():
             executable="h264_receiver",
             name="left_cam_receiver",
             namespace="gbr/cam_left",
-            arguments=[left_video_topic]
+            arguments=[left_video_topic],
+            output="both"
         )
 
     right_cam_receiver = Node(
@@ -22,7 +23,8 @@ def generate_launch_description():
             executable="h264_receiver",
             name="right_cam_receiver",
             namespace="gbr/cam_right",
-            arguments=[right_video_topic]
+            arguments=[right_video_topic],
+            output="both"
         )
 
     # Return a launch description generated from node list

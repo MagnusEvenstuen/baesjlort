@@ -4,7 +4,7 @@ H264Receiver::H264Receiver(const std::string &image_topic)
     : rclcpp::Node("h264_receiver_node")
 {
 
-    this->declare_parameter<std::string>("topic_out", "/image_compressed");
+    this->declare_parameter<std::string>("topic_out", "image_raw");
     std::string topic_out = this->get_parameter("topic_out").as_string();
 
     src_ = gst_element_factory_make("appsrc", "src");
@@ -66,15 +66,17 @@ H264Receiver::H264Receiver(const std::string &image_topic)
 
     gst_element_set_state(pipeline_.get(), GST_STATE_PLAYING);
 
-    RCLCPP_INFO(get_logger(), "Subscribing to topic '%s'", image_topic.c_str()); 
-
+    RCLCPP_INFO(get_logger(), "Subscribing to topic '%s/%s'", get_namespace(), image_topic.c_str()); 
     image_subscriber_ = create_subscription<CompressedImage>(image_topic, rclcpp::SensorDataQoS(),
             std::bind(&H264Receiver::image_received_callback, this, std::placeholders::_1));
+
+    RCLCPP_INFO(get_logger(), "Publishing to topic '%s/%s'", get_namespace(), topic_out.c_str()); 
     image_publisher_ = create_publisher<Image>(topic_out, 1);
 }
 
 void H264Receiver::image_received_callback(CompressedImage::UniquePtr msg)
 {
+    // RCLCPP_INFO(get_logger(), "Img received callback");
     GstBuffer *buffer = gst_buffer_new_allocate(nullptr, msg->data.size(), nullptr);
     GstMapInfo map;
     gst_buffer_map(buffer, &map, GST_MAP_WRITE);
@@ -85,14 +87,14 @@ void H264Receiver::image_received_callback(CompressedImage::UniquePtr msg)
     // Transfers the ownership of buffer, no need for cleanup
     if (gst_app_src_push_buffer(GST_APP_SRC(src_), buffer) != GST_FLOW_OK)
     {
-        std::cout << "Failed to push buffer" << std::endl;
+        RCLCPP_ERROR(get_logger(), "Failed to push buffer");
         return;
     }
 }
 
 void H264Receiver::image_decoded_callback(GstElement *sink, H264Receiver *data)
 {
-    std::cout << "Entering decoded callback" << std::endl;
+    // RCLCPP_INFO(data->get_logger(), "Entering decoded callback");
     GstSample *sample = gst_app_sink_pull_sample(GST_APP_SINK(sink));
     if (!sample)
     {

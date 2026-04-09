@@ -27,8 +27,8 @@ def generate_launch_description():
 
     # Return a launch description generated from node list
     return LaunchDescription([
-        DeclareLaunchArgument("left_cam_path", default_value="/dev/video0"),
-        DeclareLaunchArgument("right_cam_path", default_value="/dev/video4"),
+        DeclareLaunchArgument("left_cam_path", default_value="/dev/video2"),
+        DeclareLaunchArgument("right_cam_path", default_value="/dev/video6"),
         left_cam,
         right_cam
     ])
