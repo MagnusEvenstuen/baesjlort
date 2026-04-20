@@ -19,18 +19,18 @@ def extract_timestamp_ns(filepath):
 # ------------------------------------------------------------
 # Konfigurasjon
 # ------------------------------------------------------------
-left_input = "/home/gud/Skole/baesjlort/scripts/plotting_program/videos/gbr_cam_left_image_raw_1774374140039571928.mp4"
-right_input = "/home/gud/Skole/baesjlort/scripts/plotting_program/videos/gbr_cam_right_image_raw_1774374140047241766.mp4"
+left_input = "/home/gud/Downloads/wetransfer_noe_2026-03-25_0803/gbr_cam_left_image_raw_1774374140039571928.mp4"
+right_input = "/home/gud/Downloads/wetransfer_noe_2026-03-25_0803/gbr_cam_right_image_raw_1774374140047241766.mp4"
 
 # Ønsket segment i venstre video (i sekunder fra starten av venstre video)
-start_seconds = (0*60 + 1)*2
-end_seconds   = (0*60 + 10)*2
+start_seconds = (20*60 + 50)*2
+end_seconds   = (21*60 + 15)*2
 duration = end_seconds - start_seconds
 
 # Midlertidige filer
-left_slow = "left_slow.mp4"
-right_slow = "right_slow.mp4"
-final_output = "synced_slow.mp4"
+left_slow = "left_slow3.mp4"
+right_slow = "right_slow3.mp4"
+final_output = "synced_slow3.mp4"
 
 # ------------------------------------------------------------
 # Hent absolutte starttider (i sekunder)
@@ -49,7 +49,7 @@ right_start_sec = right_start_ns / 1_000_000_000.0
 abs_start_sec = left_start_sec + start_seconds
 
 # Finn tilsvarende offset i høyre video
-right_offset = abs_start_sec - right_start_sec
+right_offset = (abs_start_sec - right_start_sec) - 4.5
 
 if right_offset < 0:
     raise ValueError(f"Ønsket start er før høyre video begynner (offset={right_offset} s).")

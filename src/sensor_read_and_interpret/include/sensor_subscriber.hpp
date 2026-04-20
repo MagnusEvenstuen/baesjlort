@@ -28,9 +28,9 @@ public:
     sensor_subscriber() : Node("sensor_subscriber"),
         //Setup IMU objects with their positions on the robot and initial orientations
         IMU_center_(Eigen::Vector3d(0.0f, -0.003f, -0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f)),
-        IMU_center1_(Eigen::Vector3d(0.04f, -0.003f, -0.0013), Eigen::Quaterniond(-0.3827, 0.0, 0.0, 0.9239)),
-        IMU_center2_(Eigen::Vector3d(-0.04f, -0.003f, -0.0013), Eigen::Quaterniond(1.0f, 0.0f, 0.0f, 0.0f)),
-        IMU_front1_(Eigen::Vector3d(-0.03f, 0.05f, -0.0013), Eigen::Quaterniond(0.7071, 0.0, 0.0, 0.7071)),
+        IMU_center1_(Eigen::Vector3d(0.04f, -0.003f, -0.0013), Eigen::Quaterniond(-0.3827, 0.0, 0.0, 0.9239)),  //Rotated 225 degrees around z
+        IMU_center2_(Eigen::Vector3d(-0.04f, -0.003f, -0.0013), Eigen::Quaterniond(1.0f, 0.0f, 0.0f, 0.0f)),    //Not rotated at all
+        IMU_front1_(Eigen::Vector3d(-0.03f, 0.05f, -0.0013), Eigen::Quaterniond(0.7071, 0.0, 0.0, 0.7071)),     //Rotated 90 degrees around z
         IMU_front2_(Eigen::Vector3d(0.03f, 0.05f, -0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, 0.383f)),
         IMU_rear1_(Eigen::Vector3d(-0.03f, -0.05f, -0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f)),
         IMU_rear2_(Eigen::Vector3d(0.03f, -0.05f, -0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f)),

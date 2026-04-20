@@ -64,16 +64,16 @@ Stereo.T_c1_c2: !!opencv-matrix
 ORBextractor.nFeatures: 3000
 
 # Scale factor between levels
-ORBextractor.scaleFactor: 1.2
+ORBextractor.scaleFactor: 1.1
 
 # Number of levels in the scale pyramid
-ORBextractor.nLevels: 8
+ORBextractor.nLevels: 12
 
 # Fast threshold – low values help in low‑contrast environments
-ORBextractor.iniThFAST: 3
-ORBextractor.minThFAST: 2
+ORBextractor.iniThFAST: 2
+ORBextractor.minThFAST: 1
 
-ORBmatcher.nnratio: 0.95
+ORBmatcher.nnratio: 0.90
 ORBmatcher.checkOrientation: false
 
 #--------------------------------------------------------------------------------------------

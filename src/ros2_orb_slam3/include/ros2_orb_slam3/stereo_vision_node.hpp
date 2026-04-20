@@ -43,7 +43,7 @@ public:
             "src/ros2_orb_slam3/orb_slam3/Vocabulary/ORBvoc.txt.bin",     //Path to vocabulary file 
             "src/ros2_orb_slam3/config/stereo_gbr_sim.yaml",               //Path to camera settings file 
             ORB_SLAM3::System::STEREO, 
-            false                                                                                   //Enable viewer
+            true                                                                                   //Enable viewer
         );
 
         //ROS2 publishers and subscribers
@@ -123,11 +123,13 @@ private:
         
         //Apply CLAHE (this might not be nessacerry)
         std::lock_guard<std::mutex> lock(image_mutex_);
+        //left_image_ = apply_clahe(left_img_->image);
+        //right_image_ = apply_clahe(right_img_->image);
         left_image_ = apply_clahe(left_img_->image);
         right_image_ = apply_clahe(right_img_->image);
 
-        //left_image_ = (left_img_->image);
-        //right_image_ = (right_img_->image);
+        left_image_ = (left_img_->image);
+        right_image_ = (right_img_->image);
         
         // Process stereo pair immediately (message_filters ensures both are available)
         last_header_ = left_msg->header;
@@ -237,6 +239,31 @@ private:
         cv::merge(lab_planes, lab_image);
         cv::cvtColor(lab_image, result, cv::COLOR_Lab2BGR);
         
+        return result;
+    }
+
+    cv::Mat apply_homomorphic(const cv::Mat& image) {
+        cv::Mat gray, log_img, blur, high_freq, result;
+        
+        // Konverter til grayscale med vekting som fremhever røde kanaler
+        // (vann absorberer rødt, så rød-kanalen har faktisk mer tekstur)
+        // Vekter: B=0.1, G=0.3, R=0.6 (motsatt av standard BGR-grayscale)
+        cv::Mat channels[3];
+        cv::split(image, channels);
+
+        result = 0.1 * channels[0] + 0.3 * channels[1] + 0.6 * channels[2];
+        result.convertTo(gray, CV_32F);
+        
+        cv::log(gray + 1.0f, log_img);
+        
+        cv::GaussianBlur(log_img, blur, cv::Size(31, 31), 15.0);
+        high_freq = log_img - blur;
+        
+        cv::exp(high_freq, result);
+        cv::normalize(result, result, 0, 255, cv::NORM_MINMAX);
+        result.convertTo(result, CV_8U);
+        
+        cv::cvtColor(result, result, cv::COLOR_GRAY2BGR);
         return result;
     }
 
