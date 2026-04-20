@@ -33,7 +33,7 @@ namespace ORB_SLAM3
 {
 
     const int ORBmatcher::TH_HIGH = 255;
-    const int ORBmatcher::TH_LOW = 0;
+    const int ORBmatcher::TH_LOW = 250;
     const int ORBmatcher::HISTO_LENGTH = 50;
 
     ORBmatcher::ORBmatcher(float nnratio, bool checkOri): mfNNratio(nnratio), mbCheckOrientation(checkOri)
@@ -192,8 +192,8 @@ namespace ORB_SLAM3
                     // Apply ratio to second match (only if best and second are in the same scale level)
                     if(bestDist<=TH_HIGH)
                     {
-                        if(bestLevel==bestLevel2 && bestDist>mfNNratio*bestDist2)
-                            continue;
+                        //if(bestLevel==bestLevel2 && bestDist>mfNNratio*bestDist2)
+                        //    continue;
 
                         if(F.Nleft != -1 && F.mvRightToLeftMatch[bestIdx] != -1){ //Also match with the stereo observation at right camera
                             F.mvpMapPoints[F.mvRightToLeftMatch[bestIdx]] = pMP;
@@ -215,9 +215,9 @@ namespace ORB_SLAM3
     float ORBmatcher::RadiusByViewingCos(const float &viewCos)
     {
         if(viewCos>0.998)
-            return 2.5;
+            return 5.0;
         else
-            return 4.0;
+            return 8.0;
     }
 
     int ORBmatcher::SearchByBoW(KeyFrame* pKF,Frame &F, vector<MapPoint*> &vpMapPointMatches)
@@ -703,27 +703,27 @@ namespace ORB_SLAM3
             {
                 if(bestDist<(float)bestDist2*mfNNratio)
                 {
-                    if(vnMatches21[bestIdx2]>=0)
-                    {
-                        vnMatches12[vnMatches21[bestIdx2]]=-1;
-                        nmatches--;
-                    }
-                    vnMatches12[i1]=bestIdx2;
-                    vnMatches21[bestIdx2]=i1;
-                    vMatchedDistance[bestIdx2]=bestDist;
-                    nmatches++;
-
-                    if(mbCheckOrientation)
-                    {
-                        float rot = F1.mvKeysUn[i1].angle-F2.mvKeysUn[bestIdx2].angle;
-                        if(rot<0.0)
-                            rot+=360.0f;
-                        int bin = round(rot*factor);
-                        if(bin==HISTO_LENGTH)
-                            bin=0;
-                        assert(bin>=0 && bin<HISTO_LENGTH);
-                        rotHist[bin].push_back(i1);
-                    }
+                    //if(vnMatches21[bestIdx2]>=0)
+                    //{
+                    //    vnMatches12[vnMatches21[bestIdx2]]=-1;
+                    //    nmatches--;
+                    //}
+                    //vnMatches12[i1]=bestIdx2;
+                    //vnMatches21[bestIdx2]=i1;
+                    //vMatchedDistance[bestIdx2]=bestDist;
+                    //nmatches++;
+//
+                    //if(mbCheckOrientation)
+                    //{
+                    //    float rot = F1.mvKeysUn[i1].angle-F2.mvKeysUn[bestIdx2].angle;
+                    //    if(rot<0.0)
+                    //        rot+=360.0f;
+                    //    int bin = round(rot*factor);
+                    //    if(bin==HISTO_LENGTH)
+                    //        bin=0;
+                    //    assert(bin>=0 && bin<HISTO_LENGTH);
+                    //    rotHist[bin].push_back(i1);
+                    //}
                 }
             }
 

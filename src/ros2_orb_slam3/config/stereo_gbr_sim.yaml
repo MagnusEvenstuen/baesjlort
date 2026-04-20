@@ -73,7 +73,7 @@ ORBextractor.nLevels: 12
 ORBextractor.iniThFAST: 2
 ORBextractor.minThFAST: 1
 
-ORBmatcher.nnratio: 0.90
+ORBmatcher.nnratio: 0.99
 ORBmatcher.checkOrientation: false
 
 #--------------------------------------------------------------------------------------------

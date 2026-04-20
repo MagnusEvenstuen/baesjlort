@@ -125,8 +125,8 @@ private:
         std::lock_guard<std::mutex> lock(image_mutex_);
         //left_image_ = apply_clahe(left_img_->image);
         //right_image_ = apply_clahe(right_img_->image);
-        left_image_ = apply_clahe(left_img_->image);
-        right_image_ = apply_clahe(right_img_->image);
+        //left_image_ = apply_homomorphic(left_img_->image);
+        //right_image_ = apply_homomorphic(right_img_->image);
 
         left_image_ = (left_img_->image);
         right_image_ = (right_img_->image);
@@ -256,7 +256,7 @@ private:
         
         cv::log(gray + 1.0f, log_img);
         
-        cv::GaussianBlur(log_img, blur, cv::Size(31, 31), 15.0);
+        cv::GaussianBlur(log_img, blur, cv::Size(63, 63), 15.0);
         high_freq = log_img - blur;
         
         cv::exp(high_freq, result);
