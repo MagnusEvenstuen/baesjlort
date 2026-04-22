@@ -214,13 +214,24 @@ public:
 
     void update_depth(float current_pressure)
     {
+        static int calibration_readings = 0;
         //Presumes starting at surface level
         if (!set_surface_pressure_)
         {
-            surface_pressure_ = current_pressure;
-            set_surface_pressure_ = true;
+            surface_pressure_ += current_pressure;
+            calibration_readings++;
+            if (calibration_readings >= 100)
+            {
+                surface_pressure_ /= calibration_readings;
+                set_surface_pressure_ = true;
+            }
         }
-        depth_ = -(current_pressure - surface_pressure_) / (water_density_ * gravity_);
+        if (current_pressure > surface_pressure_)
+        {
+            depth_ = -(current_pressure - surface_pressure_) / (water_density_ * gravity_);
+        } else {
+            depth_ = 0.0f;
+        }
     }
 
     void update(const Eigen::Vector3d& acc, const Eigen::Vector3d& gyro, const std::array<float, 8>& thruster_gain, const Eigen::Quaterniond& orientation)
@@ -334,7 +345,7 @@ private:
     std::chrono::steady_clock::time_point start_time_;
     std::ofstream csv_file_;
     float depth_ = 0.0f;
-    float surface_pressure_ = 101325.0f;   //Pa
+    float surface_pressure_ = 0.0f;   //Pa
     const float water_density_ = 997.0f;       //kg/m^3
     const float gravity_ = 9.81f;              //m/s^2
     bool set_surface_pressure_ = false;
