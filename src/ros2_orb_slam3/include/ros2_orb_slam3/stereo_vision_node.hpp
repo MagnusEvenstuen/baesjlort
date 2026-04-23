@@ -54,13 +54,13 @@ public:
 
         left_subscriber_.subscribe(
             this, 
-            "/gbr/cam_left/image_color",
+            "/gbr/cam_left/image_raw",
             rclcpp::SensorDataQoS().get_rmw_qos_profile()
         );
         
         right_subscriber_.subscribe(
             this,
-            "/gbr/cam_right/image_color",
+            "/gbr/cam_right/image_raw",
             rclcpp::SensorDataQoS().get_rmw_qos_profile()
         );
 
