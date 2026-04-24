@@ -125,7 +125,7 @@ void H264Receiver::image_decoded_callback(GstElement *sink, H264Receiver *data)
         << width << ", " << height << ')' << std::endl;
 
     std_msgs::msg::Header header;
-    header.stamp = rclcpp::Time(buffer->dts);
+    header.stamp = data->get_clock()->now();
     cv::Mat img(height, width, CV_8UC3, (char*)map.data);
     
     auto pub_msg = cv_bridge::CvImage(header, "rgb8", img).toImageMsg();

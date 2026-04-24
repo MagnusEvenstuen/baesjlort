@@ -155,9 +155,15 @@ private:
         //Check if both images have been received
 
         //Process stereo images with ORB_SLAM3
-        std::lock_guard<std::mutex> lock(image_mutex_);
-        Sophus::SE3f pose = slam_system_->TrackStereo(left_image_, 
-                                                    right_image_, 
+        cv::Mat left_image;
+        cv::Mat right_image;
+        {
+            std::lock_guard<std::mutex> lock(image_mutex_);
+            left_image = left_image_.clone();
+            right_image = right_image_.clone();
+        }
+        Sophus::SE3f pose = slam_system_->TrackStereo(left_image, 
+                                                    right_image, 
                                                     header.stamp.sec + header.stamp.nanosec * 1e-9);
         //Publish if valid pose
         if (!pose.matrix().isIdentity()) 
