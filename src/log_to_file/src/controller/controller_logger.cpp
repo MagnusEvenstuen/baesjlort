@@ -28,7 +28,8 @@ ControllerLogger::ControllerLogger(const std::string &topic, std::filesystem::pa
             << std::endl;
 	}
 
-    controller_subscriber_ = create_subscription<ControllerState>(topic, 10,
+    auto qos = rclcpp::QoS(1).best_effort();
+    controller_subscriber_ = create_subscription<ControllerState>(topic, qos,
             std::bind(&ControllerLogger::controllerSubscriptionCallback, this, std::placeholders::_1));
 }
 

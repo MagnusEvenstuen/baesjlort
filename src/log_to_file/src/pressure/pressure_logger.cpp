@@ -25,7 +25,8 @@ PressureLogger::PressureLogger(const std::string &topic, std::filesystem::path p
             << "fluid_pressure,variance" << std::endl;
 	}
 
-    pressure_subscriber_ = create_subscription<FluidPressure>(topic, 10,
+    auto qos = rclcpp::QoS(1).best_effort();
+    pressure_subscriber_ = create_subscription<FluidPressure>(topic, qos,
             std::bind(&PressureLogger::pressureSubscriptionCallback, this, std::placeholders::_1));
 }
 

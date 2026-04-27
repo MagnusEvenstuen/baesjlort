@@ -409,7 +409,7 @@ private:
     Eigen::Quaterniond target_object_direction_ = Eigen::Quaterniond::Identity();
     bool found_object = false;
     bool running_ = true;
-    bool auto_ = true;
+    bool auto_ = false;
     bool manual_alt_mode_ = false;
     bool prev_ps_ = false;
     bool prev_l1_ = false;

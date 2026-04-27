@@ -16,7 +16,7 @@ VideoLogger::VideoLogger(const std::string &topic, std::filesystem::path path)
 
     RCLCPP_INFO(get_logger(), "Logging to %s", std::filesystem::absolute(path).c_str());
 
-    video_subscriber_ = create_subscription<Image>(topic, 10,
+    video_subscriber_ = create_subscription<Image>(topic, rclcpp::QoS(1).best_effort(),
             std::bind(&VideoLogger::imageSubscriptionCallback, this, std::placeholders::_1));
 }
 

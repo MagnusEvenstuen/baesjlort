@@ -4,62 +4,27 @@ from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node, PushROSNamespace
 from launch.substitutions import PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
+from launch.actions import ExecuteProcess
 
 def generate_launch_description():
     left_video_topic = LaunchConfiguration("left_video_topic")
     right_video_topic = LaunchConfiguration("right_video_topic")
 
-    imu_topic = LaunchConfiguration("imu_topic")
+    navigator_imu_topic = LaunchConfiguration("navigator_imu_topic")
 
-    left_video_logger = GroupAction(
-            actions=[
-                PushROSNamespace("/gbr/cam_left"),
-                IncludeLaunchDescription(
-                    PathJoinSubstitution([
-                        FindPackageShare('log_to_file'),
-                        'launch',
-                        "video_logger.launch.py"
-                        ]),
-                    launch_arguments={
-                        "video_topic": left_video_topic
-                        }.items()
-                    )
-                ]
-            )
-
-    right_video_logger = GroupAction(
-            actions=[
-                PushROSNamespace("/gbr/cam_right"),
-                IncludeLaunchDescription(
-                    PathJoinSubstitution([
-                        FindPackageShare('log_to_file'),
-                        'launch',
-                        "video_logger.launch.py"
-                        ]),
-                    launch_arguments={
-                        "video_topic": right_video_topic
-                        }.items()
-                    )
-                ]
-            )
-
-    imu_logger = IncludeLaunchDescription(
-            PathJoinSubstitution([
-                FindPackageShare('log_to_file'),
-                'launch',
-                "imu_logger.launch.py"
-                ]),
-            launch_arguments={
-                "imu_topic": imu_topic
-                }.items()
-            )
-
-    # Return a launch description generated from node list
     return LaunchDescription([
-            DeclareLaunchArgument("left_video_topic", default_value="/gbr/cam_left/image_raw"),
-            DeclareLaunchArgument("right_video_topic", default_value="/gbr/cam_right/image_raw"),
-            DeclareLaunchArgument("imu_topic", default_value="/gbr/imu"),
-            left_video_logger,
-            right_video_logger,
-            imu_logger
-        ])
+        DeclareLaunchArgument("left_video_topic", default_value="/gbr/cam_left/image_raw"),
+        DeclareLaunchArgument("right_video_topic", default_value="/gbr/cam_left/image_raw"),
+        DeclareLaunchArgument("navigator_imu_topic", default_value="/gbr/navigator_imu"),
+        ExecuteProcess(
+            cmd=['ros2', 'bag', 'record',
+                 left_video_topic,
+                 right_video_topic,
+                 navigator_imu_topic,
+                 "/gbr/imu1",
+                 "/gbr/imu2",
+                 "/gbr/imu3",
+                 ],
+            output='screen'
+        )
+    ])

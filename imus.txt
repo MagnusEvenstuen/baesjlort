@@ -1,0 +1,8 @@
+imu1: phoenix back up right
+imu2: middle phoenix back up
+imu3: left mux/connector up
+
+viss an e konsekvente i ROVen
+imu1: top right
+imu2: top middle
+imu3: middle left

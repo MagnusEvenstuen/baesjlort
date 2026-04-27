@@ -21,16 +21,16 @@ Camera.fps: 30
 Camera.RGB: 0
 
 # Intrinsics for left camera (from P_left after rectification)
-Camera1.fx: 538.784527
-Camera1.fy: 538.784527
-Camera1.cx: 161.955271
-Camera1.cy: 230.658319
+Camera1.fx: 1034.165081
+Camera1.fy: 1033.125629
+Camera1.cx: 940.983669
+Camera1.cy: 537.905979
 
 # Right camera – same intrinsics because images are rectified
-Camera2.fx: 538.784527
-Camera2.fy: 538.784527
-Camera2.cx: 161.955271
-Camera2.cy: 230.658319
+Camera2.fx: 1044.118942
+Camera2.fy: 1044.082334
+Camera2.cx: 952.381655
+Camera2.cy: 588.325337
 
 # Distortion – set to zero because images are already rectified
 Camera1.k1: 0.0
