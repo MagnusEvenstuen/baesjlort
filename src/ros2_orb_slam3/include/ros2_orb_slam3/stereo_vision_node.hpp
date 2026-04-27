@@ -85,31 +85,29 @@ public:
         
         sync_->registerCallback(&stereo_vision_node::stereo_callback, this);
 
-        processing_thread_ = std::thread([this]() {
-            while (running_)
+        processing_thread_ = std::jthread([this](std::stop_token st) {
+            while (!st.stop_requested())
             {
+                std::unique_lock<std::mutex> lock(image_mutex_);
+                cv_.wait(lock, st, [this](){
+                            return new_frame_;
+                        });
+
                 if (new_frame_)
                 {
                     new_frame_ = false;
+                    lock.unlock();
                     process_stereo_pair(last_header_);
                 }
-
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
         });
-
-        processing_thread_.detach();
     }
 
     ~stereo_vision_node()
     {
-        if (slam_system_) {
+        if (slam_system_)
+        {
             slam_system_->Shutdown();
-        }
-        running_ = false;
-
-        if (processing_thread_.joinable()) {
-            processing_thread_.join();
         }
     }
 
@@ -117,27 +115,33 @@ private:
     void stereo_callback(const sensor_msgs::msg::Image::ConstSharedPtr& left_msg,
         const sensor_msgs::msg::Image::ConstSharedPtr& right_msg)
     {
-        //Convert images
-        auto left_img_ = cv_bridge::toCvShare(left_msg, "bgr8");
-        auto right_img_ = cv_bridge::toCvShare(right_msg, "bgr8");
-        
-        //Apply CLAHE (this might not be nessacerry)
-        std::lock_guard<std::mutex> lock(image_mutex_);
-        //left_image_ = apply_clahe(left_img_->image);
-        //right_image_ = apply_clahe(right_img_->image);
-        //left_image_ = apply_homomorphic(left_img_->image);
-        //right_image_ = apply_homomorphic(right_img_->image);
+        {
+            // Needs to be at the beginning due to usage of toCvShare
+            // Prevent the memory from being accessed when copying the ptr
+            std::lock_guard<std::mutex> lock(image_mutex_);
+            //Convert images
+            auto left_img_ = cv_bridge::toCvShare(left_msg, "bgr8");
+            auto right_img_ = cv_bridge::toCvShare(right_msg, "bgr8");
+            
+            //Apply CLAHE (this might not be nessacerry)
+            //left_image_ = apply_clahe(left_img_->image);
+            //right_image_ = apply_clahe(right_img_->image);
+            //left_image_ = apply_homomorphic(left_img_->image);
+            //right_image_ = apply_homomorphic(right_img_->image);
 
-        left_image_ = (left_img_->image);
-        right_image_ = (right_img_->image);
-        
-        // Process stereo pair immediately (message_filters ensures both are available)
-        last_header_ = left_msg->header;
-        new_frame_ = true;
+            left_image_ = (left_img_->image);
+            right_image_ = (right_img_->image);
+            
+            // Process stereo pair immediately (message_filters ensures both are available)
+            last_header_ = left_msg->header;
+            new_frame_ = true;
+        }
+        cv_.notify_one();
     }
 
     void orientation_callback(const std_msgs::msg::Float32MultiArray::SharedPtr msg)
     {
+        std::lock_guard<std::mutex> lock(orientation_mutex_);
         //Sets the correct orientation from IMU data
         orientation_ = Eigen::Quaterniond(
             msg->data[0],
@@ -159,6 +163,9 @@ private:
         cv::Mat right_image;
         {
             std::lock_guard<std::mutex> lock(image_mutex_);
+            /// If slow, test this. Not immune to others modifying the data
+            // std::swap(left_image, left_image_);
+            // std::swap(right_image, right_image_);
             left_image = left_image_.clone();
             right_image = right_image_.clone();
         }
@@ -195,9 +202,13 @@ private:
         pose_msg.header.frame_id = "world";
         
         Eigen::Quaternionf quat(pose.rotationMatrix());
-        Eigen::Quaternionf orientation = orientation_.cast<float>();
+        Eigen::Quaternionf orientation;
 
         Eigen::Vector3f position = Eigen::Vector3f(pose.translation().x(), pose.translation().y(), pose.translation().z());
+        {
+            std::lock_guard<std::mutex> lock(orientation_mutex_);
+            orientation = orientation_.cast<float>();
+        }
         position = quat.conjugate() * position;
         //position = orientation * position;
 
@@ -293,16 +304,18 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr thrust_publisher_;
     rclcpp::Subscription<std_msgs::msg::Float32MultiArray>::SharedPtr orientation_subscriber_;
     
-    std::mutex image_mutex_;
     double init_start_time_;
     rclcpp::TimerBase::SharedPtr init_timer_;
     Eigen::Quaterniond orientation_;
 
-    std::thread processing_thread_;
+    std::jthread processing_thread_;
+    std::mutex image_mutex_;
+    std::mutex orientation_mutex_;
+    std::condition_variable_any cv_;
     bool new_frame_ = false;
-    bool running_ = true;
     sensor_msgs::msg::Image::SharedPtr image_msg_;
     std_msgs::msg::Header last_header_;
+
 };
 
 
