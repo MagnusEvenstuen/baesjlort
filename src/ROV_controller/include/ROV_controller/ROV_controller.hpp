@@ -88,6 +88,9 @@ private:
     void object_position_callback(const std_msgs::msg::Float64MultiArray::ConstSharedPtr& msg)
     {
         object_position_ = Eigen::Vector3d(msg->data[0], msg->data[2], -msg->data[1]);
+        current_orientation_.normalize();
+        //Changes position to world frame
+        object_position_ = current_orientation_ * object_position_;
 
         //Uses enum, now Jon Aksel is happy :-)
         if (object_position_.y() < 3 && msg->data[3] == ROV_classes_to_detect::valve)

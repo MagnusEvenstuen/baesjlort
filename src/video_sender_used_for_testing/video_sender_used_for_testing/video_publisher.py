@@ -13,10 +13,10 @@ class VideoPublisher(Node):
         self.right_cam = self.create_publisher(Image, '/gbr/cam_right/image_color', 30)
         self.bridge = CvBridge()
         
-        self.left_path = "/home/gud/Skole/baesjlort/scripts/plotting_program/videos/left_slow2.mp4"
+        self.left_path = "/home/gud/Skole/baesjlort/scripts/plotting_program/videos/left_slow.mp4"
         self.capture_left = cv2.VideoCapture(self.left_path)
 
-        self.right_path = "/home/gud/Skole/baesjlort/scripts/plotting_program/videos/right_slow2.mp4"
+        self.right_path = "/home/gud/Skole/baesjlort/scripts/plotting_program/videos/right_slow.mp4"
         self.capture_right = cv2.VideoCapture(self.right_path)
 
         self.fps = 30
