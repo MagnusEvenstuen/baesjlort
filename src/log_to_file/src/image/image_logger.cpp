@@ -26,7 +26,9 @@ ImageLogger::ImageLogger(const std::string &topic, std::filesystem::path path)
     safe_topic_ = topic_;
     std::replace(safe_topic_.begin(), safe_topic_.end(), '/', '_');
 
-    image_subscriber_ = create_subscription<Image>(topic, 10,
+    rclcpp::QoS qos(1);
+    qos.best_effort();
+    image_subscriber_ = create_subscription<Image>(topic, qos,
             std::bind(&ImageLogger::imageSubscriptionCallback, this, std::placeholders::_1));
 }
 
@@ -47,6 +49,6 @@ void ImageLogger::imageSubscriptionCallback(Image::UniquePtr msg)
 
     cv_bridge::CvImagePtr img = cv_bridge::toCvCopy(*msg, msg->encoding);
     cv::Mat bgr_image;
-    cv::cvtColor(img->image, bgr_image, cv::COLOR_YUV2BGR_YUY2);
+    cv::cvtColor(img->image, bgr_image, cv::COLOR_RGB2BGR);
     cv::imwrite(imgPath.string(), bgr_image);
 }

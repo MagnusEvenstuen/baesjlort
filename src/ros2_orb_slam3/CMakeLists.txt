@@ -6,8 +6,8 @@ project(ros2_orb_slam3)
 
 message(WARNING "Project source dir: ${PROJECT_SOURCE_DIR}")
 
-# Enforce use of C++17
-set(CMAKE_CXX_STANDARD 17)
+# Enforce use of C++20
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -O3")
 

@@ -14,6 +14,7 @@ find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(cv_bridge REQUIRED)
+find_package(camera_info_manager REQUIRED)
 
 pkg_search_module(gstreamer REQUIRED IMPORTED_TARGET gstreamer-1.0)
 pkg_search_module(gstreamer-app REQUIRED IMPORTED_TARGET gstreamer-app-1.0)
@@ -26,11 +27,22 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     PkgConfig::gstreamer
     PkgConfig::gstreamer-app
     cv_bridge::cv_bridge
+    camera_info_manager::camera_info_manager
 )
 
 install(TARGETS
     ${PROJECT_NAME}
     DESTINATION lib/${PROJECT_NAME}
+)
+
+install(DIRECTORY
+    config
+    DESTINATION share/${PROJECT_NAME}
+)
+
+install(DIRECTORY
+    launch
+    DESTINATION share/${PROJECT_NAME}
 )
 
 if(BUILD_TESTING)

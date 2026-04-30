@@ -7,7 +7,7 @@ ImuLogger::ImuLogger(const std::string &topic, std::filesystem::path path)
 {
     if (path.empty())
     {
-        std::string name = topic.substr(1);
+        std::string name = std::string(get_namespace()).substr(1) + '/' + topic;
         std::replace(name.begin(), name.end(), '/', '_');
         path = name + ".csv";
     }
@@ -42,7 +42,7 @@ ImuLogger::ImuLogger(const std::string &topic, std::filesystem::path path)
 	}
 
 	// TODO: Create subscribers
-    imu_subscriber_ = create_subscription<Imu>(topic, 10,
+    imu_subscriber_ = create_subscription<Imu>(topic, rclcpp::QoS(1).best_effort(),
             std::bind(&ImuLogger::imuSubscriptionCallback, this, std::placeholders::_1));
 }
 

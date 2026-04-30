@@ -6,9 +6,23 @@ H264Receiver::H264Receiver(const std::string &image_topic)
 
     this->declare_parameter<std::string>("topic_out", "image_raw");
     std::string topic_out = this->get_parameter("topic_out").as_string();
+    this->declare_parameter<bool>("use_nvidia", false);
+    bool use_nvidia = this->get_parameter("use_nvidia").as_bool();
+    this->declare_parameter<std::string>("cam_info_path", "");
+    std::string cam_info_path = this->get_parameter("cam_info_path").as_string();
 
     src_ = gst_element_factory_make("appsrc", "src");
-    decoder_ = gst_element_factory_make("avdec_h264", "decoder");
+    parser_ = gst_element_factory_make("h264parse", "parser");
+    if (use_nvidia)
+    {
+        decoder_ = gst_element_factory_make("nvh264dec", "decoder");
+        RCLCPP_INFO(get_logger(), "Using nvidia decoder");
+    }
+    else
+    {
+        decoder_ = gst_element_factory_make("avdec_h264", "decoder");
+        RCLCPP_INFO(get_logger(), "Using software decoder");
+    }
     converter_ = gst_element_factory_make("videoconvert", "converter");
     capsfilter_ = gst_element_factory_make("capsfilter", "capsfilter");
     sink_ = gst_element_factory_make("appsink", "sink");
@@ -45,10 +59,10 @@ H264Receiver::H264Receiver(const std::string &image_topic)
 
     gst_caps_unref(caps);
 
-    gst_bin_add_many(GST_BIN(pipeline_.get()), src_, decoder_,
-            converter_, capsfilter_, sink_, nullptr);
+    gst_bin_add_many(GST_BIN(pipeline_.get()), src_, parser_,
+            decoder_, converter_, capsfilter_, sink_, nullptr);
 
-    if (gst_element_link_many(src_, decoder_, converter_,
+    if (gst_element_link_many(src_, parser_, decoder_, converter_,
                 capsfilter_, sink_, nullptr) != TRUE)
     {
         std::cerr << "Failed to link gstreamer elements" << std::endl;
@@ -72,6 +86,29 @@ H264Receiver::H264Receiver(const std::string &image_topic)
 
     RCLCPP_INFO(get_logger(), "Publishing to topic '%s/%s'", get_namespace(), topic_out.c_str()); 
     image_publisher_ = create_publisher<Image>(topic_out, 1);
+
+    if (!cam_info_path.empty())
+    {
+        std::string cam_name = get_namespace();
+        std::replace(cam_name.begin(), cam_name.end(), '/', '_');
+        cim = std::make_unique<CameraInfoManager>(this, cam_name, "file://" + cam_info_path);
+        camera_info_ = cim->getCameraInfo();
+        camera_info_publisher_ = create_publisher<CameraInfo>("camera_info", 10);
+        if (cim->isCalibrated())
+        {
+            RCLCPP_INFO(get_logger(), "Camera is calibrated");
+            camera_info_publisher_ = create_publisher<CameraInfo>("camera_info", 10);
+        }
+        else
+        {
+            RCLCPP_WARN(get_logger(), "Camera is NOT calibrated");
+            RCLCPP_WARN(get_logger(), "Camera info path was: %s", cam_info_path.c_str());
+        }
+    }
+    else
+    {
+        RCLCPP_WARN(get_logger(), "'cam_info_path' is not set");
+    }
 }
 
 void H264Receiver::image_received_callback(CompressedImage::UniquePtr msg)
@@ -125,12 +162,18 @@ void H264Receiver::image_decoded_callback(GstElement *sink, H264Receiver *data)
         << width << ", " << height << ')' << std::endl;
 
     std_msgs::msg::Header header;
+    // header.stamp = rclcpp::Time(buffer->dts);
     header.stamp = data->get_clock()->now();
     cv::Mat img(height, width, CV_8UC3, (char*)map.data);
     
     auto pub_msg = cv_bridge::CvImage(header, "rgb8", img).toImageMsg();
 
     data->publish_image(*pub_msg);
+    // if (data->cim->isCalibrated())
+    {
+        data->camera_info_.header.stamp = pub_msg->header.stamp;
+        data->publish_info();
+    }
     
     gst_buffer_unmap(buffer, &map);
     gst_sample_unref(sample);
@@ -139,4 +182,9 @@ void H264Receiver::image_decoded_callback(GstElement *sink, H264Receiver *data)
 void H264Receiver::publish_image(const Image &msg)
 {
     image_publisher_->publish(msg);
+}
+
+void H264Receiver::publish_info()
+{
+    camera_info_publisher_->publish(camera_info_);
 }
