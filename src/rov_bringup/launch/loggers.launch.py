@@ -24,6 +24,7 @@ def generate_launch_description():
                  "/gbr/imu1",
                  "/gbr/imu2",
                  "/gbr/imu3",
+                 "/gbr/thrusters"
                  ],
             output='screen'
         )
