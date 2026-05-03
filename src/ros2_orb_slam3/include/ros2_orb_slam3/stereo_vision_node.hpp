@@ -120,8 +120,10 @@ private:
             // Prevent the memory from being accessed when copying the ptr
             std::lock_guard<std::mutex> lock(image_mutex_);
             //Convert images
-            auto left_img_ = cv_bridge::toCvShare(left_msg, "bgr8");
-            auto right_img_ = cv_bridge::toCvShare(right_msg, "bgr8");
+            // auto left_img_ = cv_bridge::toCvShare(left_msg, "bgr8");
+            // auto right_img_ = cv_bridge::toCvShare(right_msg, "bgr8");
+            auto left_img_ = cv_bridge::toCvCopy(left_msg, "bgr8");
+            auto right_img_ = cv_bridge::toCvCopy(right_msg, "bgr8");
             
             //Apply CLAHE (this might not be nessacerry)
             //left_image_ = apply_clahe(left_img_->image);
@@ -164,10 +166,10 @@ private:
         {
             std::lock_guard<std::mutex> lock(image_mutex_);
             /// If slow, test this. Not immune to others modifying the data
-            // std::swap(left_image, left_image_);
-            // std::swap(right_image, right_image_);
-            left_image = left_image_.clone();
-            right_image = right_image_.clone();
+            std::swap(left_image, left_image_);
+            std::swap(right_image, right_image_);
+            // left_image = left_image_.clone();
+            // right_image = right_image_.clone();
         }
         Sophus::SE3f pose = slam_system_->TrackStereo(left_image, 
                                                     right_image, 
