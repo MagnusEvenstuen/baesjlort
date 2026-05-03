@@ -440,14 +440,14 @@ private:
     //Thruster allocation (x, y, z, roll, pitch, yaw)
     Eigen::Matrix<double, 8, 6> thrust_map_matrix = 
     (Eigen::Matrix<double, 8, 6>() <<
-    -1.0, 1.0, 0.0, 0.0, 0.0, 1.0,   //Thruster 1
-    1.0, 1.0, 0.0, 0.0, 0.0, -1.0,  //Thruster 2
-    -1.0, -1.0, 0.0, 0.0, 0.0, -1.0, //Thruster 3
-    1.0, -1.0, 0.0, 0.0, 0.0, 1.0,  //Thruster 4
-    0.0, 0.0, 1.0, -1.0, 1.0, 0.0, //Thruster 5
-    0.0, 0.0, 1.0, 1.0, 1.0, 0.0,  //Thruster 6
-    0.0, 0.0, 1.0, -1.0, -1.0, 0.0,    //Thruster 7
-    0.0, 0.0, 1.0, 1.0, -1.0, 0.0    //Thruster 8
+    -std::sqrt(2)/2,  std::sqrt(2)/2,  0.0,  0.0,              0.0,              0.156*std::sqrt(2),  // Thruster 1
+     std::sqrt(2)/2,  std::sqrt(2)/2,  0.0,  0.0,              0.0,             -0.156*std::sqrt(2),  // Thruster 2
+    -std::sqrt(2)/2, -std::sqrt(2)/2,  0.0,  0.0,              0.0,             -0.156*std::sqrt(2),  // Thruster 3
+     std::sqrt(2)/2, -std::sqrt(2)/2,  0.0,  0.0,              0.0,              0.156*std::sqrt(2),  // Thruster 4
+     0.0,             0.0,            -1.0, -0.115,             0.096,            0.0,                 // Thruster 5
+     0.0,             0.0,            -1.0, -0.115,            -0.096,            0.0,                 // Thruster 6
+     0.0,             0.0,            -1.0,  0.115,             0.096,            0.0,                 // Thruster 7
+     0.0,             0.0,            -1.0,  0.115,            -0.096,            0.0                  // Thruster 8
     ).finished();
 };
 
