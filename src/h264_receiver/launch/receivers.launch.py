@@ -13,17 +13,19 @@ def generate_launch_description():
     left_info = os.path.join(get_package_share_directory("h264_receiver"), "config", "left.yaml")
     right_info = os.path.join(get_package_share_directory("h264_receiver"), "config", "right.yaml")
 
+    use_nvidia = False
+
     left_cam_receiver = Node(
             package = "h264_receiver",
             executable = "h264_receiver",
             name = "left_cam_receiver",
             namespace = "/gbr/cam_left",
             parameters = [
-                { "use_nvidia": False },
+                { "use_nvidia": use_nvidia },
                 { "cam_info_path": left_info }
                 ],
             arguments = [left_video_topic],
-            # output = "both"
+            output = "both"
         )
     left_rectify = Node(
         package = "image_proc",
@@ -42,11 +44,11 @@ def generate_launch_description():
             name = "right_cam_receiver",
             namespace = "/gbr/cam_right",
             parameters = [
-                { "use_nvidia": False },
+                { "use_nvidia": use_nvidia },
                 { "cam_info_path": right_info }
                 ],
             arguments = [right_video_topic],
-            # output = "both"
+            output = "both"
         )
 
     right_rectify = Node(
@@ -66,6 +68,6 @@ def generate_launch_description():
             DeclareLaunchArgument("right_video_topic", default_value="image_compressed"),
             left_cam_receiver,
             right_cam_receiver,
-            left_rectify,
-            right_rectify
+            # left_rectify,
+            # right_rectify
         ])

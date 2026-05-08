@@ -48,6 +48,8 @@ private:
     GstElement *decoder_;
     GstElement *parser_;
     GstElement *converter_;
+    // Only used when gpu accelerated
+    GstElement *downloader_;
     GstElement *capsfilter_;
     GstElement *sink_;
     UniquePipeline pipeline_;

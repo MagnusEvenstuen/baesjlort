@@ -16,14 +16,17 @@ H264Receiver::H264Receiver(const std::string &image_topic)
     if (use_nvidia)
     {
         decoder_ = gst_element_factory_make("nvh264dec", "decoder");
-        RCLCPP_INFO(get_logger(), "Using nvidia decoder");
+        converter_ = gst_element_factory_make("cudaconvert", "converter");
+        downloader_ = gst_element_factory_make("cudadownload", "downloader");
+        RCLCPP_INFO(get_logger(), "Using nvidia decoder and converter");
     }
     else
     {
         decoder_ = gst_element_factory_make("avdec_h264", "decoder");
-        RCLCPP_INFO(get_logger(), "Using software decoder");
+        converter_ = gst_element_factory_make("videoconvert", "converter");
+        downloader_ = gst_element_factory_make("identity", "dummy");
+        RCLCPP_INFO(get_logger(), "Using software decoder and converter");
     }
-    converter_ = gst_element_factory_make("videoconvert", "converter");
     capsfilter_ = gst_element_factory_make("capsfilter", "capsfilter");
     sink_ = gst_element_factory_make("appsink", "sink");
 
@@ -47,7 +50,7 @@ H264Receiver::H264Receiver(const std::string &image_topic)
     
     caps = gst_caps_new_simple(
         "video/x-raw",
-        "format", G_TYPE_STRING, "RGB",
+        "format", G_TYPE_STRING, "BGR",
         // "width", G_TYPE_INT, 640,
         // "height", G_TYPE_INT, 480,
         // "framerate", GST_TYPE_FRACTION, 30, 1,
@@ -60,10 +63,11 @@ H264Receiver::H264Receiver(const std::string &image_topic)
     gst_caps_unref(caps);
 
     gst_bin_add_many(GST_BIN(pipeline_.get()), src_, parser_,
-            decoder_, converter_, capsfilter_, sink_, nullptr);
+            decoder_, converter_, downloader_,
+            capsfilter_, sink_, nullptr);
 
     if (gst_element_link_many(src_, parser_, decoder_, converter_,
-                capsfilter_, sink_, nullptr) != TRUE)
+                downloader_, capsfilter_, sink_, nullptr) != TRUE)
     {
         std::cerr << "Failed to link gstreamer elements" << std::endl;
         std::exit(-1);
@@ -81,11 +85,11 @@ H264Receiver::H264Receiver(const std::string &image_topic)
     gst_element_set_state(pipeline_.get(), GST_STATE_PLAYING);
 
     RCLCPP_INFO(get_logger(), "Subscribing to topic '%s/%s'", get_namespace(), image_topic.c_str()); 
-    image_subscriber_ = create_subscription<CompressedImage>(image_topic, rclcpp::SensorDataQoS(),
+    image_subscriber_ = create_subscription<CompressedImage>(image_topic, rclcpp::QoS(1).best_effort(),
             std::bind(&H264Receiver::image_received_callback, this, std::placeholders::_1));
 
     RCLCPP_INFO(get_logger(), "Publishing to topic '%s/%s'", get_namespace(), topic_out.c_str()); 
-    image_publisher_ = create_publisher<Image>(topic_out, 1);
+    image_publisher_ = create_publisher<Image>(topic_out, rclcpp::QoS(1).best_effort());
 
     if (!cam_info_path.empty())
     {
@@ -93,7 +97,6 @@ H264Receiver::H264Receiver(const std::string &image_topic)
         std::replace(cam_name.begin(), cam_name.end(), '/', '_');
         cim = std::make_unique<CameraInfoManager>(this, cam_name, "file://" + cam_info_path);
         camera_info_ = cim->getCameraInfo();
-        camera_info_publisher_ = create_publisher<CameraInfo>("camera_info", 10);
         if (cim->isCalibrated())
         {
             RCLCPP_INFO(get_logger(), "Camera is calibrated");
@@ -157,24 +160,26 @@ void H264Receiver::image_decoded_callback(GstElement *sink, H264Receiver *data)
     int width, height;
     gst_structure_get_int(s, "width", &width);
     gst_structure_get_int(s, "height", &height);
-    const char *format = gst_structure_get_string(s, "format");
-    std::cout << "Format: " << format << ", Size: ("
-        << width << ", " << height << ')' << std::endl;
+    // const char *format = gst_structure_get_string(s, "format");
+    // std::cout << "Format: " << format << ", Size: ("
+    //     << width << ", " << height << ')' << std::endl;
 
-    std_msgs::msg::Header header;
-    // header.stamp = rclcpp::Time(buffer->dts);
-    header.stamp = data->get_clock()->now();
-    cv::Mat img(height, width, CV_8UC3, (char*)map.data);
-    
-    auto pub_msg = cv_bridge::CvImage(header, "rgb8", img).toImageMsg();
+    Image msg;
+    // msg.header.stamp = rclcpp::Time(buffer->dts);
+    msg.header.stamp = data->get_clock()->now();
+    msg.width = width;
+    msg.height = height;
+    msg.data.assign(map.data, map.data + map.size);
+    msg.encoding = "bgr8";
+    msg.step = width * 3;
 
-    data->publish_image(*pub_msg);
-    // if (data->cim->isCalibrated())
+    data->publish_image(msg);
+    if (data->cim->isCalibrated())
     {
-        data->camera_info_.header.stamp = pub_msg->header.stamp;
+        data->camera_info_.header.stamp = msg.header.stamp;
         data->publish_info();
     }
-    
+
     gst_buffer_unmap(buffer, &map);
     gst_sample_unref(sample);
 }
