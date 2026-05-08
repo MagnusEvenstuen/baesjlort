@@ -5,6 +5,7 @@ from launch_ros.actions import Node, PushROSNamespace
 from launch.substitutions import PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
 from launch.actions import ExecuteProcess
+import os
 
 def generate_launch_description():
     left_video_topic = LaunchConfiguration("left_video_topic")
@@ -14,7 +15,7 @@ def generate_launch_description():
 
     return LaunchDescription([
         DeclareLaunchArgument("left_video_topic", default_value="/gbr/cam_left/image_raw"),
-        DeclareLaunchArgument("right_video_topic", default_value="/gbr/cam_left/image_raw"),
+        DeclareLaunchArgument("right_video_topic", default_value="/gbr/cam_right/image_raw"),
         DeclareLaunchArgument("navigator_imu_topic", default_value="/gbr/navigator_imu"),
         ExecuteProcess(
             cmd=['ros2', 'bag', 'record',
@@ -24,8 +25,10 @@ def generate_launch_description():
                  "/gbr/imu1",
                  "/gbr/imu2",
                  "/gbr/imu3",
-                 "/gbr/thrusters"
+                 "/gbr/thrusters",
+                 "/gbr/pressure"
                  ],
+            cwd=f"{os.getcwd()}/rosbag",
             output='screen'
         )
     ])
