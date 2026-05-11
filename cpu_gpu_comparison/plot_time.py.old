@@ -1,0 +1,61 @@
+import matplotlib.pyplot as pp
+import rclpy
+from rclpy.node import Node
+from rclpy.qos import QoSPresetProfiles, QoSProfile
+from sensor_msgs.msg import CompressedImage, Image
+from std_msgs.msg import Header
+from rclpy.time import Time
+# from builtin_interfaces.msg import Time
+
+class Plotter(Node):
+    def __init__(self):
+        super().__init__("plotter")
+
+        qos = QoSPresetProfiles.BEST_AVAILABLE.value
+        qos.depth = 30
+        
+        # self.img_sub = self.create_subscription(Image, "/gbr/cam_left/image_raw", self.image_callback, QoSPresetProfiles.BEST_AVAILABLE.value)
+        self.img_sub = self.create_subscription(Image, "/gbr/cam_left/image_raw", self.image_callback, qos)
+        self.comp_img_sub = self.create_subscription(CompressedImage, "/gbr/cam_left/image_compressed", self.comp_image_callback, QoSPresetProfiles.BEST_AVAILABLE.value)
+        # self.comp_img_sub = self.create_subscription(CompressedImage, "/gbr/cam_left/image_compressed", self.comp_image_callback, 10)
+
+        self.img_list = []
+        self.comp_img_list = []
+        self.timer = self.create_timer(5, self.timer_callback)
+
+    def image_callback(self, img):
+        self.timer.reset()
+        self.img_list.append(Time().from_msg(img.header.stamp))
+
+    def comp_image_callback(self, img):
+        self.timer.reset()
+        self.comp_img_list.append(Time().from_msg(img.header.stamp))
+
+    def timer_callback(self):
+        diff_list = []
+
+        for i in range(len(self.img_list)):
+            if i > 0:
+                diff = self.img_list[i] - self.img_list[i-1]
+                diff_list.append(diff.nanoseconds * 1e-9)
+
+        pp.plot(diff_list)
+        pp.show()
+
+def main(args=None):
+    rclpy.init(args=args)
+
+    plotter = Plotter()
+
+    rclpy.spin(plotter)
+
+    # Destroy the node explicitly
+    # (optional - otherwise it will be done automatically
+    # when the garbage collector destroys the node object)
+    plotter.destroy_node()
+    rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    main()
+
