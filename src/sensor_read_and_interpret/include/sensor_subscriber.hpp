@@ -27,7 +27,7 @@ class sensor_subscriber : public rclcpp::Node
 public:
     sensor_subscriber() : Node("sensor_subscriber"),
         //Setup IMU objects with their positions on the robot and initial orientations
-        IMU_center_(Eigen::Vector3d(0.0f, -0.003f, -0.0013), Eigen::Quaterniond(0.924f, 0.0f, 0.0f, -0.383f)),
+        IMU_center_(Eigen::Vector3d(0.0f, -0.003f, -0.0013), Eigen::Quaterniond(1.0f, 0.0f, 0.0f, 0.0f)),
         IMU_center1_(Eigen::Vector3d(0.04f, -0.003f, -0.0013), Eigen::Quaterniond(-0.3827, 0.0, 0.0, 0.9239)),  //Rotated 225 degrees around z
         IMU_center2_(Eigen::Vector3d(-0.04f, -0.003f, -0.0013), Eigen::Quaterniond(1.0f, 0.0f, 0.0f, 0.0f)),    //Not rotated at all
         IMU_front1_(Eigen::Vector3d(-0.03f, 0.05f, -0.0013), Eigen::Quaterniond(0.7071, 0.0, 0.0, 0.7071)),     //Rotated 90 degrees around z
@@ -39,7 +39,7 @@ public:
         imu_objects_{IMU_center_, IMU_center1_, IMU_center2_, IMU_front1_, IMU_front2_, IMU_rear1_, IMU_rear2_, IMU_rear3_},
         imu_topic_map_{
             //{"/gbr/imu_center_perfect", 0},
-            {"/gbr/imu7", 3},
+            {"/gbr/navigator_imu1", 3},
             {"/gbr/imu1", 0},       //Currently only 1, 2, and 3 are used.
             {"/gbr/imu2", 1},
             {"/gbr/imu3", 2},
@@ -140,12 +140,12 @@ private:
             }
 
             imu_obj.update2_electric_boogalo(
-                msg->linear_acceleration.x,
-                msg->linear_acceleration.y,
-                msg->linear_acceleration.z,
-                msg->angular_velocity.x,
-                msg->angular_velocity.y,
-                msg->angular_velocity.z,
+                msg->linear_acceleration.x/8,
+                msg->linear_acceleration.y/8,
+                msg->linear_acceleration.z/8,
+                msg->angular_velocity.x/16,
+                msg->angular_velocity.y/16,
+                msg->angular_velocity.z/16,
                 fuse_sensors);
             
             Eigen::Vector3d acc = imu_obj.get_acceleration();
@@ -218,7 +218,7 @@ private:
                 recieved_counter++;
         }
 
-        if (recieved_counter <= 2)
+        if (recieved_counter <= 0)
         {
             sensor_handler_.non_measurement_prediction(thrust_);
             return;
@@ -249,9 +249,8 @@ private:
             {
                 avg_gyro += gyro;
             }
-            for (const auto& orientation : orientation_vector)
-            {
-                avg_orientation_IMU = avg_orientation_IMU * orientation;
+            for (const auto& orientation : orientation_vector) {
+                avg_orientation_IMU.coeffs() += orientation.coeffs();
             }
             if (!acc_vector.empty())
             {
@@ -274,17 +273,16 @@ private:
         auto gyro_msg = std_msgs::msg::Float32MultiArray();
         gyro_msg.data = {avg_gyro.x(), avg_gyro.y(), avg_gyro.z()};
         avg_gyro_publisher_->publish(gyro_msg);
-        
+
         auto acc_msg = std_msgs::msg::Float32MultiArray();
         acc_msg.data = {avg_acc.x(), avg_acc.y(), avg_acc.z()};
         avg_acc_publisher_->publish(acc_msg);
 
-        //Publish data for Slamming balls
+        ////Publish data for Slamming balls
         Eigen::Quaterniond ori_from_handler = sensor_handler_.get_orientation();
         auto orientation_msg = std_msgs::msg::Float32MultiArray();
         orientation_msg.data = {ori_from_handler.w(), ori_from_handler.x(), ori_from_handler.y(), ori_from_handler.z()};
         orientation_publisher_->publish(orientation_msg);
-
         Eigen::Vector3d position = sensor_handler_.get_position();
         auto position_msg = std_msgs::msg::Float32MultiArray();
         position_msg.data = {-position.x(), -position.y(), position.z()};
@@ -308,7 +306,7 @@ private:
 
         acc_ = Eigen::Vector3d::Zero();
         gyro_ = Eigen::Vector3d::Zero();
-        orientation_ = Eigen::Quaterniond(0.0, 0.0, 0.0, 0.0);
+        orientation_ = Eigen::Quaterniond(1.0, 0.0, 0.0, 0.0);
     }
 
     void pressure_callback(const sensor_msgs::msg::FluidPressure::ConstSharedPtr& msg)

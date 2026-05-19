@@ -2,6 +2,7 @@ import scipy.signal as sig
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+import pandas as pd
 
 
 #Optimal filter design, and exporting code are modified versions of code from https://github.com/MagnusEvenstuen/DiggSiggECGProject/blob/main/Filtering.py
@@ -40,7 +41,7 @@ def optimalFilter(filterLength, edges, weights, fs):
     lp = sig.remez(
         numtaps=filterLength,
         bands=edges,
-        desired=[1, 0],
+        desired=[0, 1, 0],
         weight=weights,
         fs=fs
     )
@@ -52,17 +53,16 @@ def optimalFilter(filterLength, edges, weights, fs):
     # Amplituderespons (dB)
     plt.subplot(2, 1, 1)
     plt.plot(w, 20 * np.log10(np.abs(h)))
-    plt.title("Frekvensrespons")
+    plt.title("Frequency response")
     plt.ylabel("Amplitude [dB]")
     plt.grid(True)
     # Faserespons
     plt.subplot(2, 1, 2)
     plt.plot(w, np.unwrap(np.angle(h)) * 180 / np.pi)
-    plt.ylabel("Fase [grader]")
-    plt.xlabel("Frekvens [Hz]")
+    plt.ylabel("Phase [deqrees]")
+    plt.xlabel("Frequency [Hz]")
     plt.grid(True)
     plt.tight_layout()
-    plt.show()
     return lp
 
 file_path = 'data_files/sensor_data.csv'
@@ -77,7 +77,7 @@ correct_acc_x = data[:, 10]
 correct_acc_y = data[:, 11]
 correct_acc_z = data[:, 12]
 
-lp = optimalFilter(21, [0, 5, 6, 50], [3, 1], 100)
+lp = optimalFilter(21, [0, 2, 4, 30, 35, 35], [1, 3, 1], 70)
 
 acc_x_lp = np.convolve(acc_x, lp, mode="same")
 acc_y_lp = np.convolve(acc_y, lp, mode="same")
@@ -85,16 +85,62 @@ acc_z_lp = np.convolve(acc_z, lp, mode="same")
 
 plt.figure()
 plt.title("Acceleration")
-plt.plot(timestamp, acc_x, label="acceleration_x")
-plt.plot(timestamp, acc_y, label="acceleration_y")
-plt.plot(timestamp, acc_z, label="acceleration_z")
-plt.plot(timestamp, acc_x_lp, label="lp_acceleration_x")
-plt.plot(timestamp, acc_y_lp, label="lp_acceleration_y")
-plt.plot(timestamp, acc_z_lp, label="lp_acceleration_z")
-plt.plot(timestamp, correct_acc_x, label="correct_acceleration_x", linestyle=":")
-plt.plot(timestamp, correct_acc_y, label="correct_acceleration_y", linestyle=":")
-plt.plot(timestamp, correct_acc_z, label="correct_acceleration_z", linestyle=":")
+plt.plot(timestamp, acc_x, label="acceleration_x", linestyle=":")
+plt.plot(timestamp, acc_y, label="acceleration_y", linestyle=":")
+plt.plot(timestamp, acc_z, label="acceleration_z", linestyle=":")
+plt.plot(timestamp, acc_x_lp, label="hp_acceleration_x")
+plt.plot(timestamp, acc_y_lp, label="hp_acceleration_y")
+plt.plot(timestamp, acc_z_lp, label="hp_acceleration_z")
 plt.xlabel("Time")
 plt.ylabel("Acceleration (m/s^2)")
 plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+
+fig, axes = plt.subplots(3, 1, sharex=True, figsize=(8, 10))
+fig.suptitle("Acceleration filtered")
+
+# X-akse
+axes[0].plot(timestamp, acc_x, ':', label="acceleration_x (raw)")
+axes[0].plot(timestamp, acc_x_lp, label="hp_acceleration_x (filtered)")
+axes[0].set_ylabel("Acceleration (m/s²)")
+axes[0].set_title("X")
+axes[0].legend(loc='best')
+axes[0].grid(True)
+
+# Y-akse
+axes[1].plot(timestamp, acc_y, ':', label="acceleration_y (raw)")
+axes[1].plot(timestamp, acc_y_lp, label="hp_acceleration_y (filtered)")
+axes[1].set_ylabel("Acceleration (m/s²)")
+axes[1].set_title("Y")
+axes[1].legend(loc='best')
+axes[1].grid(True)
+
+# Z-akse
+axes[2].plot(timestamp, acc_z, ':', label="acceleration_z (raw)")
+axes[2].plot(timestamp, acc_z_lp, label="hp_acceleration_z (filtered)")
+axes[2].set_xlabel("Tid (s)")
+axes[2].set_ylabel("Acceleration (m/s²)")
+axes[2].set_title("Z")
+axes[2].legend(loc='best')
+axes[2].grid(True)
+plt.xlabel("Time")
+plt.tight_layout()
 plt.show()
+print("AVG HP", np.average(acc_x_lp), np.average(acc_y_lp), np.average(acc_z_lp))
+print("AVG", np.average(acc_x), np.average(acc_y), np.average(acc_z))
+
+# Les header-linjen for å ta vare på den
+with open(file_path, 'r') as f:
+    header_line = f.readline().strip()
+
+# Les all data (uten header)
+all_data = np.genfromtxt(file_path, delimiter=',', skip_header=1)
+
+# Bytt ut kolonne 1,2,3 (acc_x, acc_y, acc_z) med filtrerte versjoner
+all_data[:, 1] = acc_x_lp
+all_data[:, 2] = acc_y_lp
+all_data[:, 3] = acc_z_lp
+
+# Lagre ny CSV med samme header
+output_file = 'data_files/sensor_data_filtered.csv'
+np.savetxt(output_file, all_data, delimiter=',', header=header_line, comments='')
+print(f"Filtrert data lagret til {output_file}")

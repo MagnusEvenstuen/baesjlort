@@ -63,7 +63,7 @@ public:
                         "correct_acc_x,correct_acc_y,correct_acc_z, correct_vel_x,correct_vel_y,"
                         "correct_vel_z, correct_pos_x,correct_pos_y,correct_pos_z, depth_by_pressure,"
                         "orientation_x, orientation_y, orientation_z, truth_orientation_x, truth_orientation_y, truth_orientation_z,"
-                        "gyro_x, gyro_y, gyro_z\n";
+                        "gyro_x, gyro_y, gyro_z, thrust_1, thrust_2, thrust_3, thrust_4, thrust_5, thrust_6, thrust_7, thrust_8, SLAM frame\n";
         }
     }
     ~sensor_handler()
@@ -79,6 +79,7 @@ public:
                            const float quat_x, const float quat_y, const float quat_z, 
                            const float quat_w, const float dt)
     {
+        new_SLAM_data_ = true;
         if (first_update_)
         {
             //On first update, set position directly to SLAM position to avoid large jumps
@@ -95,9 +96,9 @@ public:
 
         //Update position and orientation from SLAM pose estimate
         Eigen::Vector3d estimated_SLAM_speed(
-            -(pos_x - prev_SLAM_pos_.x()) / dt,
-            -(pos_z - prev_SLAM_pos_.z()) / dt,
-            -(pos_y - prev_SLAM_pos_.y()) / dt
+            2*(-(pos_x - prev_SLAM_pos_.x()) / dt),
+            2*(-(pos_z - prev_SLAM_pos_.z()) / dt),
+            2*(-(pos_y - prev_SLAM_pos_.y()) / dt)
         );
 
         Eigen::Quaterniond slam_to_world = slam_quat.conjugate()*orientation_;
@@ -269,11 +270,10 @@ public:
         );
         orientation_ = orientation_ * delta_orientation;
         orientation_.normalize();
-        orientation_ = orientation;
 
         Eigen::Vector3d imu_speed(current_speed_.x() + acc_filtered.x() * dt, current_speed_.y() + acc_filtered.y() * dt, current_speed_.z() + acc_filtered.z() * dt);
         update_current_variables(dt, imu_speed);
-        log_to_csv(acc_filtered.x(), acc_filtered.y(), acc_filtered.z(), gyro_filtered.x(), gyro_filtered.y(), gyro_filtered.z());
+        log_to_csv(acc_filtered.x(), acc_filtered.y(), acc_filtered.z(), gyro_filtered.x(), gyro_filtered.y(), gyro_filtered.z(), thruster_gain);
     }
 
     void update_current_variables(const float dt, const Eigen::Vector3d& imu_speed)
@@ -303,7 +303,7 @@ public:
         return orientation_;
     }
 
-    void log_to_csv(float acc_x, float acc_y, float acc_z, float gyro_x, float gyro_y, float gyro_z)
+    void log_to_csv(float acc_x, float acc_y, float acc_z, float gyro_x, float gyro_y, float gyro_z, const std::array<float, 8>& thrust)
     {
         if (csv_file_.is_open())
         {
@@ -320,10 +320,15 @@ public:
                      << perfect_position_.x() << ", " << perfect_position_.y() << ", " << perfect_position_.z() << ", " << depth_ << ","
                      << orientation_.x() << ", " << orientation_.y() << ", " << orientation_.z() << ", "
                      << perfect_orientation_.x() << ", " << perfect_orientation_.y() << ", " << perfect_orientation_.z() << ", "
-                     << gyro_x << ", " << gyro_y << ", " << gyro_z
-                     << "\n";
+                     << gyro_x << ", " << gyro_y << ", " << gyro_z << ", ";
+            for (const auto& thruster : thrust)
+            {
+                csv_file_ << thruster << ", ";
+            }
+            csv_file_ << new_SLAM_data_ << "\n";
             csv_file_.flush();
         }
+        new_SLAM_data_ = false;
     }
 
 private:
@@ -350,6 +355,7 @@ private:
     const float gravity_ = 9.81f;              //m/s^2
     bool set_surface_pressure_ = false;
     bool first_update_ = true;
+    bool new_SLAM_data_ = false;
 };
 
 #endif // SENSOR_HANDLER_HPP

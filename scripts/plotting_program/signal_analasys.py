@@ -32,6 +32,28 @@ plt.ylabel("Magnuitude")
 plt.title("IMU Acceleration")
 plt.legend()
 
+print(np.abs(acc_x_freq[4]))
+print(np.abs(acc_y_freq[4]))
+print(np.abs(acc_z_freq[4]))
+
+plt.figure()
+plt.subplot(3, 1, 1)
+plt.plot(freqs[:len(acc_x)//2], np.abs(acc_x_freq[:len(acc_x)//2]), label='acc_x')
+plt.ylabel("Magnuitude")
+plt.title("IMU Acceleration")
+plt.legend()
+
+plt.subplot(3, 1, 2)
+plt.plot(freqs[:len(acc_x)//2], np.abs(acc_y_freq[:len(acc_x)//2]), label='acc_y')
+plt.ylabel("Magnuitude")
+plt.legend()
+
+plt.subplot(3, 1, 3)
+plt.plot(freqs[:len(acc_x)//2], np.abs(acc_z_freq[:len(acc_x)//2]), label='acc_z')
+plt.xlabel("Frequency (Hz)")
+plt.ylabel("Magnuitude")
+plt.legend()
+
 plt.figure()
 plt.plot(freqs[:len(acc_x)//2], np.abs(correct_acc_x_freq[:len(acc_x)//2]), label='acc_x')
 plt.plot(freqs[:len(acc_x)//2], np.abs(correct_acc_y_freq[:len(acc_x)//2]), label='acc_y')

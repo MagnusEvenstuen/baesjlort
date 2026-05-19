@@ -12,7 +12,7 @@ def lowpass_filter_5tap(data):
             filtered[i] = np.mean(data[i-2:i+3])
     return filtered
 
-file_path = "data_files/objekt_posisjoner1.csv"
+file_path = "data_files/objekt_posisjoner.csv"
 data = np.genfromtxt(file_path, delimiter=',', skip_header=1)
 
 timestamp = data[:, 0]
@@ -25,6 +25,7 @@ classes = ["Aruco marker", "Structure", "Structure wood", "Tube", "Valve"]
 
 data_0 = [[], [], [], [], []]
 data_1 = [[], [], [], [], []]
+
 data_2 = [[], [], [], [], []]
 data_3 = [[], [], [], [], []]
 
@@ -35,7 +36,7 @@ for i in range(len(object_id)):
         data_0[2].append(z_pos[i])
         data_0[3].append(timestamp[i])
         data_0[4].append(class_id[i])
-    elif object_id[i] == 4:
+    elif object_id[i] == 1:
         data_1[0].append(x_pos[i])
         data_1[1].append(y_pos[i])
         data_1[2].append(z_pos[i])
@@ -47,7 +48,7 @@ for i in range(len(object_id)):
         data_2[2].append(z_pos[i])
         data_2[3].append(timestamp[i])
         data_2[4].append(class_id[i])
-    elif object_id[i] == 6:
+    elif object_id[i] == 3:
         data_3[0].append(x_pos[i])
         data_3[1].append(y_pos[i])
         data_3[2].append(z_pos[i])
@@ -138,3 +139,8 @@ if data_3[3]:
 
 plt.tight_layout()
 plt.show()
+
+print("Klasse:", classes[int(data_0[4][0])], "Mediana avstand z:", np.median(data_0[2]), "Median avstand y:", np.median(data_0[1]), "Median avstand x:", np.median(data_0[0]), "STD:", np.std(data_0[2]), "Length:", len(data_0[2]))
+print("Klasse:", classes[int(data_1[4][0])], "Mediana avstand z:", np.median(data_1[2]), "Median avstand y:", np.median(data_1[1]), "Median avstand x:", np.median(data_1[0]), "STD:", np.std(data_1[2]), "Length:", len(data_1[2]))
+print("Klasse:", classes[int(data_2[4][0])], "Mediana avstand z:", np.median(data_2[2]), "Median avstand y:", np.median(data_2[1]), "Median avstand x:", np.median(data_2[0]), "STD:", np.std(data_2[2]), "Length:", len(data_2[2]))
+print("Klasse:", classes[int(data_3[4][0])], "Mediana avstand z:", np.median(data_3[2]), "Median avstand y:", np.median(data_3[1]), "Median avstand x:", np.median(data_3[0]), "STD:", np.std(data_3[2]), "Length:", len(data_3[2]))

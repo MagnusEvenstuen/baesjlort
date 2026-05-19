@@ -54,13 +54,13 @@ public:
 
         left_subscriber_.subscribe(
             this, 
-            "/gbr/cam_left/image_rect",
+            "/gbr/cam_right/image_raw",
             rclcpp::SensorDataQoS().get_rmw_qos_profile()
         );
         
         right_subscriber_.subscribe(
             this,
-            "/gbr/cam_right/image_rect",
+            "/gbr/cam_left/image_raw",
             rclcpp::SensorDataQoS().get_rmw_qos_profile()
         );
 
@@ -173,24 +173,12 @@ private:
         }
         Sophus::SE3f pose = slam_system_->TrackStereo(left_image, 
                                                     right_image, 
-                                                    header.stamp.sec + header.stamp.nanosec * 1e-9);
+                                                    header.stamp.sec * 1e9 + header.stamp.nanosec);
         //Publish if valid pose
         if (!pose.matrix().isIdentity()) 
         {
             publishPose(pose, header);
             pose_identity_counter = 0;  //Reset counter if we get a valid pose
-        } else 
-        {
-            RCLCPP_WARN(this->get_logger(), "Pose is identity, not publishing...");
-
-            pose_identity_counter++;
-            if (pose_identity_counter >= 2000)
-            {
-                //Reseting SLAM system after consecutive identity poses to improve speed estimation
-                RCLCPP_WARN(this->get_logger(), "Pose is identity, to long. Resetting...");
-                pose_identity_counter = 0;
-                slam_system_->Reset();
-            }
         }
     }
 

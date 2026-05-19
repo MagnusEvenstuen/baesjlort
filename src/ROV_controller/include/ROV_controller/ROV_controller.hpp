@@ -23,7 +23,7 @@ enum ROV_classes_to_detect
 class ROV_controller : public rclcpp::Node
 {
 public:
-    ROV_controller() : Node("rov_controller"), PID_x(1.2, 0.0, 0.4), PID_y(1.2, 0.0, 0.4), PID_z(1.2, 0.01, 0.1),
+    ROV_controller() : Node("rov_controller"), PID_x(3.5, 0.0, 0.4), PID_y(3.5, 0.0, 0.4), PID_z(3.5, 0.1, 0.1),
                         PID_orientation(0.5, 0.0, 0.01)
     {
         //Sets up ROS2 publishers and subscribers
@@ -93,12 +93,12 @@ private:
         object_position_ = current_orientation_ * object_position_;
 
         //Uses enum, now Jon Aksel is happy :-)
-        if (object_position_.y() < 3 && msg->data[3] == ROV_classes_to_detect::valve)
+        if (object_position_.y() < 8 && msg->data[3] == ROV_classes_to_detect::valve)
         {
-            found_object = true;
+            /*found_object = true;
             PID_x.set_target_position((current_position_.x() + object_position_.x()));
             PID_y.set_target_position((current_position_.y() + object_position_.y()));
-            PID_z.set_target_position((current_position_.z() + object_position_.z()) - 1.0);
+            PID_z.set_target_position((current_position_.z() + object_position_.z()));
 
         
             target_position_ = Eigen::Vector3d(PID_x.get_target_position(), PID_y.get_target_position(), PID_z.get_target_position());
@@ -121,39 +121,24 @@ private:
                                                 Eigen::Vector3d::UnitY(),   //UnitY because that is forward on the ROV
                                                 direction
                                             );
-            last_detection_time_ = this->now().seconds();
-        } else if (msg->data[3] == ROV_classes_to_detect::structure)
-        {            
-            last_structure_position_ = object_position_;
-            /*found_object = true;
-            Eigen::Vector3d target_position_correction = current_orientation_ * rotate_structure_bias;
-            PID_x.set_target_position((current_position_.x() + object_position_.x() + target_position_correction.x()));
-            PID_y.set_target_position((current_position_.y() + object_position_.y() + target_position_correction.y()));
-            PID_z.set_target_position((current_position_.z() + object_position_.z() + target_position_correction.z()));
-
-            //This equation makes target_position_ not really the target position, but it works with the code without changing anything else
-            target_position_ = Eigen::Vector3d(PID_x.get_target_position() - target_position_correction.x(), PID_y.get_target_position() - target_position_correction.y(), PID_z.get_target_position() - target_position_correction.z());
-
-            RCLCPP_INFO(this->get_logger(), 
-                "Ny Target - X: %.2f, Y: %.2f, Z: %.2f", 
-                PID_x.get_target_position(), PID_y.get_target_position(), PID_z.get_target_position());
-
-            Eigen::Vector3d direction = target_position_ - current_position_;
-
-            RCLCPP_INFO(this->get_logger(), 
-                "Forskjell fra nå pos - X: %.2f, Y: %.2f, Z: %.2f", 
-                direction.x(), 
-                direction.y(), 
-                direction.z());
-
-            direction.normalize();
-
-            target_object_direction_ = Eigen::Quaterniond::FromTwoVectors(
-                                                Eigen::Vector3d::UnitY(),   //UnitY because that is forward on the ROV
-                                                direction
-                                            );
-            PID_orientation.set_target_quaternion(target_object_direction_);
             last_detection_time_ = this->now().seconds();*/
+        } else if (msg->data[3] == ROV_classes_to_detect::structure)
+        {
+            // Lagre absolutt world-posisjon til strukturen
+            structure_world_pos_ = current_position_ + object_position_;
+            last_structure_position_ = structure_world_pos_;
+        
+            if (!circle_initialized_)
+            {
+                // Initialiser vinkelen basert på nåværende posisjon relativt til strukturen
+                Eigen::Vector3d to_rov = current_position_ - structure_world_pos_;
+                circle_angle_ = std::atan2(to_rov.x(), to_rov.y());
+                circle_initialized_ = true;
+                RCLCPP_INFO(this->get_logger(), "Sirkel initialisert med vinkel: %.2f", circle_angle_);
+            }
+        
+            found_object = true;
+            last_detection_time_ = this->now().seconds();
         } else if (msg->data[3] == ROV_classes_to_detect::tube)
         { 
             RCLCPP_INFO(this->get_logger(), 
@@ -248,8 +233,8 @@ private:
         float distance_from_target = Eigen::Vector3f(PID_x.get_error_float(), PID_y.get_error_float(), PID_z.get_error_float()).norm();
 
         //Looks towards target position if far away to improve SLAM
-        //RCLCPP_INFO(this->get_logger(), 
-        //"Distance: %.2f", distance_from_target);
+        RCLCPP_INFO(this->get_logger(), 
+        "Distance: %.2f", distance_from_target);
         Eigen::Vector3d direction = (target_position_ - current_position_);
         direction.normalize();
 
@@ -263,7 +248,13 @@ private:
         {
             Eigen::Quaterniond direction_target = target_orientation_.slerp(std::min(1.0f, distance_from_target), direction_to_target);
             current_direction_target = current_direction_target.slerp(0.01, direction_target);
-            PID_orientation.set_target_quaternion(direction_to_target);
+            if (distance_from_target < 1.0)
+            {
+                PID_orientation.set_target_quaternion(target_orientation_);
+            } else
+            {
+                PID_orientation.set_target_quaternion(direction_to_target);
+            }
         } else 
         {
             if (last_detection_time_ + 3.0 < current_time && current_time - reversing_time_ < 5.0)
@@ -310,13 +301,40 @@ private:
                 reversing_time_ = current_time;
                 first_reverse_ = true;
                 found_object = false;
+                circle_initialized_ = false;
+                found_object = false;
             }
             
             else
             {
+                // Inkrementer vinkelen
+                circle_angle_ += circle_speed_ * dt;
+
+                // Beregn neste punkt på sirkelen rundt strukturen (X/Y-planet)
+                Eigen::Vector3d circle_target;
+                circle_target.x() = structure_world_pos_.x() + circle_radius_ * std::sin(circle_angle_);
+                circle_target.y() = structure_world_pos_.y() + circle_radius_ * std::cos(circle_angle_);
+                circle_target.z() = structure_world_pos_.z();  // Hold samme dybde som strukturen
+
+                target_position_ = circle_target;
+                PID_x.set_target_position(circle_target.x());
+                PID_y.set_target_position(circle_target.y());
+                PID_z.set_target_position(circle_target.z());
+
+                // Pek alltid mot strukturen
+                Eigen::Vector3d toward_structure = (structure_world_pos_ - current_position_).normalized();
+                target_object_direction_ = Eigen::Quaterniond::FromTwoVectors(
+                    Eigen::Vector3d::UnitY(),
+                    toward_structure
+                );
                 PID_orientation.set_target_quaternion(target_object_direction_);
+
                 first_reverse_ = true;
                 reversing_time_ = current_time;
+
+                RCLCPP_INFO(this->get_logger(),
+                    "Sirkler - Vinkel: %.2f, Mål X: %.2f, Y: %.2f, Z: %.2f",
+                    circle_angle_, circle_target.x(), circle_target.y(), circle_target.z());
             }
         }
 
@@ -330,7 +348,7 @@ private:
 
         //Reduce translation force if orientation error is big to make sure the ROV always points in the right direction
         double orientation_error_norm = PID_orientation.get_error_quat().norm();
-        force_world *= 1.0 / (1.0 + 5.0 * orientation_error_norm);
+        force_world *= 1.0 / (1.0 + 10.0 * orientation_error_norm);
 
         // NOT actual forces
         //Puts the forces in an array, and multiplies it with the thruster setup
@@ -340,9 +358,7 @@ private:
                   orientation_output(1),
                   orientation_output(0),
                   orientation_output(2);
-
         forces *= 0.1;
-            
         set_thrust(forces);
 
         //Get errors for logging
@@ -358,13 +374,13 @@ private:
     void set_thrust(const Eigen::VectorXd &forces)
     {
         Eigen::VectorXd gain = thrust_map_matrix*forces;
-        gain = gain.cwiseMax(-10.0).cwiseMin(10.0);             //Forces the output between pluss, minus 10 to prevent to high power consumption, and making SLAM easier
+        gain = gain.cwiseMax(-1.0).cwiseMin(1.0);             //Forces the output between pluss, minus 10 to prevent to high power consumption, and making SLAM easier
         auto msg = std_msgs::msg::Float64MultiArray();
         msg.data = std::vector<double>({gain(0), gain(1), gain(2), gain(3), gain(4), gain(5), gain(6), gain(7)});       //Publishes to thrusters
         thrust_publisher_->publish(msg);
-        //RCLCPP_INFO(this->get_logger(), 
-        //    "Thruster - T1: %.2f, T2: %.2f, T3: %.2f, T4: %.2f, T5: %.2f, T6: %.2f, T7: %.2f, T8: %.2f", 
-        //    gain(0), gain(1), gain(2), gain(3), gain(4), gain(5), gain(6), gain(7));
+        RCLCPP_INFO(this->get_logger(), 
+            "Thruster - T1: %.2f, T2: %.2f, T3: %.2f, T4: %.2f, T5: %.2f, T6: %.2f, T7: %.2f, T8: %.2f", 
+            gain(0), gain(1), gain(2), gain(3), gain(4), gain(5), gain(6), gain(7));
     }
 
     void log_errors_to_csv(const Eigen::Vector3d& position_error, const Eigen::Vector3d& orientation_error, double timestamp)
@@ -402,7 +418,7 @@ private:
     rclcpp::Subscription<controller_msgs::msg::ControllerState>::SharedPtr controller_subscriber_;
     rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr thrust_publisher_;
     Eigen::Vector3d current_position_ = Eigen::Vector3d::Zero();
-    Eigen::Vector3d target_position_ = Eigen::Vector3d(0.0, 4, -2.5);
+    Eigen::Vector3d target_position_ = Eigen::Vector3d(0.0, 3.0, -1.0);
     Eigen::Vector3d object_position_ = Eigen::Vector3d::Zero();
     Eigen::Quaterniond current_orientation_ = Eigen::Quaterniond::Identity();
     Eigen::Quaterniond target_orientation_ = Eigen::Quaterniond(Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitX()) *   // pitch
@@ -412,7 +428,7 @@ private:
     Eigen::Quaterniond target_object_direction_ = Eigen::Quaterniond::Identity();
     bool found_object = false;
     bool running_ = true;
-    bool auto_ = false;
+    bool auto_ = true;
     bool manual_alt_mode_ = false;
     bool prev_ps_ = false;
     bool prev_l1_ = false;
@@ -440,15 +456,20 @@ private:
     //Thruster allocation (x, y, z, roll, pitch, yaw)
     Eigen::Matrix<double, 8, 6> thrust_map_matrix = 
     (Eigen::Matrix<double, 8, 6>() <<
-    -std::sqrt(2)/2,  std::sqrt(2)/2,  0.0,  0.0,              0.0,              0.156*std::sqrt(2),  // Thruster 1
-    -std::sqrt(2)/2, -std::sqrt(2)/2,  0.0,  0.0,              0.0,              0.156*std::sqrt(2),  // Thruster 2
-    -std::sqrt(2)/2, -std::sqrt(2)/2,  0.0,  0.0,              0.0,             -0.156*std::sqrt(2),  // Thruster 3
-    -std::sqrt(2)/2,  std::sqrt(2)/2,  0.0,  0.0,              0.0,             -0.156*std::sqrt(2),  // Thruster 4
-     0.0,             0.0,            -1.0, -0.115,             0.096,            0.0,                 // Thruster 5
-     0.0,             0.0,             1.0,  0.115,             0.096,            0.0,                 // Thruster 6
-     0.0,             0.0,            -1.0,  0.115,             0.096,            0.0,                 // Thruster 7
-     0.0,             0.0,            -1.0,  0.115,            -0.096,            0.0                  // Thruster 8
+    -0.25 * std::sqrt(2),  0.25 * std::sqrt(2),  0.0,   0.0,     0.0,     0.801 * std::sqrt(2),  // Rad 1
+     0.25 * std::sqrt(2),  0.25 * std::sqrt(2),  0.0,   0.0,     0.0,    -0.801 * std::sqrt(2),  // Rad 2
+    -0.25 * std::sqrt(2), -0.25 * std::sqrt(2),  0.0,   0.0,     0.0,    -0.801 * std::sqrt(2),  // Rad 3
+     0.25 * std::sqrt(2), -0.25 * std::sqrt(2),  0.0,   0.0,     0.0,     0.801 * std::sqrt(2),  // Rad 4
+     0.0,                  0.0,                 -0.25, -2.174,   2.604,   0.0,                    // Rad 5
+     0.0,                  0.0,                 -0.25, -2.174,  -2.604,   0.0,                    // Rad 6
+     0.0,                  0.0,                 -0.25,  2.174,   2.604,   0.0,                    // Rad 7
+     0.0,                  0.0,                 -0.25,  2.174,  -2.604,   0.0                     // Rad 8
     ).finished();
+    Eigen::Vector3d structure_world_pos_ = Eigen::Vector3d::Zero();
+    double circle_angle_ = 0.0;
+    double circle_radius_ = 4.0;   // Meter fra strukturen
+    double circle_speed_ = 0.05;   // Radianer per sekund
+    bool circle_initialized_ = false;
 };
 
 #endif // ROV_CONTROLLER_HPP

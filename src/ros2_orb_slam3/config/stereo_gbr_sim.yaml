@@ -11,8 +11,8 @@ File.version: "1.0"
 Camera.type: "PinHole"
 
 # Image size (after rectification)
-Camera.width: 1920
-Camera.height: 1080
+Camera.width: 640
+Camera.height: 480
 
 # Camera frames per second (adjust to your actual fps)
 Camera.fps: 30
@@ -21,16 +21,16 @@ Camera.fps: 30
 Camera.RGB: 0
 
 # Intrinsics for left camera (from P_left after rectification)
-Camera1.fx: 1034.165081
-Camera1.fy: 1033.125629
-Camera1.cx: 940.983669
-Camera1.cy: 537.905979
+Camera1.fx: 538.784527
+Camera1.fy: 538.784527
+Camera1.cx: 161.955271
+Camera1.cy: 230.658319
 
 # Right camera – same intrinsics because images are rectified
-Camera2.fx: 1044.118942
-Camera2.fy: 1044.082334
-Camera2.cx: 952.381655
-Camera2.cy: 588.325337
+Camera2.fx: 538.784527
+Camera2.fy: 538.784527
+Camera2.cx: 161.955271
+Camera2.cy: 230.658319
 
 # Distortion – set to zero because images are already rectified
 Camera1.k1: 0.0
@@ -64,16 +64,16 @@ Stereo.T_c1_c2: !!opencv-matrix
 ORBextractor.nFeatures: 3000
 
 # Scale factor between levels
-ORBextractor.scaleFactor: 1.1
+ORBextractor.scaleFactor: 1.2
 
 # Number of levels in the scale pyramid
-ORBextractor.nLevels: 12
+ORBextractor.nLevels: 8
 
 # Fast threshold – low values help in low‑contrast environments
-ORBextractor.iniThFAST: 2
-ORBextractor.minThFAST: 1
+ORBextractor.iniThFAST: 3
+ORBextractor.minThFAST: 2
 
-ORBmatcher.nnratio: 0.99
+ORBmatcher.nnratio: 0.95
 ORBmatcher.checkOrientation: false
 
 #--------------------------------------------------------------------------------------------
